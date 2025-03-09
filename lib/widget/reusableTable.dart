@@ -1,0 +1,546 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/appController.dart';
+import 'package:flutter_application_1/models.dart/Item.dart';
+import 'package:flutter_application_1/models.dart/category.dart';
+import 'package:flutter_application_1/services/Apiservice.dart';
+import 'package:flutter_application_1/widget/ActionbuttonRow.dart';
+import 'package:flutter_application_1/widget/categoryWidget.dart';
+import 'package:flutter_application_1/widget/customdropdow.dart';
+import 'package:flutter_application_1/widget/popupButton.dart';
+import 'package:get/get.dart';
+
+class ReusableTable extends StatelessWidget {
+  final List<Map<String, dynamic>> data;
+  final Function(BuildContext, Map<String, dynamic>)? onEdit;
+  final Function(BuildContext, Map<String, dynamic>)? onDelete;
+
+  ReusableTable({
+    Key? key,
+    required this.data,
+    this.onEdit,
+    this.onDelete,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (data.isEmpty) {
+      return Container(
+        alignment: Alignment.center,
+        child: const Text(
+          'Aucune donnée disponible.',
+          style: TextStyle(fontSize: 18, color: Colors.grey),
+        ),
+      );
+    }
+
+    final headers = data.first.keys
+        .where((key) => key != 'id' && key != 'categoryId')
+        .toList();
+
+    return Column(
+      children: [
+        // En-tête
+        Container(
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: Colors.blueGrey[50],
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.withOpacity(0.5), width: 2),
+            ),
+          ),
+          child: Table(
+            children: [
+              TableRow(
+                children: [
+                  ...headers.map((header) => _buildHeaderCell(header)),
+                  _buildHeaderCell('Actions'),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Contenu défilable
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Table(
+              border: TableBorder.all(
+                  color: Colors.grey.withOpacity(0.3), width: 1),
+              children: data
+                  .map((rowData) => _buildRow(rowData, headers, context))
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TableRow _buildRow(Map<String, dynamic> rowData, List<String> headers,
+      BuildContext context) {
+    ApiService apiService = ApiService();
+    return TableRow(
+      children: [
+        ...headers.map((header) {
+          if (header == 'Catégorie') {
+            final categoryId = rowData[header];
+            if (categoryId == null) {
+              return const Text('Aucune catégorie');
+            }
+            return Center(
+              child: FutureWidget<Category>(
+                fetchFunction: () => apiService.fetchCategoryById(categoryId),
+                builder: (category) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(category.title ?? 'Titre inconnu',
+                        style: const TextStyle(fontSize: 16)),
+                  );
+                },
+              ),
+            );
+          } else {
+            return _buildCell(rowData[header]);
+          }
+        }),
+        _buildActionButtons(rowData, context),
+      ],
+    );
+  }
+
+  Widget _buildHeaderCell(String text) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Text(text,
+            style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+
+  Widget _buildCell(dynamic value) {
+    return Center(
+      child: Container(
+        alignment: Alignment.center,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: value is bool
+            ? Icon(
+                !value
+                    ? Icons.check_circle_outline
+                    : Icons.remove_shopping_cart_outlined,
+                color: !value ? Colors.green : Colors.red,
+              )
+            : Text(
+                value != null ? value.toString() : 'Aucune donnée',
+                style: const TextStyle(fontSize: 16),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(
+      Map<String, dynamic> rowData, BuildContext context) {
+    final buttonKey1 = GlobalKey();
+    final buttonKey2 = GlobalKey();
+
+    final String? id = rowData['id'];
+    final String? name = rowData['Nom du produit']; // Récupération de l'ID
+    final String? unitPrice = rowData['Prix unitaire'];
+    final String? categoryId = rowData['categoryId'];
+    final String? quantity = rowData['quantité'].toString();
+
+    if (id == null) {
+      return const SizedBox.shrink(); // Si pas d'ID, ne rien afficher
+    }
+
+    void updateItem(BuildContext context) {
+      PopupHelper.showPopup(
+        context: context,
+        buttonKey: buttonKey1,
+        width: 300,
+        popupContent: UpdateItemForm(
+          isHistoriquePage: false,
+          categoryId: categoryId,
+          id: id,
+          name: name,
+          unitPrice: unitPrice,
+          quantity: quantity,
+        ),
+      );
+    }
+
+    void deletedItem(BuildContext context) {
+      PopupHelper.showPopup(
+        context: context,
+        buttonKey: buttonKey2,
+        width: 300,
+        popupContent: DeleteItemForm(
+          categoryId: categoryId!,
+          itemId: id,
+        ),
+      );
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton(
+              key: buttonKey1,
+              style: OutlinedButton.styleFrom(
+                shape:
+                    const CircleBorder(side: BorderSide(color: Colors.orange)),
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(36, 36),
+              ),
+              onPressed: () {
+                updateItem(context);
+              },
+              child: const Icon(Icons.edit_outlined,
+                  size: 18, color: Colors.orange),
+            ),
+            const SizedBox(width: 10),
+            OutlinedButton(
+              key: buttonKey2,
+              style: OutlinedButton.styleFrom(
+                shape: const CircleBorder(side: BorderSide(color: Colors.red)),
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(36, 36),
+              ),
+              onPressed: () {
+                deletedItem(context);
+              },
+              child:
+                  const Icon(Icons.delete_outline, size: 18, color: Colors.red),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FutureWidget<T> extends StatelessWidget {
+  final Future<T> Function() fetchFunction;
+  final Widget Function(T data) builder;
+
+  const FutureWidget(
+      {super.key, required this.fetchFunction, required this.builder});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<T>(
+      future: fetchFunction(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Text('');
+        } else if (snapshot.hasError) {
+          return const Center(child: Text(''));
+        } else if (!snapshot.hasData) {
+          return const Center(child: Text('Aucune donnée disponible.'));
+        }
+        return builder(snapshot.data as T);
+      },
+    );
+  }
+}
+
+class UpdateItemForm extends StatefulWidget {
+  bool? isHistoriquePage = false;
+  final String? id;
+  final String? name;
+  final String? unitPrice;
+  final String? categoryId;
+  final String? quantity;
+
+  UpdateItemForm({
+    super.key,
+    this.id,
+    this.name,
+    this.unitPrice,
+    this.categoryId,
+    this.quantity,
+    this.isHistoriquePage,
+  });
+
+  @override
+  State<UpdateItemForm> createState() => _UpdateItemFormState();
+}
+
+class _UpdateItemFormState extends State<UpdateItemForm> {
+  bool isLoading = false;
+  late TextEditingController itemTextController;
+  late TextEditingController unitPriceController;
+  late TextEditingController quantityController;
+  late TextEditingController categoryIdController; // Contrôleur pour categoryId
+  String? selectedItemId;
+  Item? item;
+
+  @override
+  void initState() {
+    super.initState();
+    // Si isHistoriquePage est vrai, on initialise les champs avec des valeurs vides
+    if (widget.isHistoriquePage == true) {
+      itemTextController = TextEditingController();
+      unitPriceController = TextEditingController();
+      quantityController = TextEditingController();
+      categoryIdController = TextEditingController();
+    } else {
+      // Sinon, on les initialise avec les valeurs passées
+      itemTextController = TextEditingController(text: widget.name);
+      unitPriceController =
+          TextEditingController(text: widget.unitPrice?.trim());
+      quantityController = TextEditingController(text: widget.quantity!.trim());
+      categoryIdController =
+          TextEditingController(text: widget.categoryId ?? "");
+    }
+  }
+
+  Future<void> updateItem() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    ApiService apiService = ApiService();
+    try {
+      // Si isHistoriquePage est vrai, l'ID et le categoryId sont différents
+      String itemId = widget.isHistoriquePage == true
+          ? selectedItemId! // Utilisation de l'ID sélectionné via le dropdown
+          : widget.id!;
+      String categoryId = widget.isHistoriquePage == true
+          ? item!.categoryId! // Valeur par défaut ou saisie manuelle
+          : widget.categoryId!;
+
+      await apiService.updateItem(
+        itemId,
+        categoryId,
+        itemTextController.text.trim(),
+        int.parse(unitPriceController.text.trim()),
+        int.parse(quantityController.text.trim()),
+      );
+
+      setState(() {
+        isLoading = false;
+      });
+ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Item mis à jour avec succès!')),
+      );
+      if (!widget.isHistoriquePage!) {
+        PopupHelper.removePopup(context);
+      }
+      await apiController.refreshData();
+
+      
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la mise à jour de l\'item.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          const Text(
+            'Modifier l\'item',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 15),
+          widget.isHistoriquePage == true
+              ? ReusableSearchDropdown(hintText: 'Selectionné un produit',
+                  items: apiController.items.map(
+                    (e) {
+                      return e.name!;
+                    },
+                  ).toList(),
+                  onPressed: (itemName) {
+                    setState(() {
+                      selectedItemId = apiController.items
+                          .firstWhere((element) => element.name == itemName!)
+                          .id;
+                      item = apiController.items
+                          .firstWhere((element) => element.name == itemName!);
+                          itemTextController.text=item!.name!;
+                          unitPriceController.text=item!.unitPrice.toString();
+                          quantityController.text=item!.quantity.toString();
+                    });
+                  },
+                )
+              : Container(), // Affichage
+          const SizedBox(height: 15),
+          widget.isHistoriquePage == true
+              ? _buildTextField(itemTextController, 'Nom de l\'item')
+              : _buildTextField(
+                  itemTextController, 'Modifier le nom de l\'item'),
+          const SizedBox(height: 15),
+          widget.isHistoriquePage == true
+              ? _buildTextField(unitPriceController, 'Prix', isNumeric: true)
+              : _buildTextField(
+                  unitPriceController, 'Modifier le prix du produit',
+                  isNumeric: true),
+          const SizedBox(height: 15),
+          widget.isHistoriquePage == true
+              ? _buildTextField(quantityController, 'Quantité', isNumeric: true)
+              : _buildTextField(quantityController, 'Modifier la quantité',
+                  isNumeric: true),
+          const SizedBox(height: 15),
+
+          // Dropdown pour sélectionner un item (utilisé pour récupérer l'ID)
+
+          const SizedBox(height: 16),
+          isLoading
+              ? const CircularProgressIndicator()
+              : ActionButtonsRow(
+                  cancelText: "Annuler",
+                  confirmText: "Valider",
+                  onCancel: () {
+                    PopupHelper.removePopup(context);
+                  },
+                  onConfirm: () async {
+                    if (itemTextController.text.isNotEmpty) {
+                      await updateItem();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Veuillez entrer un nom valide.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hintText,
+      {bool isNumeric = false}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+        decoration: InputDecoration(
+          hintText: hintText,
+          fillColor: Colors.grey[200],
+          filled: true,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    itemTextController.dispose();
+    unitPriceController.dispose();
+    quantityController.dispose();
+    categoryIdController.dispose();
+    super.dispose();
+  }
+}
+
+class DeleteItemForm extends StatefulWidget {
+  final String? itemId;
+  final String? categoryId;
+  bool? isHistoriquePage = false;
+
+  DeleteItemForm(
+      {super.key,
+      required this.itemId,
+      required this.categoryId,
+      this.isHistoriquePage});
+
+  @override
+  State<DeleteItemForm> createState() => _DeleteItemFormState();
+}
+
+class _DeleteItemFormState extends State<DeleteItemForm> {
+  bool isLoading = false;
+
+  Future<void> deleteItem() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    ApiService apiService = ApiService();
+    try {
+      await apiService.deleteItem(widget.itemId!, widget.categoryId!);
+      setState(() {
+        isLoading = false;
+      });
+
+      PopupHelper.removePopup(context);
+      await apiController.refreshData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Élément supprimé avec succès!')),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de la suppression de l\'élément.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          const Text(
+            'Supprimer l\'élément',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 15),
+          if (!widget.isHistoriquePage!)
+            const Text(
+              'Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 15, color: Colors.red),
+            ),
+          const SizedBox(height: 16),
+          isLoading
+              ? const CircularProgressIndicator()
+              : ActionButtonsRow(
+                  cancelText: "Annuler",
+                  confirmText: "Supprimer",
+                  onCancel: () {
+                    PopupHelper.removePopup(context);
+                  },
+                  onConfirm: () async {
+                    await deleteItem();
+                  },
+                ),
+        ],
+      ),
+    );
+  }
+}
