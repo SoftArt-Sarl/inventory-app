@@ -458,47 +458,64 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
   final TextEditingController quantitytext = TextEditingController();
 
   Future<void> retirerStock() async {
-    setState(() {
-      isLoading = true; // Lancer le chargement
-    });
+  if (isLoading) return; // Éviter les doubles soumissions
 
+  setState(() {
+    isLoading = true; // Lancer le chargement
+  });
+
+  try {
+    ApiService apiService = ApiService();
+
+    // Vérification que le champ nom est rempli
+    String itemName = nametext.text.trim();
+    if (itemName.isEmpty) {
+      throw Exception("Veuillez saisir le nom de l'article.");
+    }
+
+    // Vérification que l'article existe
+    Item? item;
     try {
-      ApiService apiService = ApiService();
-      Item item = apiController.items.firstWhere(
-        (element) => element.name == nametext.text.trim(),
-      );
-
-      int? quantity = int.tryParse(quantitytext.text.trim());
-      if (quantity == null || quantity <= 0) {
-        throw Exception('Quantité invalide');
-      }
-
-      await apiService.retirerStok(item, quantity);
-
-      PopupHelper.removePopup(context);
-      await apiController.refreshData();
-
-      setState(() {
-        isLoading = false; // Arrêter le chargement après le retrait
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit retiré avec succès!')),
+      item = apiController.items.firstWhere(
+        (element) => element.name == itemName,
       );
     } catch (e) {
-      setState(() {
-        isLoading = false; // Arrêter le chargement en cas d'erreur
-      });
-
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur lors du retrait du produit.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      throw Exception("L'article n'existe pas.");
     }
+
+    // Vérification de la quantité
+    int? quantity = int.tryParse(quantitytext.text.trim());
+    if (quantity == null || quantity <= 0) {
+      throw Exception('Veuillez saisir une quantité valide (supérieure à 0).');
+    }
+
+    // Exécuter le retrait du stock
+    await apiService.retirerStok(item, quantity);
+
+    // Rafraîchir les données
+    await apiController.refreshData();
+
+    setState(() {
+      isLoading = false; // Arrêter le chargement
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Produit retiré avec succès!')),
+    );
+  } catch (e) {
+    setState(() {
+      isLoading = false; // Arrêter le chargement en cas d'erreur
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()), // Afficher le message d'erreur précis
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -586,47 +603,64 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
   final TextEditingController quantitytext = TextEditingController();
 
   Future<void> ajouterStock() async {
-    setState(() {
-      isLoading = true; // Début du chargement
-    });
+  if (isLoading) return; // Éviter les doubles soumissions
 
+  setState(() {
+    isLoading = true; // Début du chargement
+  });
+
+  try {
+    ApiService apiService = ApiService();
+
+    // Vérification que le champ nom est rempli
+    String itemName = nametext.text.trim();
+    if (itemName.isEmpty) {
+      throw Exception("Veuillez saisir le nom de l'article.");
+    }
+
+    // Vérification que l'article existe
+    Item? item;
     try {
-      ApiService apiService = ApiService();
-      Item item = apiController.items.firstWhere(
-        (element) => element.name == nametext.text.trim(),
-      );
-
-      int? quantity = int.tryParse(quantitytext.text.trim());
-      if (quantity == null || quantity <= 0) {
-        throw Exception('Quantité invalide');
-      }
-
-      await apiService.ajouterStock(item, quantity);
-
-      PopupHelper.removePopup(context);
-      await apiController.refreshData();
-
-      setState(() {
-        isLoading = false; // Fin du chargement
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stock ajouté avec succès!')),
+      item = apiController.items.firstWhere(
+        (element) => element.name == itemName,
       );
     } catch (e) {
-      setState(() {
-        isLoading = false; // Arrêter le chargement en cas d'erreur
-      });
-
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Erreur lors de l\'ajout du stock.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      throw Exception("L'article n'existe pas.");
     }
+
+    // Vérification de la quantité
+    int? quantity = int.tryParse(quantitytext.text.trim());
+    if (quantity == null || quantity <= 0) {
+      throw Exception('Veuillez saisir une quantité valide (supérieure à 0).');
+    }
+
+    // Exécuter l’ajout de stock
+    await apiService.ajouterStock(item, quantity);
+
+    // Rafraîchir les données
+    await apiController.refreshData();
+
+    setState(() {
+      isLoading = false; // Fin du chargement
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Stock ajouté avec succès!')),
+    );
+  } catch (e) {
+    setState(() {
+      isLoading = false; // Arrêter le chargement en cas d'erreur
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.toString()), // Afficher le message d'erreur précis
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
