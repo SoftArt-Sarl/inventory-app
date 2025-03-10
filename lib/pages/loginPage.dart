@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           userinfo.authmodel.value = authModel;
           userinfo.saveAuthModel('authmodel', jsonEncode(response.data));
 
-          Get.snackbar("Succès", "Connexion réussie",
+          Get.snackbar("Success", "Login successful",
               backgroundColor: Colors.green, colorText: Colors.white);
               
           // Rediriger vers la page d'accueil ou une autre page
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           // print(e.toString);
           print(response.statusCode);
-          Get.snackbar("Erreur", "Email ou mot de passe incorrect",
+          Get.snackbar("Erreur", "Email or password incorrect",
               backgroundColor: Colors.red, colorText: Colors.white);
         }
       } catch (e) {
@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
         obscureText: obscureText,
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return "Ce champ est requis";
+            return "This field is required";
           }
           return null;
         },
@@ -123,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Connexion',
+                      const Text('Login',
                           style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 16),
@@ -133,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController),
                       const SizedBox(height: 16),
                       _buildTextField(
-                          label: "Mot de passe",
+                          label: "Password",
                           icon: Icons.lock,
                           controller: _passwordController,
                           obscureText: false),
@@ -152,7 +152,7 @@ class _LoginPageState extends State<LoginPage> {
                               child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text('Se connecter'),
+                                  Text('Login'),
                                 ],
                               ),
                             ),
@@ -162,11 +162,11 @@ class _LoginPageState extends State<LoginPage> {
                       //   child: Text('Créer un compte',
                       //       style: TextStyle(color: Colors.orange[500])),
                       // ),
-                      TextButton(
+                      /* TextButton(
                         onPressed: () {},
                         child: Text('Mot de passe oublié ?',
                             style: TextStyle(color: Colors.grey[400])),
-                      ),
+                      ), */
                     ],
                   ),
                 ),

@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Stock management',
       theme: ThemeData(
         appBarTheme:
             const AppBarTheme(iconTheme: IconThemeData(color: Colors.black)),
@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
       home: const Scaffold(
         body: Center(
           child: Text(
-            'Gestion de stock',
+            'Stock management',
             style: TextStyle(fontSize: 18, color: Colors.orange),
           ),
         ),
@@ -77,8 +77,8 @@ class _HomePageState extends State<HomePage> {
         ),
                 header: const Header(
                   isCategory: false,
-                  title: 'Produits',
-                  buttonText: 'Ajouter un produit',
+                  title: 'Items',
+                  buttonText: 'Add new Item',
                 ),
                 productList: Obx(() => ReusableTable(
                       data: apiController.itemsRupturefilter
@@ -108,8 +108,8 @@ class _HomePageState extends State<HomePage> {
         ),
         header: const Header(
           isCategory: false,
-          title: 'Produits',
-          buttonText: 'Ajouter un produit',
+          title: 'Items',
+          buttonText: 'Add new Item',
         ),
         productList: Obx(() => ReusableTable(
               data: apiController.filteredItems
@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
       // CategoryPage(),
       // const Center(child: Text("Stock")),
       // const Center(child: Text("Paramètres")),
-      const Center(child: Text("Déconnexion")),
+      const Center(child: Text("Sign out")),
     ]);
   }
 }
@@ -168,8 +168,8 @@ class _TablePageWidgetState extends State<TablePageWidget> {
             ? const Header1()
             : const Header(
                 isCategory: true,
-                title: 'Catégories',
-                buttonText: 'Ajouter une catégorie',
+                title: 'Categories',
+                buttonText: 'Add new Category',
               ),
         productList: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

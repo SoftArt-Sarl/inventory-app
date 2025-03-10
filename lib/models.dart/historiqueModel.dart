@@ -72,37 +72,37 @@ class ActionItem {
     switch (action) {
       case 'Added new':
         return itemId == null
-            ? '➕ Nouvelle catégorie ajouté : ${newValue!.title??''}'
-            : '➕ $quantity unités ajoutées à ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unité';
+            ? '➕ New category added : ${newValue!.title??''}'
+            : '➕ $quantity items added for ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unit';
       case 'RemovedFromStock':
-        return '🔻 $quantity unités retirées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
+        return '🔻 $quantity items removed (Old value: ${oldValue?.quantity ?? 0} → new value: ${newValue?.quantity ?? 0})';
       case 'Deleted':
         return itemId == null
-        ?'❌ Catégorie supprimé'
-        :'❌ Produit supprimé';
+        ?'❌ Category deleted'
+        :'❌ Item deleted';
       case 'Updated':
         return itemId==null
-        ?'🔄 Catégorie mis à jour'
-        :'🔄 Produit mis à jour : $updatedDetails';
+        ?'🔄 Category updated'
+        :'🔄 Item updated : $updatedDetails';
       case 'Added To Stock':
-        return '🔻 $quantity unités ajoutées${oldValue!.name} (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
+        return '🔻 $quantity items added ${oldValue!.name} (Old value: ${oldValue?.quantity ?? 0} → New value: ${newValue?.quantity ?? 0})';
       default:
-        return '⚠️ Action inconnue';
+        return '⚠️ Error';
     }
   }
 
   String get updatedDetails {
     List<String> changes = [];
     if (oldValue?.quantity != newValue?.quantity) {
-      changes.add('Quantité: ${oldValue?.quantity ?? 0} → ${newValue?.quantity ?? 0}');
+      changes.add('Quantity: ${oldValue?.quantity ?? 0} → ${newValue?.quantity ?? 0}');
     }
     if (oldValue?.name != newValue?.name) {
-      changes.add('Nom: ${oldValue?.name ?? 'Inconnu'} → ${newValue?.name ?? 'Inconnu'}');
+      changes.add('Title: ${oldValue?.name ?? 'Error'} → ${newValue?.name ?? 'Error'}');
     }
     if (oldValue?.unitPrice != newValue?.unitPrice) {
-      changes.add('Prix: ${oldValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA → ${newValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA');
+      changes.add('Price: ${oldValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA → ${newValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA');
     }
-    return changes.isNotEmpty ? changes.join(', ') : 'Aucune modification détectée';
+    return changes.isNotEmpty ? changes.join(', ') : 'No changes detected';
   }
 
   Map<String, dynamic> toJson() {

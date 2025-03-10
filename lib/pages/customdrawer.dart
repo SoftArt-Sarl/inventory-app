@@ -37,9 +37,9 @@ class _SideMenuState extends State<SideMenu> {
     // Liste des titres des éléments du menu pour utilisation dans l'AppBar
     List<String> menuTitles = [
       "Dashboard",
-      "Produits",
-      "Catégories",
-      "Déconnexion",
+      "Items",
+      "Categories",
+      "Sign Out",
     ];
 
     return Scaffold(
@@ -60,9 +60,9 @@ class _SideMenuState extends State<SideMenu> {
                       children: [
                         const SizedBox(height: 10),
                         _buildMenuItem(Icons.dashboard, "Dashboard", 0),
-                        _buildMenuItem(Icons.shopping_cart, "Produits", 1),
-                        _buildMenuItem(Icons.dashboard_outlined, "Catégories", 2),
-                        _buildMenuItem(Icons.logout, "Déconnexion", 3),
+                        _buildMenuItem(Icons.shopping_cart, "Items", 1),
+                        _buildMenuItem(Icons.dashboard_outlined, "Categories", 2),
+                        _buildMenuItem(Icons.logout, "Sign Out", 3),
                       ],
                     ),
                   ),
@@ -91,10 +91,10 @@ class _SideMenuState extends State<SideMenu> {
                   children: [
                     _buildMenuItem(Icons.dashboard, "Dashboard", 0),
                     _buildMenuItem(Icons.sell, "Solder", 1),
-                    _buildMenuItem(Icons.shopping_cart, "Produits", 2),
-                    _buildMenuItem(Icons.dashboard_outlined, "Catégories", 3),
-                    _buildMenuItem(Icons.settings, "Paramètres", 4),
-                    _buildMenuItem(Icons.logout, "Déconnexion", 5),
+                    _buildMenuItem(Icons.shopping_cart, "Items", 2),
+                    _buildMenuItem(Icons.dashboard_outlined, "Categories", 3),
+                    _buildMenuItem(Icons.settings, "Settings", 4),
+                    _buildMenuItem(Icons.logout, "Sign Out", 5),
                   ],
                 ),
               ),

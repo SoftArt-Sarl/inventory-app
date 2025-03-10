@@ -71,7 +71,7 @@ class ApiController extends GetxController {
           .toList();
       return actionItems;
     } catch (e) {
-      print('Erreur lors de la récupération des données: $e');
+      print('An error has occured: $e');
       return [];
     }
   }
@@ -102,7 +102,7 @@ class ApiController extends GetxController {
           .toList();
       return items;
     } catch (e) {
-      throw Exception('Erreur lors de la récupération des items: $e');
+      throw Exception('An error has occured: $e');
     }
   }
 
@@ -112,7 +112,7 @@ class ApiController extends GetxController {
       final fetchedItems = await _apiService.fetchItems();
       items.assignAll(fetchedItems);
     } catch (e) {
-      print('Erreur lors de la récupération des items: $e');
+      print('An error has occured: $e');
     } finally {
       isLoading.value = false;
     }
@@ -124,7 +124,7 @@ class ApiController extends GetxController {
       final fechtRuptureItems = await fechtRuptureItemslist();
       itemsRupture.assignAll(fechtRuptureItems);
     } catch (e) {
-      print('Erreur lors de la récupération des items: $e');
+      print('An error has occured: $e');
     } finally {
       isLoading.value = false;
     }

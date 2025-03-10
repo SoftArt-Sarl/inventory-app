@@ -45,15 +45,15 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 Obx(() => _buildCard(
                     FontAwesomeIcons.box,
-                    'Produits',
-                    '${Item.calculateTotalQuantity(apiController.items)} Articles',
+                    'Items',
+                    '${Item.calculateTotalQuantity(apiController.items)} products',
                     Colors.green, () {
                   
                 }),),
                 Obx(() => _buildCard(
                     FontAwesomeIcons.layerGroup,
-                    'Catégories',
-                    '${apiController.categories.length} Catégories',
+                    'Categories',
+                    '${apiController.categories.length} Categories',
                     Colors.blue,
                     () {
                       homeController.changeIndex(2);
@@ -61,8 +61,8 @@ class DashboardScreen extends StatelessWidget {
                 Obx(
                   () => _buildCard(
                       FontAwesomeIcons.exclamationTriangle,
-                      'Produits en Rupture',
-                      '${Item.getOutOfStockItems(apiController.itemsRupture).length} Articles',
+                      'Almost out of stock',
+                      '${Item.getOutOfStockItems(apiController.itemsRupture).length} Products',
                       Colors.red,
                       () {
                         homeController.changeIndex(1);
@@ -70,7 +70,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 _buildCard(
                     FontAwesomeIcons.euroSign,
-                    'Valeur Totale du Stock',
+                    'Total item price',
                     '${Item.calculateTotalValue(apiController.items).toString()} FCFA',
                     Colors.purple,
                     () {}),
@@ -147,7 +147,7 @@ class HeaderSection extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'Tableau de bord',
+            'Dashboard',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Spacer(),
@@ -178,7 +178,7 @@ class HistoriqueSection extends StatelessWidget {
                 Row(
                   children: [
                     const Text(
-                      'Faire un stok',
+                      'Actions history',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
@@ -195,7 +195,7 @@ class HistoriqueSection extends StatelessWidget {
                               contentPadding: EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 10),
                               isDense: true,
-                              hintText: 'Rechercher un produit ou un achat',
+                              hintText: 'Search for an action',
                               border: InputBorder.none
                               // border: OutlineInputBorder(
                               //     borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -297,25 +297,28 @@ class _ButtonListState extends State<ButtonList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+       const SizedBox(
+          child: Text('Shortcuts', style: TextStyle(fontSize: 20, color: Colors.orange, fontWeight: FontWeight.bold),),
+        ),
         if (_selectedForm == null) ...[
           _buildDashboardButton(
             context,
             icon: Icons.add_shopping_cart,
-            label: "Ajouter un stock",
+            label: "Add to an item",
             color: Colors.green,
             onTap: () => showForm(const AjouterStockForm()),
           ),
           _buildDashboardButton(
             context,
             icon: Icons.remove_shopping_cart,
-            label: "Retirer un stock",
+            label: "Remove an item",
             color: Colors.blue,
             onTap: () => showForm(const RetirerStockForm()),
           ),
           _buildDashboardButton(
             context,
             icon: Icons.add_box,
-            label: "Ajouter un produit",
+            label: "Add a new item",
             color: Colors.orange,
             onTap: () => showForm(AddProduitForm(
               isHistoriquePage: true,
@@ -324,7 +327,7 @@ class _ButtonListState extends State<ButtonList> {
           _buildDashboardButton(
             context,
             icon: Icons.edit,
-            label: "Modifier un produit",
+            label: "Edit an item",
             color: Colors.teal,
             onTap: () => showForm(UpdateItemForm(
               isHistoriquePage: true,
@@ -340,7 +343,7 @@ class _ButtonListState extends State<ButtonList> {
           _buildDashboardButton(
             context,
             icon: Icons.category,
-            label: "Ajouter une catégorie",
+            label: "Add a new category",
             color: Colors.purple,
             onTap: () => showForm(CategoryForm(
               isHistoriquePage: true,

@@ -39,7 +39,7 @@ class _AjouterProduitPageState extends State<AjouterProduitPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Ajouter un produit',
+                    'Add new Item',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
@@ -47,9 +47,9 @@ class _AjouterProduitPageState extends State<AjouterProduitPage> {
                     columnsDesktop: 2,
                     children: [
                       _buildTextField(referenceController, 'Référence', 'Référence du produit'),
-                      _buildTextField(nomController, 'Nom du produit', 'Nom du produit'),
-                      _buildNumberField(quantiteController, 'Quantité en stock', 'Quantité en stock'),
-                      _buildNumberField(prixController, 'Prix unitaire', 'Prix unitaire', isDecimal: true),
+                      _buildTextField(nomController, 'Item title', 'Item title'),
+                      _buildNumberField(quantiteController, 'Quantity', 'Quantity'),
+                      _buildNumberField(prixController, 'Unit Price', 'Unit Price', isDecimal: true),
                       _buildDropdownField(
                         'Catégorie',
                         ['Sélectionner une catégorie', 'Électronique', 'Alimentation', 'Vêtements'],

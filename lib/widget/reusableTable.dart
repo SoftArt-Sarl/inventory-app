@@ -148,7 +148,7 @@ class ReusableTable extends StatelessWidget {
     final buttonKey2 = GlobalKey();
 
     final String? id = rowData['id'];
-    final String? name = rowData['Nom du produit']; // Récupération de l'ID
+    final String? name = rowData['Nom du produit'];
     final String? unitPrice = rowData['Prix unitaire'];
     final String? categoryId = rowData['categoryId'];
     final String? quantity = rowData['quantité'].toString();

@@ -123,7 +123,7 @@ class _Header1State extends State<Header1> {
           children: [
             const SizedBox(width: 5),
             const Text(
-              'Listes des catégories',
+              'Categories list',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Expanded(
@@ -140,14 +140,14 @@ class _Header1State extends State<Header1> {
                       const Icon(Icons.attach_money, color: Colors.orange),
                       const SizedBox(width: 5),
                       Text(
-                        'Valeur totale : ${apiController.categorySelected.value.total} FCFA',
+                        'Total : ${apiController.categorySelected.value.total} FCFA',
                         style: const TextStyle(fontSize: 14, ),
                       ),
                       const SizedBox(width: 20),
                       const Icon(Icons.production_quantity_limits, color: Colors.blue),
                       const SizedBox(width: 5),
                       Text(
-                        'Nombre total : ${apiController.categorySelected.value.items!.length} produits',
+                        'Total value : ${apiController.categorySelected.value.items!.length} items',
                         style: const TextStyle(fontSize: 14,),
                       ),
                     ],
@@ -167,7 +167,7 @@ class _Header1State extends State<Header1> {
                 );
               },
               child: const Text(
-                'Ajouter un produit',
+                'Add new item',
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -271,7 +271,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
       prixtext.clear();
       categorieText.clear();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit ajouté avec succès!')),
+        const SnackBar(content: Text('Item added successfully!')),
       );
     } catch (e) {
       setState(() {
@@ -279,7 +279,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
       });
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur lors de l\'ajout du produit.')),
+        const SnackBar(content: Text('Error when adding item.')),
       );
     }
   }
@@ -292,14 +292,14 @@ class _AddProduitFormState extends State<AddProduitForm> {
       child: Column(
         children: [
           const Text(
-            'Ajouter une un produit',
+            'Add new item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           if (!apiController.isCategorySelected.value)
             const SizedBox(height: 15),
           if (!apiController.isCategorySelected.value)
             ReusableSearchDropdown(
-              hintText: 'Selectionné une catégorie',
+              hintText: 'Select category',
               items: apiController.categories.map(
                 (e) {
                   // int index = apiController.categories.indexOf(e);
@@ -324,7 +324,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               controller: nametext,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Nom',
+                hintText: 'Title',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -345,7 +345,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               controller: quantitytext,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -366,7 +366,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               controller: prixtext,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Prix unitaire',
+                hintText: 'Unit price',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -398,7 +398,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:
-                              Text('Veuillez entrer une catégorie valide.'),
+                              Text('Enter a valid category.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -408,7 +408,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -426,7 +426,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
           children: [
             Expanded(
               child: Text(
-              'Assurez vous que la catégories du produit est créer d\'abord sinon veillez en créer une',
+              'Ensure that you have already created a category for this product',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -470,7 +470,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
 
       int? quantity = int.tryParse(quantitytext.text.trim());
       if (quantity == null || quantity <= 0) {
-        throw Exception('Quantité invalide');
+        throw Exception('Invalid quantity');
       }
 
       await apiService.retirerStok(item, quantity);
@@ -483,7 +483,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit retiré avec succès!')),
+        const SnackBar(content: Text('Item removed successfully !')),
       );
     } catch (e) {
       setState(() {
@@ -493,7 +493,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors du retrait du produit.'),
+          content: Text('Error when removing item.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -507,7 +507,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
       child: Column(
         children: [
           const Text(
-            'Retirer un stock',
+            'Remove item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
@@ -527,7 +527,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
               controller: quantitytext,
               keyboardType: TextInputType.number, // Assure que seul un nombre est entré
               decoration: InputDecoration(
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -552,7 +552,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer une quantité valide.'),
+                          content: Text('Enter a valid quantity.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -562,7 +562,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -598,7 +598,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
 
       int? quantity = int.tryParse(quantitytext.text.trim());
       if (quantity == null || quantity <= 0) {
-        throw Exception('Quantité invalide');
+        throw Exception('Invalid quantity');
       }
 
       await apiService.ajouterStock(item, quantity);
@@ -611,7 +611,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stock ajouté avec succès!')),
+        const SnackBar(content: Text('Item added successfully !')),
       );
     } catch (e) {
       setState(() {
@@ -621,7 +621,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de l\'ajout du stock.'),
+          content: Text('Error when adding item.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -635,7 +635,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
       child: Column(
         children: [
           const Text(
-            'Ajouter du stock',
+            'Add item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
@@ -655,7 +655,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
               controller: quantitytext,
               keyboardType: TextInputType.number, // Clavier numérique
               decoration: InputDecoration(
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -680,7 +680,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer une quantité valide.'),
+                          content: Text('Enter a valid quantity.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -690,7 +690,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Ajouter',
+                        'Add',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -732,7 +732,7 @@ class _CategoryFormState extends State<CategoryForm> {
         isLoading = false; // Arrêter le chargement après l'ajout
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie ajoutée avec succès!')),
+        const SnackBar(content: Text('Category created successfully !')),
       );
     } catch (e) {
       setState(() {
@@ -741,7 +741,7 @@ class _CategoryFormState extends State<CategoryForm> {
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Erreur lors de l\'ajout de la catégorie.')),
+            content: Text('Error when creating category.')),
       );
     }
   }
@@ -753,7 +753,7 @@ class _CategoryFormState extends State<CategoryForm> {
       child: Column(
         children: [
           const Text(
-            'Ajouter une catégorie',
+            'Create a category',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
@@ -763,7 +763,7 @@ class _CategoryFormState extends State<CategoryForm> {
               controller: categorieText,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Entrez le nom de la catégorie',
+                hintText: 'Enter category name',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -795,7 +795,7 @@ class _CategoryFormState extends State<CategoryForm> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:
-                              Text('Veuillez entrer une catégorie valide.'),
+                              Text('Enter a valid category.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -805,7 +805,7 @@ class _CategoryFormState extends State<CategoryForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
