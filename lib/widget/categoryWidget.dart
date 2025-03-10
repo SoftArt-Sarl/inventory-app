@@ -82,13 +82,13 @@ class CategoryWidget extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildInfoItem(Icons.shopping_cart,
-                        'Produits: ${category!.items?.length ?? 0}'),
+                        'Items: ${category!.items?.length ?? 0}'),
                   ),
                   const Spacer(),
                   Expanded(
                     child: _buildInfoItem(
                         Icons.warning_amber_rounded,
-                        'Rupture: ${apiController.itemsRupture.where(
+                        'Almost Out of stock: ${apiController.itemsRupture.where(
                               (element) => element.categoryId == category!.id!,
                             ).toList().length}',
                         Colors.red),
