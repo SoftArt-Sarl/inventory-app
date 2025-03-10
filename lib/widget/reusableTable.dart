@@ -181,6 +181,7 @@ class ReusableTable extends StatelessWidget {
         popupContent: DeleteItemForm(
           categoryId: categoryId!,
           itemId: id,
+          isHistoriquePage: false,
         ),
       );
     }

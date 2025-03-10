@@ -18,6 +18,9 @@ class _SideMenuState extends State<SideMenu> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
+    if (apiController.items.isEmpty) {
+      apiController.refreshData();
+    }
   }
 
   @override
@@ -34,10 +37,8 @@ class _SideMenuState extends State<SideMenu> {
     // Liste des titres des éléments du menu pour utilisation dans l'AppBar
     List<String> menuTitles = [
       "Dashboard",
-      "Solder",
       "Produits",
       "Catégories",
-      "Paramètres",
       "Déconnexion",
     ];
 
@@ -59,11 +60,9 @@ class _SideMenuState extends State<SideMenu> {
                       children: [
                         const SizedBox(height: 10),
                         _buildMenuItem(Icons.dashboard, "Dashboard", 0),
-                        _buildMenuItem(Icons.sell, "Solder", 1),
-                        _buildMenuItem(Icons.shopping_cart, "Produits", 2),
-                        _buildMenuItem(Icons.dashboard_outlined, "Catégories", 3),
-                        _buildMenuItem(Icons.settings, "Paramètres", 4),
-                        _buildMenuItem(Icons.logout, "Déconnexion", 5),
+                        _buildMenuItem(Icons.shopping_cart, "Produits", 1),
+                        _buildMenuItem(Icons.dashboard_outlined, "Catégories", 2),
+                        _buildMenuItem(Icons.logout, "Déconnexion", 3),
                       ],
                     ),
                   ),
@@ -82,7 +81,10 @@ class _SideMenuState extends State<SideMenu> {
               appBar: AppBar(
                 backgroundColor: Colors.white,
                 elevation: 0,
-                title: Text(menuTitles[_selectedIndex],style: const TextStyle(color: Colors.black),), // Affiche le titre du menu sélectionné dans l'AppBar
+                title: Text(
+                  menuTitles[_selectedIndex],
+                  style: const TextStyle(color: Colors.black),
+                ), // Affiche le titre du menu sélectionné dans l'AppBar
               ),
               drawer: Drawer(
                 child: Column(
@@ -107,23 +109,31 @@ class _SideMenuState extends State<SideMenu> {
   // Widget pour chaque élément du menu
   Widget _buildMenuItem(IconData icon, String title, int index) {
     return InkWell(
-      onTap: index == 5
-          ? () async{
-
-           await userinfo.logout();
-           apiController.isCategorySelected.value=false;
+      onTap: index == 3
+          ? () async {
+              await userinfo.logout();
+              apiController.isCategorySelected.value = false;
+              homeController.selectedIndex(0);
               // Déconnexion ou autre action
             }
-          : () {
-            apiController.isCategorySelected.value=false;
+          : () async {
+              homeController.selectedIndex(0);
+              apiController.isCategorySelected.value = false;
               setState(() {
                 _selectedIndex = index;
               });
-              _pageController.jumpToPage(index);
+
+              // Vérifiez si le contrôleur est déjà attaché à la page
+              if (_pageController.hasClients) {
+                // Utilisez animateToPage avec une durée pour une animation fluide
+                await Future.delayed(const Duration(milliseconds: 100)); // Ajout d'un petit délai
+                _pageController.animateToPage(index,
+                    duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+              }
+
               if (!_isDesktop) {
                 Navigator.of(context).pop(); // Ferme le Drawer si ce n'est pas un desktop
               }
-              
             },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
@@ -147,7 +157,9 @@ class _SideMenuState extends State<SideMenu> {
                 Text(
                   title,
                   style: TextStyle(
-                    color: _selectedIndex == index ? Colors.white : Colors.grey[700],
+                    color: _selectedIndex == index
+                        ? Colors.white
+                        : Colors.grey[700],
                     fontSize: 15,
                   ),
                 ),

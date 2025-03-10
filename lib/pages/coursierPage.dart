@@ -40,28 +40,40 @@ class DashboardScreen extends StatelessWidget {
               columnsMobile: 1,
               columnsTablet: 2,
               runSpacing: 5,
-              columnsDesktop: 3,
+              columnsDesktop: 4,
               spacing: 0,
               children: [
-                _buildCard(
+                Obx(() => _buildCard(
                     FontAwesomeIcons.box,
-                    'Produits en Stock',
+                    'Produits',
                     '${Item.calculateTotalQuantity(apiController.items)} Articles',
-                    Colors.green),
-                // ignore: deprecated_member_use
-                // _buildCard(FontAwesomeIcons.shoppingCart, 'Achats en Cours',
-                //     '3 Achats', Colors.yellow),
-                // ignore: deprecated_member_use
-                _buildCard(
-                    FontAwesomeIcons.exclamationTriangle,
-                    'Produits en Rupture',
-                    '${Item.getOutOfStockItems(apiController.items).length} Articles',
-                    Colors.red),
+                    Colors.green, () {
+                  
+                }),),
+                Obx(() => _buildCard(
+                    FontAwesomeIcons.layerGroup,
+                    'Catégories',
+                    '${apiController.categories.length} Catégories',
+                    Colors.blue,
+                    () {
+                      homeController.changeIndex(2);
+                    }),),
+                Obx(
+                  () => _buildCard(
+                      FontAwesomeIcons.exclamationTriangle,
+                      'Produits en Rupture',
+                      '${Item.getOutOfStockItems(apiController.itemsRupture).length} Articles',
+                      Colors.red,
+                      () {
+                        homeController.changeIndex(1);
+                      }),
+                ),
                 _buildCard(
                     FontAwesomeIcons.euroSign,
                     'Valeur Totale du Stock',
                     '${Item.calculateTotalValue(apiController.items).toString()} FCFA',
-                    Colors.purple),
+                    Colors.purple,
+                    () {}),
               ],
             ),
             Expanded(
@@ -92,27 +104,31 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(IconData icon, String title, String value, Color color) {
-    return Card(
-      color: Colors.white,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title),
-                Text(value,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
+  Widget _buildCard(IconData icon, String title, String value, Color color,
+      VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Card(
+        color: Colors.white,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(icon, size: 32, color: color),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title),
+                  Text(value,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -135,7 +151,7 @@ class HeaderSection extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           Spacer(),
-          UserProfile(),
+          // UserProfile(),
         ],
       ),
     );
@@ -191,23 +207,14 @@ class HistoriqueSection extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    ElevatedButton(
-                      key: buttonKey1,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green),
-                      onPressed: () {
-                        PopupHelper.showPopup(
-                          context: context,
-                          buttonKey: buttonKey1,
-                          width: 300,
-                          popupContent: const RetirerStokForm(),
-                        );
-                      },
-                      child: const Text(
-                        '+ Facture',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    )
+                    IconButton(
+                        onPressed: () async {
+                          await apiController.refreshData();
+                        },
+                        icon: const Icon(
+                          Icons.refresh_outlined,
+                          color: Colors.orange,
+                        ))
                   ],
                 ),
               ],
@@ -264,7 +271,6 @@ class HistoriqueSection extends StatelessWidget {
   }
 }
 
-
 class ButtonList extends StatefulWidget {
   const ButtonList({super.key});
 
@@ -293,83 +299,89 @@ class _ButtonListState extends State<ButtonList> {
       children: [
         if (_selectedForm == null) ...[
           _buildDashboardButton(
-          context,
-          icon: Icons.add_shopping_cart,
-          label: "Ajouter un stock",
-          color: Colors.green,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.remove_shopping_cart,
-          label: "Retirer un stock",
-          color: Colors.blue,
-          onTap: () => showForm( const RetirerStokForm()),
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.add_box,
-          label: "Ajouter un produit",
-          color: Colors.orange,
-          onTap: () => showForm( AddProduitForm(isHistoriquePage: true,)),
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.edit,
-          label: "Modifier un produit",
-          color: Colors.teal,
-          onTap: ()=> showForm( UpdateItemForm(isHistoriquePage: true,)),
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.delete,
-          label: "Supprimer un produit",
-          color: Colors.red,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.category,
-          label: "Ajouter une catégorie",
-          color: Colors.purple,
-          onTap: () => showForm( CategoryForm(isHistoriquePage: true,)),
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.edit_attributes,
-          label: "Modifier une catégorie",
-          color: Colors.deepOrange,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.delete_forever,
-          label: "Supprimer une catégorie",
-          color: Colors.redAccent,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.search,
-          label: "Rechercher un produit/catégorie",
-          color: Colors.indigo,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          
-          icon: Icons.list,
-          label: "Voir la liste des produits",
-          color: Colors.brown,
-          onTap: () {},
-        ),
-        _buildDashboardButton(
-          context,
-          icon: Icons.history,
-          label: "Historique des stocks",
-          color: Colors.grey,
-          onTap: () {},
-        ),
+            context,
+            icon: Icons.add_shopping_cart,
+            label: "Ajouter un stock",
+            color: Colors.green,
+            onTap: () => showForm(const AjouterStockForm()),
+          ),
+          _buildDashboardButton(
+            context,
+            icon: Icons.remove_shopping_cart,
+            label: "Retirer un stock",
+            color: Colors.blue,
+            onTap: () => showForm(const RetirerStockForm()),
+          ),
+          _buildDashboardButton(
+            context,
+            icon: Icons.add_box,
+            label: "Ajouter un produit",
+            color: Colors.orange,
+            onTap: () => showForm(AddProduitForm(
+              isHistoriquePage: true,
+            )),
+          ),
+          _buildDashboardButton(
+            context,
+            icon: Icons.edit,
+            label: "Modifier un produit",
+            color: Colors.teal,
+            onTap: () => showForm(UpdateItemForm(
+              isHistoriquePage: true,
+            )),
+          ),
+          // _buildDashboardButton(
+          //   context,
+          //   icon: Icons.delete,
+          //   label: "Supprimer un produit",
+          //   color: Colors.red,
+          //   onTap: () {},
+          // ),
+          _buildDashboardButton(
+            context,
+            icon: Icons.category,
+            label: "Ajouter une catégorie",
+            color: Colors.purple,
+            onTap: () => showForm(CategoryForm(
+              isHistoriquePage: true,
+            )),
+          ),
+          // _buildDashboardButton(
+          //   context,
+          //   icon: Icons.edit_attributes,
+          //   label: "Modifier une catégorie",
+          //   color: Colors.deepOrange,
+          //   onTap: () {},
+          // ),
+          // _buildDashboardButton(
+          //   context,
+          //   icon: Icons.delete_forever,
+          //   label: "Supprimer une catégorie",
+          //   color: Colors.redAccent,
+          //   onTap: () {},
+          // ),
+          // _buildDashboardButton(
+          //   context,
+          //   icon: Icons.search,
+          //   label: "Rechercher un produit/catégorie",
+          //   color: Colors.indigo,
+          //   onTap: () {},
+          // ),
+          // _buildDashboardButton(
+          //   context,
+
+          //   icon: Icons.list,
+          //   label: "Voir la liste des produits",
+          //   color: Colors.brown,
+          //   onTap: () {},
+          // ),
+          // _buildDashboardButton(
+          //   context,
+          //   icon: Icons.history,
+          //   label: "Historique des stocks",
+          //   color: Colors.grey,
+          //   onTap: () {},
+          // ),
         ] else ...[
           // Bouton de retour
           Align(
@@ -410,7 +422,10 @@ class _ButtonListState extends State<ButtonList> {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600,color: Colors.black),
+                style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black),
               ),
             ),
             const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
@@ -421,31 +436,28 @@ class _ButtonListState extends State<ButtonList> {
   }
 }
 
-// Placeholders pour les formulaires
-
-
 class ActionHistoryPage extends StatelessWidget {
-  List<ActionItem>? actionItems;
+  final List<ActionItem> actionItems;
+
   ActionHistoryPage({super.key, required this.actionItems});
 
   @override
   Widget build(BuildContext context) {
-    ApiService apiService = ApiService();
     return ListView.builder(
-      itemCount: actionItems!.length,
+      itemCount: actionItems.length,
       itemBuilder: (context, index) {
-        final action = actionItems![index];
+        final action = actionItems[index];
         return TimelineTile(
           alignment: TimelineAlign.start,
           indicatorStyle: IndicatorStyle(
             width: 30,
-            color: action.getColor(),
+            color: action.actionColor,
             iconStyle: IconStyle(
-              iconData: action.getIcon(),
+              iconData: action.actionIcon,
               color: Colors.white,
             ),
           ),
-          beforeLineStyle: LineStyle(color: action.getColor()),
+          beforeLineStyle: LineStyle(color: action.actionColor),
           endChild: Padding(
             padding: const EdgeInsets.all(5),
             child: Column(
@@ -453,29 +465,21 @@ class ActionHistoryPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    action.action == 'Added' || action.action == 'Retirer'
-                        ? Text(
-                            action.item != null
-                                ? action.getTitle(action.item!.name)
-                                : '',
-                            style: const TextStyle(fontWeight: FontWeight.bold))
-                        : action.action == 'Deleted'
-                            ? Text(action.getTitle(action.oldValue!.name),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold))
-                            : action.action == 'Updated'
-                                ? const Text('upad')
-                                : const SizedBox(),
+                    Text(
+                      action.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const Spacer(),
                     Text(
-                        DateFormat('dd MMM yyyy, HH:mm')
-                            .format(action.createdAt!),
-                        style: const TextStyle(color: Colors.grey))
+                      DateFormat('dd MMM yyyy, HH:mm')
+                          .format(action.createdAt!),
+                      style: const TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  action.getDetails(),
+                  action.details,
                   style: const TextStyle(fontSize: 16),
                 ),
                 const Divider()

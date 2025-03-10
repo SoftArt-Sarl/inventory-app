@@ -42,8 +42,9 @@ class _LoginPageState extends State<LoginPage> {
 
           Get.snackbar("Succès", "Connexion réussie",
               backgroundColor: Colors.green, colorText: Colors.white);
+              
           // Rediriger vers la page d'accueil ou une autre page
-          Get.offAll(() => const HomePage());
+          Get.offAll(() => HomePage());
         } else {
           // print(e.toString);
           print(response.statusCode);
@@ -156,11 +157,11 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                       const SizedBox(height: 16),
-                      TextButton(
-                        onPressed: () => Get.to(() => SignupPage()),
-                        child: Text('Créer un compte',
-                            style: TextStyle(color: Colors.orange[500])),
-                      ),
+                      // TextButton(
+                      //   onPressed: () => Get.to(() => SignupPage()),
+                      //   child: Text('Créer un compte',
+                      //       style: TextStyle(color: Colors.orange[500])),
+                      // ),
                       TextButton(
                         onPressed: () {},
                         child: Text('Mot de passe oublié ?',

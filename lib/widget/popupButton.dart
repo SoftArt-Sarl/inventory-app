@@ -15,6 +15,15 @@ class PopupHelper {
         buttonKey.currentContext!.findRenderObject() as RenderBox;
     final Offset position = renderBox.localToGlobal(Offset.zero);
     final Size size = renderBox.size;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
+    // Calculer la position verticale pour s'assurer que le popup ne dépasse pas l'écran
+    double topPosition = position.dy + size.height + 5;
+
+    // Si le bouton est proche du bas de l'écran, positionner le popup au-dessus du bouton
+    if (topPosition + 150 > screenHeight) {
+      topPosition = position.dy - 150;
+    }
 
     overlayEntry = OverlayEntry(
       builder: (context) => Stack(
@@ -27,9 +36,7 @@ class PopupHelper {
           ),
           Positioned(
             left: position.dx - width,
-            top: (position.dy + size.height + 5 + 150 <= MediaQuery.of(context).size.height)
-                ? position.dy + size.height + 5
-                : position.dy - 150,
+            top: topPosition,
             child: Material(
               color: Colors.transparent,
               child: Card(

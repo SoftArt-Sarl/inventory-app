@@ -52,17 +52,32 @@ dependencies:
   webview_flutter: ^4.10.0
   timeline_tile: ^2.0.0
   timelines: ^0.1.0
+  
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
+  flutter_launcher_icons: ^0.14.3
+  launcher_name: ^1.0.2
   flutter_lints: ^4.0.0
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/logo.jpg"
+  windows:
+    generate: true
+    image_path: "assets/logo.jpg"
+  macos:
+    generate: true
+    image_path: "assets/logo.jpg"
+  image_path: "assets/logo.jpg"
+
+# Définir le nom de l'application ici
+launcher_name:
+  default: "FelMaurice"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

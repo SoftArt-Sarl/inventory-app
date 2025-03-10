@@ -7,14 +7,19 @@ import 'package:flutter_application_1/models.dart/category.dart';
 import 'package:flutter_application_1/services/apiService.dart';
 
 class ApiController extends GetxController {
-  static ApiController instance=Get.find();
+  static ApiController instance = Get.find();
   // Liste des catégories et des items
-  var categories = <Category>[].obs;
-  var items = <Item>[].obs;
+  final RxList<Category>categories = <Category>[].obs;
+  final RxList<Item>items = <Item>[].obs;
+  final RxList<Item>itemsRupture = <Item>[].obs;
   var historiques = <ActionItem>[].obs;
   var isCategorySelected = false.obs;
-  var categorySelected= Category().obs;
-  var isLoading = false.obs; // Variable pour indiquer si les données sont en train de se charger
+  var categorySelected = Category().obs;
+  final RxList<Item> filteredItems = <Item>[].obs;
+  final RxList<Category> filteredCategory = <Category>[].obs;
+  final RxList<Item>itemsRupturefilter = <Item>[].obs;
+  var isLoading = false
+      .obs; // Variable pour indiquer si les données sont en train de se charger
 
   // Instance de ApiService
   final ApiService _apiService = ApiService();
@@ -32,33 +37,35 @@ class ApiController extends GetxController {
       isLoading.value = false;
     }
   }
+
   final Dio _dio = Dio(
     BaseOptions(
-        baseUrl: 'https://agricultural-stevana-softart-comp-fab2bc8e.koyeb.app'),
+        baseUrl:
+            'https://agricultural-stevana-softart-comp-fab2bc8e.koyeb.app'),
   );
 
-Future<void> fechAction()async{
-  try {
-    isLoading.value = true;
-    final actionitem=await fetchActionItems();
-    print(actionitem.length);
-    historiques.assignAll(actionitem);
-
-  } catch (e) {
-    print(e); 
-    isLoading.value = false;
-  }
-}
-
-Future<List<ActionItem>> fetchActionItems() async {
+  Future<void> fechAction() async {
     try {
-      final response = await _dio.get('/items/history',options: Options(
+      isLoading.value = true;
+      final actionitem = await fetchActionItems();
+      print(actionitem.length);
+      historiques.assignAll(actionitem);
+    } catch (e) {
+      print(e);
+      isLoading.value = false;
+    }
+  }
+
+  Future<List<ActionItem>> fetchActionItems() async {
+    try {
+      final response = await _dio.get('/items/history',
+          options: Options(
             headers: {
               'Authorization':
                   'Bearer ${userinfo.authmodel.value.access_token}',
             },
           ));
-          print(response.data);
+      print(response.data);
       List<ActionItem> actionItems = (response.data as List)
           .map((item) => ActionItem.fromJson(item))
           .toList();
@@ -69,19 +76,36 @@ Future<List<ActionItem>> fetchActionItems() async {
     }
   }
 
-//  Future<void> fetchHistory() async {
-//     try {
-//       isLoading.value = true;
-//        await _apiService.fetchItems();
-//       print(fetchedCategories.length);
-//       categories.assignAll(fetchedCategories);
-//     } catch (e) {
-//       print('Erreur lors de la récupération des catégories: $e');
-//     } finally {
-//       isLoading.value = false;
-//     }
-//   }
-  // Fonction pour récupérer les items
+  Future<List<Item>> fechtRuptureItemslist() async {
+    try {
+      final response = await _dio.get('/items/low-stock',
+          options: Options(
+            headers: {
+              'Authorization':
+                  'Bearer ${userinfo.authmodel.value.access_token}',
+            },
+          ));
+      List<Item> items = (response.data as List)
+          .map((json) => Item(
+                id: json['id'],
+                name: json['name'],
+                quantity: json['quantity'],
+                unitPrice: json['unitPrice'],
+                itemsTotal: json['itemsTotal'],
+                createdAt: DateTime.parse(json['createdAt']),
+                createdById: json['createdById'],
+                updatedAt: json['updatedAt'] != null
+                    ? DateTime.parse(json['updatedAt'])
+                    : null,
+                categoryId: json['categoryId'],
+              ))
+          .toList();
+      return items;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des items: $e');
+    }
+  }
+
   Future<void> fetchItems() async {
     try {
       isLoading.value = true;
@@ -94,10 +118,26 @@ Future<List<ActionItem>> fetchActionItems() async {
     }
   }
 
+  Future<void> fechtRuptureItems() async {
+    try {
+      isLoading.value = true;
+      final fechtRuptureItems = await fechtRuptureItemslist();
+      itemsRupture.assignAll(fechtRuptureItems);
+    } catch (e) {
+      print('Erreur lors de la récupération des items: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   // Rafraîchissement global des catégories et des items
   Future<void> refreshData() async {
     await fetchCategories();
     await fetchItems();
     await fechAction();
+    await fechtRuptureItems();
+    filteredItems.assignAll(items);
+    filteredCategory.assignAll(categories);
+    itemsRupturefilter.assignAll(itemsRupture);
   }
 }

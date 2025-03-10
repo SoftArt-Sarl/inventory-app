@@ -1,3 +1,4 @@
+import 'dart:async'; // Ajouter cette importation pour Timer
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class Userinfo extends GetxController {
   static Userinfo instance = Get.find();
   Rx<AuthModel> authmodel = AuthModel().obs;
-  // var remoteUrl = 'https://parapheur.vercel.app/api/v1';
+  Timer? _tokenExpiryTimer; // Déclare une variable pour le Timer
+
+  // Méthode pour vérifier si l'application est sur Android ou Web
   bool isAndroid() {
     if (kIsWeb) {
       return false;
@@ -24,50 +27,68 @@ class Userinfo extends GetxController {
   void onReady() {
     super.onReady();
     getAuthModel('authmodel');
-
-    // print(authmodel.value.departements!.first.isCreditAgricole);
   }
 
+  // Méthode pour récupérer le modèle d'authentification
   Future<String?> getAuthModel(String authmodelKey) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? cachedAuthModel = prefs.getString(authmodelKey);
     print(cachedAuthModel.toString());
 
+    // Si le modèle d'authentification n'est pas trouvé
     if (cachedAuthModel == null) {
-      
-      isAndroid()
-          ? Get.offAll(() =>  LoginPage())
-          : Get.offAll(() =>  LoginPage());
+      isAndroid() ? Get.offAll(() => LoginPage()) : Get.offAll(() => LoginPage());
       print('authmodel not found for key: $authmodelKey');
       return null;
     }
 
+    // Décoder le modèle d'authentification
     var mapp = jsonDecode(cachedAuthModel);
     authmodel.value = AuthModel.formjson(mapp);
+
+    // Vérifier si le token est expiré
     if (await refreshAccessToken()) {
-      isAndroid()
-          ? Get.offAll(() =>  LoginPage())
-          : Get.offAll(() =>  LoginPage());
+      // Si le token est expiré, rediriger vers la page de connexion
+      isAndroid() ? Get.offAll(() => LoginPage()) : Get.offAll(() => LoginPage());
+      print('Token expired');
       return null;
     }
-   apiController. fetchCategories();
-   apiController. fetchItems();
-   apiController.fechAction();
-    Get.offAll(()=>const HomePage());
-    // _navigateBasedOnUserRole();
+
+    // Si le token est valide, rafraîchir l'API et rediriger vers la page d'accueil
+    apiController.refresh();
+    Get.offAll(() => HomePage());
+
+    // Lancer la surveillance continue du token
+    _startTokenExpiryCheck();
+
     return cachedAuthModel;
   }
 
+  // Surveillance continue pour vérifier l'expiration du token
+  void _startTokenExpiryCheck() {
+    _tokenExpiryTimer?.cancel(); // Annuler le précédent timer s'il existe
+    _tokenExpiryTimer = Timer.periodic(Duration(minutes: 1), (timer) async {
+      if (await refreshAccessToken()) {
+        // Si le token est expiré, rediriger vers la page de connexion
+        isAndroid() ? Get.offAll(() => LoginPage()) : Get.offAll(() => LoginPage());
+        print('Token expired (periodic check)');
+        _tokenExpiryTimer?.cancel(); // Arrêter le timer une fois que l'utilisateur est redirigé
+      }
+    });
+  }
+
+  // Méthode pour sauvegarder le modèle d'authentification
   Future<void> saveAuthModel(String authmodelKey, String authModel) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString(authmodelKey, authModel);
   }
 
+  // Vérifier si le token a expiré
   bool isTokenExpired(dynamic expiresAt) {
     return DateTime.now().millisecondsSinceEpoch / 1000 > expiresAt;
   }
 
-// 1723070005
+  // Vérifier si le token d'accès est expiré
   Future<bool> refreshAccessToken() async {
     if (isTokenExpired(authmodel.value.expires_at)) {
       print('Le access_token est expiré');
@@ -77,21 +98,24 @@ class Userinfo extends GetxController {
     }
   }
 
-  
-
+  // Méthode pour se déconnecter
   Future<void> logout() async {
-    Get.defaultDialog(content: SizedBox(height: 50,width: 50,child: const CircularProgressIndicator(),));
-    // utility.loader();
+    Get.defaultDialog(content:const  SizedBox(height: 50, width: 50, child: const CircularProgressIndicator(),));
     await Future.delayed(const Duration(seconds: 3));
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('authmodel');
-    // authmodel.value=AuthModel();
-    isAndroid()
-        ? Get.offAll(() =>  LoginPage())
-        : Get.offAll(() =>  LoginPage());
+    isAndroid() ? Get.offAll(() => LoginPage()) : Get.offAll(() => LoginPage());
   }
 
+  // Rafraîchir la page
   void refreshedPage() {
     Get.appUpdate();
+  }
+
+  // Arrêter le timer lorsque le contrôleur est supprimé
+  @override
+  void onClose() {
+    _tokenExpiryTimer?.cancel();
+    super.onClose();
   }
 }

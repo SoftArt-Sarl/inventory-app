@@ -15,6 +15,7 @@ class CategoryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonKey1 = GlobalKey();
+    // final buttonKey2 = GlobalKey();
     void updateCategory(BuildContext context) {
       PopupHelper.showPopup(
         context: context,
@@ -38,7 +39,7 @@ class CategoryWidget extends StatelessWidget {
     }
 
     return Obx(() => Container(
-          padding: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.white,
             border: apiController.categorySelected.value == category &&
@@ -47,72 +48,75 @@ class CategoryWidget extends StatelessWidget {
                 : apiController.isCategorySelected.value
                     ? null
                     : const Border(
-                        left: BorderSide(color: Colors.orange, width: 2),
-                      ),
-            borderRadius: BorderRadius.circular(apiController.categorySelected.value == category &&
-                    apiController.isCategorySelected.value?5:0), // Coins arrondis
+                        left: BorderSide(color: Colors.orange, width: 2)),
+            borderRadius: BorderRadius.circular(
+                apiController.categorySelected.value == category &&
+                        apiController.isCategorySelected.value
+                    ? 5
+                    : 0),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1), // Ombre douce et légère
-                offset: const Offset(
-                    0, 2), // Déplacement de l'ombre pour simuler l'élévation
-                blurRadius: 4, // Flou de l'ombre
-                spreadRadius: 1, // Étendre légèrement l'ombre
+                color: Colors.black.withOpacity(0.1),
+                offset: const Offset(0, 2),
+                blurRadius: 4,
+                spreadRadius: 1,
               ),
             ],
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  category!.title!,
-                  style: TextStyle(
-                    fontSize: apiController.isCategorySelected.value ? 14 : 15,
-                    fontWeight: apiController.isCategorySelected.value
-                        ? FontWeight.normal
-                        : FontWeight.bold, // Gras pour le titre
-                    color: Colors.grey[900],
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                category!.title ?? 'Sans titre',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
                 ),
-                if (!apiController.isCategorySelected.value)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Exprimé à :${category!.total??0}',
-                              // 'Quantités: ${category!.items!.length}',
-                              style: TextStyle(
-                                overflow: TextOverflow.ellipsis,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ), // Espacement pour une meilleure lisibilité
-
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              // 'Exprimé à :${category!.total}',
-                              'Quantités: ${category!.items!.length}',
-                              style: TextStyle(
-                                overflow: TextOverflow.ellipsis,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ),
-                          OutlinedButton(
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(Icons.shopping_cart,
+                        'Produits: ${category!.items?.length ?? 0}'),
+                  ),
+                  const Spacer(),
+                  Expanded(
+                    child: _buildInfoItem(
+                        Icons.warning_amber_rounded,
+                        'Rupture: ${apiController.itemsRupture.where(
+                              (element) => element.categoryId == category!.id!,
+                            ).toList().length}',
+                        Colors.red),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildInfoItem(
+                        Icons.attach_money,
+                        'Total: ${category!.total?.toStringAsFixed(2) ?? "0.00"} FCFA',
+                        Colors.green),
+                  ),
+                  const Spacer(),
+                  Expanded(
+                    child: _buildInfoItem(Icons.store,
+                        'Stock: ${category!.items!.length}', Colors.blue),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
                             key: buttonKey1,
                             style: OutlinedButton.styleFrom(
                               shape: const CircleBorder(),
@@ -143,22 +147,39 @@ class CategoryWidget extends StatelessWidget {
                               size: 18,
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  )
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ));
   }
+
+  Widget _buildInfoItem(IconData icon, String text, [Color? color]) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: color ?? Colors.grey[700]),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: color ?? Colors.grey[800]),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
 }
+
 
 class UpdateCategoryForm extends StatefulWidget {
   final Category? category;
 
-  const UpdateCategoryForm({Key? key,  this.category})
-      : super(key: key);
+  const UpdateCategoryForm({Key? key, this.category}) : super(key: key);
 
   @override
   State<UpdateCategoryForm> createState() => _UpdateCategoryFormState();
@@ -270,8 +291,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
 class DeleteCategoryForm extends StatefulWidget {
   final Category? category;
 
-  const DeleteCategoryForm({Key? key,  this.category})
-      : super(key: key);
+  const DeleteCategoryForm({Key? key, this.category}) : super(key: key);
 
   @override
   State<DeleteCategoryForm> createState() => _DeleteCategoryFormState();
@@ -346,3 +366,4 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
     );
   }
 }
+

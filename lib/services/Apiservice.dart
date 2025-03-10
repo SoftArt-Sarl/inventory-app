@@ -174,6 +174,35 @@ Future<Category> fetchCategoryById(String categoryId) async {
     }
   }
 
+Future<List<Item>> fechtRuptureItems() async {
+    try {
+      final response = await _dio.get('/items/low-stock',
+          options: Options(
+            headers: {
+              'Authorization':
+                  'Bearer ${userinfo.authmodel.value.access_token}',
+            },
+          ));
+      List<Item> items = (response.data as List)
+          .map((json) => Item(
+                id: json['id'],
+                name: json['name'],
+                quantity: json['quantity'],
+                unitPrice: json['unitPrice'],
+                itemsTotal: json['itemsTotal'],
+                createdAt: DateTime.parse(json['createdAt']),
+                createdById: json['createdById'],
+                updatedAt: json['updatedAt'] != null
+                    ? DateTime.parse(json['updatedAt'])
+                    : null,
+                categoryId: json['categoryId'],
+              ))
+          .toList();
+      return items;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des items: $e');
+    }
+  }
 Future<Response> retirerStok(Item item,int quantity) async {
     try {
       final response = await _dio.patch('/items/${item.id}/remove-stock/${item.categoryId}',
@@ -192,6 +221,26 @@ Future<Response> retirerStok(Item item,int quantity) async {
       throw Exception('Erreur lors de l\'ajout de l\'item: $e');
     }
   }
+  Future<Response> ajouterStock(Item item, int quantity) async {
+  try {
+    final response = await _dio.patch(
+      '/items/${item.id}/add-stock/${item.categoryId}',
+      data: {
+        'quantity': quantity,
+      },
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+        },
+      ),
+    );
+    return response;
+  } catch (e) {
+    print(e);
+    throw Exception('Erreur lors de l\'ajout du stock: $e');
+  }
+}
+
   // Ajout d'un item
   Future<Response> addItem(String name, int quantity, int unitPrice,
        String categoryId) async {

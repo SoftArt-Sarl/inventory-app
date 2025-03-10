@@ -4,16 +4,16 @@ import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/Usermodel.dart';
 
 class ActionItem {
-  String? id;
-  String? itemId;
-  int? quantity;
-  String? userId;
-  DateTime? createdAt;
-  String? action;
-  OldValue? oldValue;
-  NewValue? newValue;
-  Item? item;
-  User? user;
+  final String? id;
+  final String? itemId;
+  final int? quantity;
+  final String? userId;
+  final DateTime? createdAt;
+  final String? action;
+  final OldValue? oldValue;
+  final NewValue? newValue;
+  final Item? item;
+  final User? user;
 
   ActionItem({
     this.id,
@@ -34,71 +34,56 @@ class ActionItem {
       itemId: json['itemId'],
       quantity: json['quantity'],
       userId: json['userId'],
-      createdAt: json['createdAt'] != null
-          ? DateTime.tryParse(json['createdAt'])
-          : null,
+      createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt']) : null,
       action: json['action'],
-      oldValue:
-          json['oldValue'] != null ? OldValue.fromJson(json['oldValue']) : null,
-      newValue:
-          json['newValue'] != null ? NewValue.fromJson(json['newValue']) : null,
+      oldValue: json['oldValue'] != null ? OldValue.fromJson(json['oldValue']) : null,
+      newValue: json['newValue'] != null ? NewValue.fromJson(json['newValue']) : null,
       item: json['item'] != null ? Item.fromJson(json['item']) : null,
       user: json['user'] != null ? User.fromJson(json['user']) : null,
     );
   }
 
-  Color getColor() {
-    switch (action) {
-      case 'Added':
-        return Colors.green;
-      case 'Retirer':
-        return Colors.orange;
-      case 'Deleted':
-        return Colors.red;
-      case 'Updated':
-        return Colors.blue;
-      default:
-        return Colors.grey;
-    }
+  Color get actionColor {
+    return {
+      // 'Added new': Colors.green,
+      'RemovedFromStock': Colors.orange,
+      'Deleted': Colors.red,
+      'Updated': Colors.blue,
+      'Added To Stock': Colors.yellow,
+    }[action] ?? Colors.grey;
   }
 
-  IconData getIcon() {
-    switch (action) {
-      case 'Added':
-        return Icons.add;
-      case 'Retirer':
-        return Icons.remove_outlined;
-      case 'Deleted':
-        return Icons.delete_outline;
-      case 'Updated':
-        return Icons.update;
-      default:
-        return Icons.info_outline;
-    }
+  IconData get actionIcon {
+    return {
+      // 'Added new': Icons.add,
+      'RemovedFromStock': Icons.remove_outlined,
+      'Deleted': Icons.delete_outline,
+      'Updated': Icons.update,
+      'Added To Stock': Icons.add,
+    }[action] ?? Icons.info_outline;
   }
 
-  String getTitle(String? itemName) {
-    return itemName ?? 'Produit inconnu';
-  }
+  String get title => item?.name ?? 'Produit inconnu';
 
-  String getDetails() {
+  String get details {
     switch (action) {
-      case 'Added':
-        return '➕ ${quantity ?? 0} unités ajoutées à ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unité';
-      case 'Retirer':
-        return '🔻 ${quantity ?? 0} unités retirées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
+      // case 'Added new':
+      //   return '➕ $quantity unités ajoutées à ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unité';
+      case 'RemovedFromStock':
+        return '🔻 $quantity unités retirées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
       case 'Deleted':
         return '❌ Produit supprimé';
       case 'Updated':
-        return '🔄 Produit mis à jour : ${_getUpdatedDetails()}';
+        return '🔄 Produit mis à jour : ${updatedDetails}';
+      case 'Added To Stock':
+        return '🔻 $quantity unités ajoutées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
       default:
-        return '';
+        return '⚠️ Action inconnue';
     }
   }
 
-  String _getUpdatedDetails() {
+  String get updatedDetails {
     List<String> changes = [];
-
     if (oldValue?.quantity != newValue?.quantity) {
       changes.add('Quantité: ${oldValue?.quantity ?? 0} → ${newValue?.quantity ?? 0}');
     }
@@ -108,7 +93,6 @@ class ActionItem {
     if (oldValue?.unitPrice != newValue?.unitPrice) {
       changes.add('Prix: ${oldValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA → ${newValue?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA');
     }
-
     return changes.isNotEmpty ? changes.join(', ') : 'Aucune modification détectée';
   }
 

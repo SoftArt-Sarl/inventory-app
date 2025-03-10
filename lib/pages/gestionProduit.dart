@@ -108,74 +108,81 @@ class Header1 extends StatefulWidget {
 
 class _Header1State extends State<Header1> {
   final buttonKey = GlobalKey();
-
+  final buttonKey2 = GlobalKey();
   ApiService apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
-    final buttonKey2 = GlobalKey();
-    // Détection de la taille de l'écran pour afficher ou non le titre
     bool isDesktop = MediaQuery.of(context).size.width >= 600;
 
-    return !isDesktop
-        ? const SizedBox.shrink()
-        : Column(
-            children: [
-              Row(
-                // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    if (!isDesktop) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 5),
+            const Text(
+              'Listes des catégories',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
-                    width: 5,
-                  ),
-                  const Text(
-                    'Listes des catégories',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Produits de la catégorie ${apiController.categorySelected.value.title}',
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          key: buttonKey2,
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange),
-                          onPressed: () {
-                            PopupHelper.showPopup(
-                              context: context,
-                              buttonKey: buttonKey2,
-                              width: 300,
-                              popupContent: AddProduitForm(isHistoriquePage: false,),
-                            );
-                          },
-                          child: const Text(
-                            'Ajouer un produit',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        )
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                      onPressed: () {
-                        apiController.isCategorySelected.value = false;
-                      },
-                      icon: const Icon(Icons.close_outlined))
+                  // Text(
+                  //   'Produits de la catégorie ${apiController.categorySelected.value.title}',
+                  //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // ),
+                  const SizedBox(width: 20),
+                  Row(
+                    children: [
+                      const Icon(Icons.attach_money, color: Colors.orange),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Valeur totale : ${apiController.categorySelected.value.total} FCFA',
+                        style: const TextStyle(fontSize: 14, ),
+                      ),
+                      const SizedBox(width: 20),
+                      const Icon(Icons.production_quantity_limits, color: Colors.blue),
+                      const SizedBox(width: 5),
+                      Text(
+                        'Nombre total : ${apiController.categorySelected.value.items!.length} produits',
+                        style: const TextStyle(fontSize: 14,),
+                      ),
+                    ],
+                  )
                 ],
               ),
-              const Divider()
-            ],
-          );
+            ),
+            ElevatedButton(
+              key: buttonKey2,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+              onPressed: () {
+                PopupHelper.showPopup(
+                  context: context,
+                  buttonKey: buttonKey2,
+                  width: 300,
+                  popupContent: AddProduitForm(isHistoriquePage: false),
+                );
+              },
+              child: const Text(
+                'Ajouter un produit',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            const SizedBox(width: 10),
+            IconButton(
+              onPressed: () {
+                apiController.isCategorySelected.value = false;
+              },
+              icon: const Icon(Icons.close_outlined),
+            )
+          ],
+        ),
+        const Divider()
+      ],
+    );
   }
 }
 
@@ -438,57 +445,57 @@ class _AddProduitFormState extends State<AddProduitForm> {
   }
 }
 
-class RetirerStokForm extends StatefulWidget {
-  const RetirerStokForm({
-    Key? key,
-  }) : super(key: key);
+class RetirerStockForm extends StatefulWidget {
+  const RetirerStockForm({Key? key}) : super(key: key);
 
   @override
-  State<RetirerStokForm> createState() => _RetirerStokFormState();
+  State<RetirerStockForm> createState() => _RetirerStockFormState();
 }
 
-class _RetirerStokFormState extends State<RetirerStokForm> {
+class _RetirerStockFormState extends State<RetirerStockForm> {
   bool isLoading = false;
-  // final TextEditingController categorieText = TextEditingController();
   final TextEditingController nametext = TextEditingController();
-  // final TextEditingController prixtext = TextEditingController();
   final TextEditingController quantitytext = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-  }
 
-  Future<void> addCategory() async {
+  Future<void> retirerStock() async {
     setState(() {
       isLoading = true; // Lancer le chargement
     });
-    ApiService apiService = ApiService();
-    Item item = apiController.items.firstWhere(
-      (element) => element.name == nametext.text.trim(),
-    );
+
     try {
-      await apiService.retirerStok(
-        item,
-        int.parse(quantitytext.text.trim()),
+      ApiService apiService = ApiService();
+      Item item = apiController.items.firstWhere(
+        (element) => element.name == nametext.text.trim(),
       );
 
-      PopupHelper.removePopup(context);
+      int? quantity = int.tryParse(quantitytext.text.trim());
+      if (quantity == null || quantity <= 0) {
+        throw Exception('Quantité invalide');
+      }
 
+      await apiService.retirerStok(item, quantity);
+
+      PopupHelper.removePopup(context);
       await apiController.refreshData();
+
       setState(() {
-        isLoading = false; // Arrêter le chargement après l'ajout
+        isLoading = false; // Arrêter le chargement après le retrait
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit ajoutée avec succès!')),
+        const SnackBar(content: Text('Produit retiré avec succès!')),
       );
     } catch (e) {
       setState(() {
         isLoading = false; // Arrêter le chargement en cas d'erreur
       });
+
       print(e);
-      // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur lors de l\'ajout de du produit.')),
+        const SnackBar(
+          content: Text('Erreur lors du retrait du produit.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -500,44 +507,32 @@ class _RetirerStokFormState extends State<RetirerStokForm> {
       child: Column(
         children: [
           const Text(
-            'Rétirer un stok',
+            'Retirer un stock',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          if (!apiController.isCategorySelected.value)
-            const SizedBox(height: 15),
+          if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
           if (!apiController.isCategorySelected.value)
             ReusableSearchDropdown(
-              items: apiController.items.map(
-                (e) {
-                  // int index = apiController.categories.indexOf(e);
-                  return e.name!;
-                },
-              ).toList(),
+              items: apiController.items.map((e) => e.name!).toList(),
               onPressed: (produit) {
                 setState(() {
                   nametext.text = produit!;
                 });
               },
             ),
-          const SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: TextFormField(
               controller: quantitytext,
+              keyboardType: TextInputType.number, // Assure que seul un nombre est entré
               decoration: InputDecoration(
-                // labelText: 'Nom de la catégorie',
                 hintText: 'Quantité',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              onChanged: (value) {
-                // Gestion dynamique si nécessaire
-              },
             ),
           ),
           const SizedBox(height: 16),
@@ -552,11 +547,9 @@ class _RetirerStokFormState extends State<RetirerStokForm> {
                     ),
                   ),
                   onPressed: () async {
-                    // Ajoute une vérification pour la saisie
                     if (quantitytext.text.isNotEmpty) {
-                      await addCategory();
+                      await retirerStock();
                     } else {
-                      // Affiche un message d'erreur si le champ est vide
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Veuillez entrer une quantité valide.'),
@@ -580,6 +573,136 @@ class _RetirerStokFormState extends State<RetirerStokForm> {
     );
   }
 }
+class AjouterStockForm extends StatefulWidget {
+  const AjouterStockForm({Key? key}) : super(key: key);
+
+  @override
+  State<AjouterStockForm> createState() => _AjouterStockFormState();
+}
+
+class _AjouterStockFormState extends State<AjouterStockForm> {
+  bool isLoading = false;
+  final TextEditingController nametext = TextEditingController();
+  final TextEditingController quantitytext = TextEditingController();
+
+  Future<void> ajouterStock() async {
+    setState(() {
+      isLoading = true; // Début du chargement
+    });
+
+    try {
+      ApiService apiService = ApiService();
+      Item item = apiController.items.firstWhere(
+        (element) => element.name == nametext.text.trim(),
+      );
+
+      int? quantity = int.tryParse(quantitytext.text.trim());
+      if (quantity == null || quantity <= 0) {
+        throw Exception('Quantité invalide');
+      }
+
+      await apiService.ajouterStock(item, quantity);
+
+      PopupHelper.removePopup(context);
+      await apiController.refreshData();
+
+      setState(() {
+        isLoading = false; // Fin du chargement
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stock ajouté avec succès!')),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Arrêter le chargement en cas d'erreur
+      });
+
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erreur lors de l\'ajout du stock.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          const Text(
+            'Ajouter du stock',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
+          if (!apiController.isCategorySelected.value)
+            ReusableSearchDropdown(
+              items: apiController.items.map((e) => e.name!).toList(),
+              onPressed: (produit) {
+                setState(() {
+                  nametext.text = produit!;
+                });
+              },
+            ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: TextFormField(
+              controller: quantitytext,
+              keyboardType: TextInputType.number, // Clavier numérique
+              decoration: InputDecoration(
+                hintText: 'Quantité',
+                fillColor: Colors.grey[200],
+                filled: true,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          isLoading
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange, // Vert pour l'ajout
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () async {
+                    if (quantitytext.text.isNotEmpty) {
+                      await ajouterStock();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Veuillez entrer une quantité valide.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Ajouter',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+
 
 class CategoryForm extends StatefulWidget {
   bool? isHistoriquePage = false;

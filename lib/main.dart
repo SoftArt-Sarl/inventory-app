@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/apiController.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/controller/historiqueController.dart';
+import 'package:flutter_application_1/controller/homeController.dart';
 import 'package:flutter_application_1/controller/userInfo.dart';
+import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
 import 'package:flutter_application_1/pages/ValiderVente.dart';
 import 'package:flutter_application_1/pages/coursierPage.dart';
@@ -21,6 +23,7 @@ void main() {
   Get.put(Userinfo());
   Get.put(ApiController());
   Get.put(ActionHistoryController());
+  Get.put(HomeController());
   runApp(const MyApp());
 }
 
@@ -49,43 +52,97 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  
+  @override
   Widget build(BuildContext context) {
     return SideMenu(pages: [
-      DashboardScreen(),
-      const PurchaseValidationPage(),
+      Obx(() => IndexedStack(
+            index: homeController.selectedIndex.value,
+            children: [
+              DashboardScreen(),
+              TablePage(
+                searchBar:SearchBarWithFilter(
+          originalList: apiController.itemsRupture,
+          filteredList:apiController.itemsRupturefilter,
+          filterFunction: (item, query) =>
+              item.name!.toLowerCase().contains(query.toLowerCase()),
+        ),
+                header: const Header(
+                  isCategory: false,
+                  title: 'Produits',
+                  buttonText: 'Ajouter un produit',
+                ),
+                productList: Obx(() => ReusableTable(
+                      data: apiController.itemsRupturefilter
+                          .map(
+                            (element) => element.toJson1(),
+                          )
+                          .toList(),
+                      onEdit: (context, row) {
+                        print('Édition : $row');
+                      },
+                      onDelete: (context, row) {
+                        print('Suppression : $row');
+                      },
+                    )),
+                // pagination: Pagination(),
+              ),
+              TablePageWidget(),
+            ],
+          )),
+      // const PurchaseValidationPage(),
       TablePage(
-        searchBar: const SearchBarWithProfile(),
+        searchBar: SearchBarWithFilter(
+          originalList: apiController.items,
+          filteredList:apiController.filteredItems,
+          filterFunction: (item, query) =>
+              item.name!.toLowerCase().contains(query.toLowerCase()),
+        ),
         header: const Header(
           isCategory: false,
           title: 'Produits',
           buttonText: 'Ajouter un produit',
         ),
-        productList: Obx(()=>ReusableTable(
-  data: apiController.items.map((element) => element.toJson1(),).toList(),
-  onEdit: (context, row) {
-    print('Édition : $row');
-  },
-  onDelete: (context, row) {
-    print('Suppression : $row');
-  },
-)),
+        productList: Obx(() => ReusableTable(
+              data: apiController.filteredItems
+                  .map(
+                    (element) => element.toJson1(),
+                  )
+                  .toList(),
+              onEdit: (context, row) {
+                print('Édition : $row');
+              },
+              onDelete: (context, row) {
+                print('Suppression : $row');
+              },
+            )),
         // pagination: Pagination(),
       ),
       TablePageWidget(),
       // CategoryPage(),
       // const Center(child: Text("Stock")),
-      const Center(child: Text("Paramètres")),
+      // const Center(child: Text("Paramètres")),
       const Center(child: Text("Déconnexion")),
     ]);
   }
 }
 
-class TablePageWidget extends StatelessWidget {
+class TablePageWidget extends StatefulWidget {
+  @override
+  State<TablePageWidget> createState() => _TablePageWidgetState();
+}
+
+class _TablePageWidgetState extends State<TablePageWidget> {
   final ApiController apiController = Get.find<ApiController>();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +152,18 @@ class TablePageWidget extends StatelessWidget {
 
     return Obx(
       () => TablePage(
-        searchBar: const SearchBarWithProfile(),
+        searchBar: SearchBarWithFilter(
+          // : _searchFocusNode,  // Ajoute le focusNode ici
+          originalList: apiController.categories,
+          filteredList: apiController.filteredCategory,
+          filterFunction: (item, query) {
+            final result = item.title!.toLowerCase().contains(query.toLowerCase());
+            Future.delayed(Duration.zero, () {
+              _searchFocusNode.requestFocus(); // Réactive le focus après la mise à jour
+            });
+            return result;
+          },
+        ),
         header: apiController.isCategorySelected.value
             ? const Header1()
             : const Header(
@@ -109,27 +177,24 @@ class TablePageWidget extends StatelessWidget {
             Expanded(
               flex: 1,
               child: SingleChildScrollView(
-                child: ResponsiveGrid(
-                  columnsMobile: 1,
-                  columnsTablet: 2,
-                  runSpacing: 5,
-                  columnsDesktop:
-                      apiController.isCategorySelected.value ? 1 : 4,
-                  spacing: 5,
-                  children: apiController.categories
-                      .map(
-                        (categorie) => InkWell(
-                          onTap: () {
-                            getCategories(categorie);
-                            apiController.isCategorySelected.value = true;
-                          },
-                          child: CategoryWidget(
-                            category: categorie,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
+                child: Obx(() => ResponsiveGrid(
+                      columnsMobile: 1,
+                      columnsTablet: 2,
+                      runSpacing: 5,
+                      columnsDesktop: apiController.isCategorySelected.value ? 1 : 3,
+                      spacing: 5,
+                      children: apiController.filteredCategory
+                          .map(
+                            (categorie) => InkWell(
+                              onTap: () {
+                                getCategories(categorie);
+                                apiController.isCategorySelected.value = true;
+                              },
+                              child: CategoryWidget(category: categorie),
+                            ),
+                          )
+                          .toList(),
+                    )),
               ),
             ),
             const VerticalDivider(),
@@ -137,15 +202,22 @@ class TablePageWidget extends StatelessWidget {
               Expanded(
                 flex: 4,
                 child: ReusableTable(
-                    data: apiController.items
-                        .where((element) =>
-                            element.categoryId ==
-                            apiController.categorySelected.value.id)
-                        .toList().map((e) => e.toJson2(),).toList()),
-              )
+                  data: apiController.items
+                      .where((element) => element.categoryId == apiController.categorySelected.value.id)
+                      .map((e) => e.toJson2())
+                      .toList(),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 }
+
