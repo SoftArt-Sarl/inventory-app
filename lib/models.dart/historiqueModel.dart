@@ -45,7 +45,7 @@ class ActionItem {
 
   Color get actionColor {
     return {
-      // 'Added new': Colors.green,
+      'Added new': Colors.green,
       'RemovedFromStock': Colors.orange,
       'Deleted': Colors.red,
       'Updated': Colors.blue,
@@ -55,7 +55,7 @@ class ActionItem {
 
   IconData get actionIcon {
     return {
-      // 'Added new': Icons.add,
+      'Added new': Icons.add,
       'RemovedFromStock': Icons.remove_outlined,
       'Deleted': Icons.delete_outline,
       'Updated': Icons.update,
@@ -63,20 +63,29 @@ class ActionItem {
     }[action] ?? Icons.info_outline;
   }
 
-  String get title => item?.name ?? 'Produit inconnu';
+    String get title {
+    return item?.name ?? oldValue?.name ?? newValue?.name ??oldValue!. title??newValue!.title?? 'Produit inconnu';
+  }
 
-  String get details {
+
+   String get details {
     switch (action) {
-      // case 'Added new':
-      //   return '➕ $quantity unités ajoutées à ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unité';
+      case 'Added new':
+        return itemId == null
+            ? '➕ Nouvelle catégorie ajouté : ${newValue!.title??''}'
+            : '➕ $quantity unités ajoutées à ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unité';
       case 'RemovedFromStock':
         return '🔻 $quantity unités retirées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
       case 'Deleted':
-        return '❌ Produit supprimé';
+        return itemId == null
+        ?'❌ Catégorie supprimé'
+        :'❌ Produit supprimé';
       case 'Updated':
-        return '🔄 Produit mis à jour : ${updatedDetails}';
+        return itemId==null
+        ?'🔄 Catégorie mis à jour'
+        :'🔄 Produit mis à jour : $updatedDetails';
       case 'Added To Stock':
-        return '🔻 $quantity unités ajoutées (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
+        return '🔻 $quantity unités ajoutées${oldValue!.name} (Ancien stock: ${oldValue?.quantity ?? 0} → Nouveau stock: ${newValue?.quantity ?? 0})';
       default:
         return '⚠️ Action inconnue';
     }
@@ -113,18 +122,20 @@ class ActionItem {
 }
 
 class OldValue {
+  final String? title;
   final int? quantity;
   final String? name;
   final int? unitPrice;
   final User? user;
 
-  const OldValue(this.name, this.unitPrice, this.user, {this.quantity});
+  const OldValue(this.name, this.unitPrice, this.user, this.title, {this.quantity});
 
   factory OldValue.fromJson(Map<String, dynamic> json) {
     return OldValue(
       json['name'],
       (json['unitPrice'] as num?)?.toInt(),
       json['user'] != null ? User.fromJson(json['user']) : null,
+      json['title'],
       quantity: json['quantity'] as int?,
     );
   }
@@ -140,14 +151,16 @@ class OldValue {
 }
 
 class NewValue {
+  final String? title;
   final int? quantity;
   final String? name;
   final int? unitPrice;
 
-  const NewValue({this.quantity, this.name, this.unitPrice});
+  const NewValue(this.title, {this.quantity, this.name, this.unitPrice});
 
   factory NewValue.fromJson(Map<String, dynamic> json) {
     return NewValue(
+      json['title'],
       quantity: json['quantity'],
       name: json['name'],
       unitPrice: (json['unitPrice'] as num?)?.toInt(),
