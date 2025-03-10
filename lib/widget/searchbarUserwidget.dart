@@ -108,7 +108,7 @@ class UserProfile extends StatelessWidget {
       children: [
         // const Text('Jane Cooper',
         //     style: TextStyle(fontWeight: FontWeight.bold)),
-        Text(userinfo.authmodel.value.user!.email!,
+        Text(userinfo.authmodel.value.user!.name!,
             style: const TextStyle(color: Colors.grey)),
       ],
     );

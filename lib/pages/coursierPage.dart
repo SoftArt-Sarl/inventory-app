@@ -485,6 +485,11 @@ class ActionHistoryPage extends StatelessWidget {
                   action.details,
                   style: const TextStyle(fontSize: 16),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  action.user!.name,
+                  style: const TextStyle(fontSize: 16),
+                ),
                 const Divider()
               ],
             ),
