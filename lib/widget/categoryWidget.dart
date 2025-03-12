@@ -64,7 +64,16 @@ class CategoryWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
+          child: apiController.isCategorySelected.value?Text(
+                category!.title ?? 'Sans titre',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ): Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(

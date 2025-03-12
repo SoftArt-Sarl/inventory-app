@@ -140,7 +140,9 @@ class _HomePageState extends State<HomePage> {
       TablePage(
         searchBar: const SizedBox.shrink(),
         header: const SizedBox.shrink(),
-        productList: PasswordChangeScreen(),
+        productList: appTypeController.isDesktop.value
+            ? PasswordChangeScreen()
+            : const UpdatePasswordPage(),
       )
     ]);
   }
@@ -189,8 +191,7 @@ class _TablePageWidgetState extends State<TablePageWidget> {
         productList: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (appTypeController.isDesktop.value &&
-                !apiController.isCategorySelected.value)
+            if (appTypeController.isDesktop.value)
               Expanded(
                 flex: 1,
                 child: SingleChildScrollView(

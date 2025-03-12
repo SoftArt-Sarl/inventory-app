@@ -36,6 +36,7 @@ class PasswordChangeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+                const VerticalDivider(),
                 // Main Content
                const  Expanded(
                   flex: 2,
