@@ -14,6 +14,7 @@ class CategoryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     final buttonKey1 = GlobalKey();
     // final buttonKey2 = GlobalKey();
     void updateCategory(BuildContext context) {

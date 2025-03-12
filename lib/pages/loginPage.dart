@@ -38,13 +38,13 @@ class _LoginPageState extends State<LoginPage> {
           print(response.data);
           AuthModel authModel = AuthModel.formjson(response.data);
           userinfo.authmodel.value = authModel;
-          userinfo.saveAuthModel('authmodel', jsonEncode(response.data));
-
+          userinfo.saveAuthModel('authmodel', jsonEncode(response.data),);
           Get.snackbar("Success", "Login successful",
-              backgroundColor: Colors.green, colorText: Colors.white);
+              backgroundColor: Colors.green, colorText: Colors.white,
+              );
               
           // Rediriger vers la page d'accueil ou une autre page
-          Get.offAll(() => HomePage());
+          Get.offAll(() => const HomePage());
         } else {
           // print(e.toString);
           print(response.statusCode);
@@ -53,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } catch (e) {
         print(e);
-        Get.snackbar("Erreur", "${e.toString()}",
+        Get.snackbar("Erreur", "Une erreur s\"est produite",
             backgroundColor: Colors.red, colorText: Colors.white);
       } finally {
         setState(() {
@@ -63,35 +63,40 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Widget _buildTextField(
-      {required String label,
-      required IconData icon,
-      required TextEditingController controller,
-      bool obscureText = false}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(10),
-      child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "This field is required";
-          }
-          return null;
-        },
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey[300],
-          labelText: label,
-          prefixIcon: Icon(icon, color: Colors.orange),
-          border: InputBorder.none,
-          focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.orange)),
+  Widget _buildTextField({
+  required String label,
+  required IconData icon,
+  required TextEditingController controller,
+  bool obscureText = false,
+  Widget? suffixIcon, // Ajout du suffixIcon en paramètre
+}) {
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(10),
+    child: TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return "This field is required";
+        }
+        return null;
+      },
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.grey[300],
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.orange),
+        suffixIcon: suffixIcon, // Ajout du suffixIcon ici
+        border: InputBorder.none,
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.orange),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
+bool obscurePassword = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,10 +138,14 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController),
                       const SizedBox(height: 16),
                       _buildTextField(
+                         suffixIcon: IconButton(
+                    icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                  ),
                           label: "Password",
                           icon: Icons.lock,
                           controller: _passwordController,
-                          obscureText: false),
+                          obscureText: obscurePassword),
                       const SizedBox(height: 16),
                       _isLoading
                           ? const CircularProgressIndicator()

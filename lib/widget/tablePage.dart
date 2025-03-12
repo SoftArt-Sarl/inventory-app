@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/appController.dart';
 
 class TablePage extends StatelessWidget {
   final Widget searchBar;
@@ -16,14 +17,15 @@ class TablePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding:  EdgeInsets.all(appTypeController.isDesktop.value? 16.0:0),
         child: Column(
           children: [
             searchBar,
-            const SizedBox(height: 16),
+           appTypeController.isDesktop.value? const SizedBox(height: 16):const SizedBox.shrink(),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(

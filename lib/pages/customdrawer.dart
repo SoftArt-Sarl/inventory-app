@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/appController.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SideMenu extends StatefulWidget {
   final List<Widget> pages; // Liste des pages à afficher
@@ -11,8 +12,9 @@ class SideMenu extends StatefulWidget {
 
 class _SideMenuState extends State<SideMenu> {
   int _selectedIndex = 0; // Index de l'élément sélectionné
-  late PageController _pageController; // Contrôleur pour gérer la transition entre les pages
-  late bool _isDesktop; // Détection si l'écran est un desktop
+  late PageController
+      _pageController; // Contrôleur pour gérer la transition entre les pages
+  // late bool _isDesktop; // Détection si l'écran est un desktop
 
   @override
   void initState() {
@@ -31,20 +33,22 @@ class _SideMenuState extends State<SideMenu> {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     // Détection de la taille de l'écran pour ajuster le comportement du Drawer
-    _isDesktop = MediaQuery.of(context).size.width >= 500; // Si l'écran est plus large que 1024px, considérer comme desktop
+    // / Si l'écran est plus large que 1024px, considérer comme desktop
 
     // Liste des titres des éléments du menu pour utilisation dans l'AppBar
     List<String> menuTitles = [
       "Dashboard",
       "Items",
       "Categories",
-      "Sign Out",
+      'paramétre'
+          "Sign Out",
     ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4F8),
-      body: _isDesktop
+      body: appTypeController.isDesktop.value
           ? Row(
               children: [
                 // Menu latéral permanent
@@ -59,10 +63,16 @@ class _SideMenuState extends State<SideMenu> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 10),
-                        _buildMenuItem(Icons.dashboard, "Dashboard", 0),
-                        _buildMenuItem(Icons.shopping_cart, "Items", 1),
-                        _buildMenuItem(Icons.dashboard_outlined, "Categories", 2),
-                        _buildMenuItem(Icons.logout, "Sign Out", 3),
+                        _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
+                            0, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items",
+                            1, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.layerGroup,
+                            "Categories", 2, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 3,
+                            appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
+                            4, appTypeController.isDesktop.value),
                       ],
                     ),
                   ),
@@ -89,12 +99,16 @@ class _SideMenuState extends State<SideMenu> {
               drawer: Drawer(
                 child: Column(
                   children: [
-                    _buildMenuItem(Icons.dashboard, "Dashboard", 0),
-                    _buildMenuItem(Icons.sell, "Solder", 1),
-                    _buildMenuItem(Icons.shopping_cart, "Items", 2),
-                    _buildMenuItem(Icons.dashboard_outlined, "Categories", 3),
-                    _buildMenuItem(Icons.settings, "Settings", 4),
-                    _buildMenuItem(Icons.logout, "Sign Out", 5),
+                    _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
+                            0, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items",
+                            1, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.layerGroup,
+                            "Categories", 2, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 3,
+                            appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
+                            4, appTypeController.isDesktop.value),
                   ],
                 ),
               ),
@@ -107,9 +121,9 @@ class _SideMenuState extends State<SideMenu> {
   }
 
   // Widget pour chaque élément du menu
-  Widget _buildMenuItem(IconData icon, String title, int index) {
+  Widget _buildMenuItem(IconData icon, String title, int index, bool isdektop) {
     return InkWell(
-      onTap: index == 3
+      onTap: index == 4
           ? () async {
               await userinfo.logout();
               apiController.isCategorySelected.value = false;
@@ -126,20 +140,24 @@ class _SideMenuState extends State<SideMenu> {
               // Vérifiez si le contrôleur est déjà attaché à la page
               if (_pageController.hasClients) {
                 // Utilisez animateToPage avec une durée pour une animation fluide
-                await Future.delayed(const Duration(milliseconds: 100)); // Ajout d'un petit délai
+                await Future.delayed(const Duration(
+                    milliseconds: 100)); // Ajout d'un petit délai
                 _pageController.animateToPage(index,
-                    duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut);
               }
 
-              if (!_isDesktop) {
-                Navigator.of(context).pop(); // Ferme le Drawer si ce n'est pas un desktop
+              if (!isdektop) {
+                Navigator.of(context)
+                    .pop(); // Ferme le Drawer si ce n'est pas un desktop
               }
             },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut, // Courbe de l'animation pour un effet plus fluide
+          curve: Curves
+              .easeInOut, // Courbe de l'animation pour un effet plus fluide
           decoration: BoxDecoration(
             color: _selectedIndex == index ? Colors.orange : Colors.transparent,
             borderRadius: BorderRadius.circular(5),
@@ -151,7 +169,8 @@ class _SideMenuState extends State<SideMenu> {
                 Icon(
                   icon,
                   size: 18,
-                  color: _selectedIndex == index ? Colors.white : Colors.grey[700],
+                  color:
+                      _selectedIndex == index ? Colors.white : Colors.grey[700],
                 ),
                 const SizedBox(width: 10),
                 Text(

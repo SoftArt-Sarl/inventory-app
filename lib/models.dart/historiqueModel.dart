@@ -85,7 +85,7 @@ class ActionItem {
         ?'🔄 Category updated'
         :'🔄 Item updated : $updatedDetails';
       case 'Added To Stock':
-        return '🔻 $quantity items added ${oldValue!.name} (Old value: ${oldValue?.quantity ?? 0} → New value: ${newValue?.quantity ?? 0})';
+        return '🔻 $quantity items added (Old value: ${oldValue?.quantity ?? 0} → New value: ${newValue?.quantity ?? 0})';
       default:
         return '⚠️ Error';
     }

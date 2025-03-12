@@ -113,9 +113,9 @@ class _Header1State extends State<Header1> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDesktop = MediaQuery.of(context).size.width >= 600;
+    appTypeController.checkScreenType(context);
 
-    if (!isDesktop) return const SizedBox.shrink();
+    if (!appTypeController.isDesktop.value) return const SizedBox.shrink();
 
     return Column(
       children: [
@@ -219,10 +219,12 @@ class Pagination extends StatelessWidget {
 }
 
 class AddProduitForm extends StatefulWidget {
-  bool? isHistoriquePage = false;
+  bool? isHistoriquePage;
+  bool? isdektop;
   AddProduitForm({
     super.key,
-    this.isHistoriquePage,
+    this.isHistoriquePage=false,
+    this.isdektop
   });
 
   @override
@@ -270,13 +272,15 @@ class _AddProduitFormState extends State<AddProduitForm> {
       quantitytext.clear();
       prixtext.clear();
       categorieText.clear();
+      !widget.isdektop!? Get.back():null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit ajouté avec succès!')),
+        const SnackBar(content: Text('Produit ajouté avec succès!',),),
       );
     } catch (e) {
       setState(() {
         isLoading = false; // Arrêter le chargement en cas d'erreur
       });
+      !widget.isdektop!? Get.back():null;
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erreur lors de l\'ajout du produit.')),
@@ -507,9 +511,10 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
       isLoading = false; // Arrêter le chargement en cas d'erreur
     });
 
+    // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(e.toString()), // Afficher le message d'erreur précis
+     const  SnackBar(
+        content: Text('Erreur lors du rétrait du stock'), // Afficher le message d'erreur précis
         backgroundColor: Colors.red,
       ),
     );
@@ -653,8 +658,8 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(e.toString()), // Afficher le message d'erreur précis
+      const SnackBar(
+        content: Text('Erreur lors de l\'ajout du stock'), // Afficher le message d'erreur précis
         backgroundColor: Colors.red,
       ),
     );
@@ -775,7 +780,7 @@ class _CategoryFormState extends State<CategoryForm> {
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Erreur lors de l\'ajout de la catégorie.')),
+            content: Text('Erreur lors de l\'ajout de la catégorie.'),backgroundColor: Colors.red,),
       );
     }
   }

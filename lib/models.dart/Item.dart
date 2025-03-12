@@ -51,7 +51,7 @@ Map<String, dynamic> toJson1() {
     return {
       'id':id,
       'categoryId':categoryId,
-      'Nom du produit': name,
+      'Nom': name,
       'quantité': quantity,
       'Prix unitaire': '$unitPrice',
       'Total': '$itemsTotal',
@@ -63,7 +63,7 @@ Map<String, dynamic> toJson1() {
     return {
       'id':id,
       'categoryId':categoryId,
-      'Nom du produit': name,
+      'Nom': name,
       'quantité': quantity,
       'Prix unitaire': '$unitPrice',
       'Total': '$itemsTotal',

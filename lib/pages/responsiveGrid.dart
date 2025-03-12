@@ -22,7 +22,7 @@ class ResponsiveGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SpGrid(
-      width: MediaQuery.of(context).size.width-200,
+      width: MediaQuery.of(context).size.width,
       margin: const EdgeInsets.all(0),
       spacing: spacing,
       runSpacing: runSpacing,

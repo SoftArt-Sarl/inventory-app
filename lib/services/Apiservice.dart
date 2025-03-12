@@ -40,6 +40,25 @@ class ApiService {
       throw Exception('Erreur lors de la connexion: $e');
     }
   }
+    Future<Response> updatePassword(String newPassword) async {
+    try {
+      final response = await _dio.post(
+        '/auth/password/update',
+        data: {
+          'password': newPassword,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du mot de passe: $e');
+    }
+  }
+
 
   // Récupération des catégories
   Future<List<Category>> fetchCategories() async {

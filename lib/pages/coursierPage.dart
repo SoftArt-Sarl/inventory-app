@@ -21,66 +21,118 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  void showButtonListBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true, // Permet d'adapter la hauteur
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(16.0)), // Coins arrondis
+      ),
+      builder: (context) => const Padding(
+        padding: EdgeInsets.only(left: 8, right: 8, bottom: 50),
+        child: Wrap(
+          runSpacing: 10,
+          spacing: 10,
+          children: [
+            ButtonList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // final buttonKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
+    // isDesktop = MediaQuery.of(context).size.width >= 500;
     return Scaffold(
+      floatingActionButton: !appTypeController.isDesktop.value? FloatingActionButton(
+          backgroundColor: Colors.orange,
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            showButtonListBottomSheet(context);
+          }):null,
       backgroundColor: const Color(0xFFF0F4F8),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(appTypeController.isDesktop.value ? 16 : 5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const HeaderSection(),
-            const SizedBox(
-              height: 5,
-            ),
-            ResponsiveGrid(
-              columnsMobile: 1,
-              columnsTablet: 2,
-              runSpacing: 5,
-              columnsDesktop: 4,
-              spacing: 0,
-              children: [
-                Obx(() => _buildCard(
-                    FontAwesomeIcons.box,
-                    'Items',
-                    '${Item.calculateTotalQuantity(apiController.items)} products',
-                    Colors.green, () {
-                  
-                }),),
-                Obx(() => _buildCard(
-                    FontAwesomeIcons.layerGroup,
-                    'Categories',
-                    '${apiController.categories.length} Categories',
-                    Colors.blue,
-                    () {
-                      homeController.changeIndex(2);
-                    }),),
-                Obx(
-                  () => _buildCard(
-                      FontAwesomeIcons.exclamationTriangle,
-                      'Almost out of stock',
-                      '${Item.getOutOfStockItems(apiController.itemsRupture).length} Products',
-                      Colors.red,
-                      () {
-                        homeController.changeIndex(1);
-                      }),
-                ),
-                _buildCard(
+            if (appTypeController.isDesktop.value)
+              const Column(
+                children: [
+                  HeaderSection(),
+                  SizedBox(height: 5),
+                ],
+              ),
+            SizedBox(
+              width: double.infinity,
+              child: ResponsiveGrid(
+                columnsMobile: 2,
+                columnsTablet: 3,
+                runSpacing: 5,
+                columnsDesktop: 4,
+                spacing: 0,
+                children: [
+                  Obx(() => _buildCard(
+                        FontAwesomeIcons.box,
+                        'Items',
+                        '${Item.calculateTotalQuantity(apiController.items)} products',
+                        Colors.green,
+                        appTypeController.isDesktop.value,
+                        () {},
+                      )),
+                  Obx(() => _buildCard(
+                        FontAwesomeIcons.layerGroup,
+                        'Categories',
+                        '${apiController.categories.length} Categories',
+                        Colors.blue,
+                        appTypeController.isDesktop.value,
+                        () {
+                          homeController.changeIndex(2);
+                        },
+                      )),
+                  Obx(() => _buildCard(
+                        FontAwesomeIcons.exclamationTriangle,
+                        'Almost out of stock',
+                        '${Item.getOutOfStockItems(apiController.itemsRupture).length} Products',
+                        Colors.red,
+                        appTypeController.isDesktop.value,
+                        () {
+                          homeController.changeIndex(1);
+                        },
+                      )),
+                  _buildCard(
                     FontAwesomeIcons.euroSign,
                     'Total item price',
                     '${Item.calculateTotalValue(apiController.items).toString()} FCFA',
                     Colors.purple,
-                    () {}),
-              ],
+                    appTypeController.isDesktop.value,
+                    () {},
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: Row(
                 children: [
                   Expanded(flex: 3, child: HistoriqueSection()),
-                  const Expanded(
+                  if (appTypeController.isDesktop.value)
+                    const Expanded(
                       flex: 1,
                       child: Card(
                         shape: RoundedRectangleBorder(
@@ -89,12 +141,14 @@ class DashboardScreen extends StatelessWidget {
                         child: SizedBox(
                           height: double.infinity,
                           child: SingleChildScrollView(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [ButtonList()],
-                          )),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [ButtonList()],
+                            ),
+                          ),
                         ),
-                      )),
+                      ),
+                    ),
                 ],
               ),
             )
@@ -105,7 +159,7 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildCard(IconData icon, String title, String value, Color color,
-      VoidCallback onTap) {
+      bool isDesktop, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Card(
@@ -113,18 +167,22 @@ class DashboardScreen extends StatelessWidget {
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
+          padding: EdgeInsets.symmetric(vertical: 10,horizontal:isDesktop ? 16 : 2),
+          child: Row(mainAxisAlignment:isDesktop?MainAxisAlignment.start: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(width: 16),
+              Icon(icon, size: isDesktop ? 32 : 20, color: color),
+              SizedBox(width: isDesktop ? 16 : 5),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title),
-                  Text(value,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
+                 if(isDesktop) Text(title,style: TextStyle(fontSize: isDesktop?15:10),),
+                  Text(
+                   isDesktop?value: value.split(' ')[0],
+                    style: TextStyle(
+                      fontSize: isDesktop ? 20 : 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -133,8 +191,6 @@ class DashboardScreen extends StatelessWidget {
       ),
     );
   }
-
-// Construire les lignes du tableau
 }
 
 class HeaderSection extends StatelessWidget {
@@ -164,6 +220,7 @@ class HistoriqueSection extends StatelessWidget {
   HistoriqueSection({super.key});
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Card(
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(5))),
@@ -182,27 +239,32 @@ class HistoriqueSection extends StatelessWidget {
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    SizedBox(
-                      width: 300,
-                      child: Card(
-                        elevation: 4,
-                        color: Colors.white,
-                        child: TextFormField(
-                          decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10),
-                              isDense: true,
-                              hintText: 'Search for an action',
-                              border: InputBorder.none
-                              // border: OutlineInputBorder(
-                              //     borderRadius: BorderRadius.all(Radius.circular(10))),
+                    if (appTypeController.isDesktop.value)
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          SizedBox(
+                            width: 300,
+                            child: Card(
+                              elevation: 4,
+                              color: Colors.white,
+                              child: TextFormField(
+                                decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    isDense: true,
+                                    hintText: 'Search for an action',
+                                    border: InputBorder.none
+                                    // border: OutlineInputBorder(
+                                    //     borderRadius: BorderRadius.all(Radius.circular(10))),
+                                    ),
                               ),
-                        ),
-                      ),
-                    ),
+                            ),
+                          )
+                        ],
+                      )
                   ],
                 ),
                 Row(
@@ -219,7 +281,27 @@ class HistoriqueSection extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+          //  if (appTypeController.isDesktop.value) const SizedBox(height: 16,),
+           const Divider(),
+            if (!appTypeController.isDesktop.value)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Card(
+                elevation: 4,
+                color: Colors.white,
+                child: TextFormField(
+                  decoration: const InputDecoration(
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                      isDense: true,
+                      hintText: 'Search for an action',
+                      border: InputBorder.none
+                      // border: OutlineInputBorder(
+                      //     borderRadius: BorderRadius.all(Radius.circular(10))),
+                      ),
+                ),
+              ),
+            ),
             Expanded(
                 child: Obx(() => ActionHistoryPage(
                       // ignore: invalid_use_of_protected_member
@@ -295,10 +377,17 @@ class _ButtonListState extends State<ButtonList> {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Column(
       children: [
-       const SizedBox(
-          child: Text('Shortcuts', style: TextStyle(fontSize: 20, color: Colors.orange, fontWeight: FontWeight.bold),),
+        const SizedBox(
+          child: Text(
+            'Shortcuts',
+            style: TextStyle(
+                fontSize: 20,
+                color: Colors.orange,
+                fontWeight: FontWeight.bold),
+          ),
         ),
         if (_selectedForm == null) ...[
           _buildDashboardButton(
@@ -321,6 +410,7 @@ class _ButtonListState extends State<ButtonList> {
             label: "Add a new item",
             color: Colors.orange,
             onTap: () => showForm(AddProduitForm(
+              isdektop: appTypeController.isDesktop.value,
               isHistoriquePage: true,
             )),
           ),
@@ -333,13 +423,6 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
-          // _buildDashboardButton(
-          //   context,
-          //   icon: Icons.delete,
-          //   label: "Supprimer un produit",
-          //   color: Colors.red,
-          //   onTap: () {},
-          // ),
           _buildDashboardButton(
             context,
             icon: Icons.category,
@@ -349,42 +432,6 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
-          // _buildDashboardButton(
-          //   context,
-          //   icon: Icons.edit_attributes,
-          //   label: "Modifier une catégorie",
-          //   color: Colors.deepOrange,
-          //   onTap: () {},
-          // ),
-          // _buildDashboardButton(
-          //   context,
-          //   icon: Icons.delete_forever,
-          //   label: "Supprimer une catégorie",
-          //   color: Colors.redAccent,
-          //   onTap: () {},
-          // ),
-          // _buildDashboardButton(
-          //   context,
-          //   icon: Icons.search,
-          //   label: "Rechercher un produit/catégorie",
-          //   color: Colors.indigo,
-          //   onTap: () {},
-          // ),
-          // _buildDashboardButton(
-          //   context,
-
-          //   icon: Icons.list,
-          //   label: "Voir la liste des produits",
-          //   color: Colors.brown,
-          //   onTap: () {},
-          // ),
-          // _buildDashboardButton(
-          //   context,
-          //   icon: Icons.history,
-          //   label: "Historique des stocks",
-          //   color: Colors.grey,
-          //   onTap: () {},
-          // ),
         ] else ...[
           // Bouton de retour
           Align(

@@ -23,6 +23,7 @@ class ReusableTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     if (data.isEmpty) {
       return Container(
         alignment: Alignment.center,
@@ -34,30 +35,31 @@ class ReusableTable extends StatelessWidget {
     }
 
     final headers = data.first.keys
+        .where((key) => key != 'id' && key != 'categoryId'&& key != 'Status')
+        .toList();
+final header1 = data.first.keys
         .where((key) => key != 'id' && key != 'categoryId')
         .toList();
-
     return Column(
       children: [
         // En-tête
-        Container(
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            color: Colors.blueGrey[50],
-            border: Border(
-              bottom: BorderSide(color: Colors.grey.withOpacity(0.5), width: 2),
-            ),
-          ),
-          child: Table(
-            children: [
-              TableRow(
-                children: [
-                  ...headers.map((header) => _buildHeaderCell(header)),
-                  _buildHeaderCell('Actions'),
-                ],
-              ),
-            ],
-          ),
+        Table(
+          children: [
+            appTypeController.isDesktop.value?
+            TableRow(
+              children: [
+                ...header1.map((header) => _buildHeaderCell(
+                    header, appTypeController.isDesktop.value)),
+                _buildHeaderCell('Actions', appTypeController.isDesktop.value),
+              ],
+            ):TableRow(
+              children: [
+                ...headers.map((header) => _buildHeaderCell(
+                    header, appTypeController.isDesktop.value)),
+                _buildHeaderCell('Actions', appTypeController.isDesktop.value),
+              ],
+            )
+          ],
         ),
         // Contenu défilable
         Expanded(
@@ -67,7 +69,7 @@ class ReusableTable extends StatelessWidget {
               border: TableBorder.all(
                   color: Colors.grey.withOpacity(0.3), width: 1),
               children: data
-                  .map((rowData) => _buildRow(rowData, headers, context))
+                  .map((rowData) => _buildRow(rowData,appTypeController.isDesktop.value? header1:headers, context))
                   .toList(),
             ),
           ),
@@ -100,33 +102,37 @@ class ReusableTable extends StatelessWidget {
               ),
             );
           } else {
-            return _buildCell(rowData[header]);
+            return _buildCell(
+                rowData[header], appTypeController.isDesktop.value);
           }
         }),
-        _buildActionButtons(rowData, context),
+        _buildActionButtons(
+            rowData, context, appTypeController.isDesktop.value),
       ],
     );
   }
 
-  Widget _buildHeaderCell(String text) {
+  Widget _buildHeaderCell(String text, bool isdektop) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Text(text,
-            style: const TextStyle(
+            style: TextStyle(
                 color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold)),
+                fontSize: isdektop ? 16 : 14,
+                fontWeight: isdektop ? FontWeight.bold : FontWeight.normal)),
       ),
     );
   }
 
-  Widget _buildCell(dynamic value) {
+  Widget _buildCell(dynamic value, bool isdektop) {
     return Center(
       child: Container(
         alignment: Alignment.center,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: isdektop
+            ? const EdgeInsets.symmetric(vertical: 10, horizontal: 8)
+            : const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: value is bool
             ? Icon(
                 !value
@@ -143,12 +149,12 @@ class ReusableTable extends StatelessWidget {
   }
 
   Widget _buildActionButtons(
-      Map<String, dynamic> rowData, BuildContext context) {
+      Map<String, dynamic> rowData, BuildContext context, bool isdektop) {
     final buttonKey1 = GlobalKey();
     final buttonKey2 = GlobalKey();
 
     final String? id = rowData['id'];
-    final String? name = rowData['Nom du produit'];
+    final String? name = rowData['Nom'];
     final String? unitPrice = rowData['Prix unitaire'];
     final String? categoryId = rowData['categoryId'];
     final String? quantity = rowData['quantité'].toString();
@@ -188,7 +194,9 @@ class ReusableTable extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+        padding: isdektop
+            ? const EdgeInsets.symmetric(vertical: 10, horizontal: 8)
+            : const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -329,15 +337,13 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
       setState(() {
         isLoading = false;
       });
-ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item mis à jour avec succès!')),
       );
       if (!widget.isHistoriquePage!) {
         PopupHelper.removePopup(context);
       }
       await apiController.refreshData();
-
-      
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -364,7 +370,8 @@ ScaffoldMessenger.of(context).showSnackBar(
           ),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
-              ? ReusableSearchDropdown(hintText: 'Selectionné un produit',
+              ? ReusableSearchDropdown(
+                  hintText: 'Selectionné un produit',
                   items: apiController.items.map(
                     (e) {
                       return e.name!;
@@ -377,9 +384,9 @@ ScaffoldMessenger.of(context).showSnackBar(
                           .id;
                       item = apiController.items
                           .firstWhere((element) => element.name == itemName!);
-                          itemTextController.text=item!.name!;
-                          unitPriceController.text=item!.unitPrice.toString();
-                          quantityController.text=item!.quantity.toString();
+                      itemTextController.text = item!.name!;
+                      unitPriceController.text = item!.unitPrice.toString();
+                      quantityController.text = item!.quantity.toString();
                     });
                   },
                 )
