@@ -20,8 +20,8 @@ class UpdatePasswordController extends GetxController {
     try {
       await ApiService().updatePassword(passwordController.text.trim());
       Get.snackbar(
-        'Succès', 
-        'Mot de passe mis à jour avec succès',
+        'Success', 
+        'Your password has been updated',
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
@@ -31,8 +31,8 @@ class UpdatePasswordController extends GetxController {
     } catch (e) {
       print(e);
       Get.snackbar(
-        'Erreur',
-        'Échec de la mise à jour du mot de passe',
+        'Error',
+        'Sorry, something went wrong',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
@@ -75,7 +75,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
         obscureText: obscureText,
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return "Ce champ est requis";
+            return "This field is requierd";
           }
           return null;
         },
@@ -102,7 +102,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTextField(
-                label: 'Nouveau mot de passe',
+                label: 'New password',
                 icon: Icons.lock,
                 controller: controller.passwordController,
                 obscureText: obscurePassword,
@@ -114,7 +114,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
               const SizedBox(height: 10),
               _buildTextField(
                 
-                label: 'Confirmer le mot de passe',
+                label: 'Confirm password',
                 icon: Icons.lock,
                 controller: controller.confirmPasswordController,
                 obscureText: obscureConfirmPassword,
@@ -137,7 +137,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
                       onPressed: controller.isLoading.value ? null : controller.updatePassword,
                       child: controller.isLoading.value
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Modifier'),
+                          : const Text('Update'),
                     ),
                   )),
             ],

@@ -28,7 +28,7 @@ class ReusableTable extends StatelessWidget {
       return Container(
         alignment: Alignment.center,
         child: const Text(
-          'Aucune donnée disponible.',
+          'No data found.',
           style: TextStyle(fontSize: 18, color: Colors.grey),
         ),
       );

@@ -32,7 +32,7 @@ class PasswordChangeScreen extends StatelessWidget {
                   child: ListView(
                     children: [
                       _buildSidebarItem(FontAwesomeIcons.user, "Edit profile"),
-                      _buildSidebarItem(FontAwesomeIcons.lock, "Password", isActive: true),
+                      _buildSidebarItem(FontAwesomeIcons.lock, "My Password", isActive: true),
                     ],
                   ),
                 ),
@@ -46,7 +46,7 @@ class PasswordChangeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Password",
+                          "Change password",
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 16),
