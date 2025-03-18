@@ -87,17 +87,17 @@ class InvoicePage extends StatelessWidget {
                         }
 
                         return ListView.builder(
-                          itemCount: invoiceController.invoicesList.length,
+                          itemCount: invoiceController.invoicesList.reversed.length,
                           itemBuilder: (context, index) {
-                            final invoice = invoiceController.invoicesList[index];
-                            return GestureDetector(
+                            final invoice = invoiceController.invoicesList.reversed.toList()[index];
+                            return InkWell(
                               onTap: () {
                                 selectedInvoice.value = invoice;
                               },
                               child: InvoiceItem(
-                                invoiceNumber: invoice.seller.name,
+                                invoiceNumber: invoice.sale.custumerName,
                                 date: invoice.createdAt.toString().split(' ')[0], // Format date
-                                amount: '${invoice.finalAmount} FCFA',
+                                amount: '${invoice.finalAmount.toStringAsFixed(0)} FCFA',
                                  // Pas de statut dans Invoice, à adapter
                               ),
                             );
@@ -149,33 +149,31 @@ class InvoiceItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Checkbox(value: false, onChanged: (value) {}),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(date, style: const TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(amount, style: const TextStyle(color: Colors.red)),
-            ],
-          ),
-        ],
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(date, style: const TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(amount, style: const TextStyle(color: Colors.red)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -296,12 +294,7 @@ class InvoicePagee extends StatelessWidget {
                         const SizedBox(height: 16),
           
                         const Center(child: Text('Merci pour votre achat !')),
-          
                         const SizedBox(height: 16),
-          
-                        // Infos paiement
-                        const Text('INFORMATIONS DE PAIEMENT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                        const Text('Méthode de paiement : À la caisse ou via MyNita'),
                       ],
                     ),
                   ),

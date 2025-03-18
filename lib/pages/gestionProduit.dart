@@ -735,12 +735,184 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     ],
                   ),
                 ),
+                ElevatedButton(onPressed: (){
+                  Get.defaultDialog(content: const AjouterStockFormmultiple());
+                }, child: const Text('text'),)
         ],
       ),
     );
   }
 }
 
+
+class AjouterStockFormmultiple extends StatefulWidget {
+  const AjouterStockFormmultiple({Key? key}) : super(key: key);
+
+  @override
+  State<AjouterStockFormmultiple> createState() => _AjouterStockFormmultipleState();
+}
+
+class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
+  bool isLoading = false;
+  final List<TextEditingController> nameControllers = [];
+  final List<TextEditingController> quantityControllers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Ajout d'une ligne initiale
+    addNewRow();
+  }
+
+  void addNewRow() {
+    nameControllers.add(TextEditingController());
+    quantityControllers.add(TextEditingController());
+    setState(() {});
+  }
+
+  Future<void> ajouterStock() async {
+    if (isLoading) return; // Éviter les doubles soumissions
+
+    setState(() {
+      isLoading = true; // Début du chargement
+    });
+
+    try {
+      ApiService apiService = ApiService();
+      List<Item> itemsToAdd = [];
+
+      for (int i = 0; i < nameControllers.length; i++) {
+        String itemName = nameControllers[i].text.trim();
+        if (itemName.isEmpty) {
+          throw Exception("Veuillez saisir le nom de l'article.");
+        }
+
+        // Vérification que l'article existe
+        Item? item;
+        try {
+          item = apiController.items.firstWhere(
+            (element) => element.name == itemName,
+          );
+        } catch (e) {
+          throw Exception("L'article '$itemName' n'existe pas.");
+        }
+
+        // Vérification de la quantité
+        int? quantity = int.tryParse(quantityControllers[i].text.trim());
+        if (quantity == null || quantity <= 0) {
+          throw Exception('Veuillez saisir une quantité valide (supérieure à 0) pour l\'article "$itemName".');
+        }
+
+        itemsToAdd.add(item);
+        await apiService.ajouterStock(item, quantity);
+      }
+
+      // Rafraîchir les données
+      await apiController.refreshData();
+
+      setState(() {
+        isLoading = false; // Fin du chargement
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stocks ajoutés avec succès!')),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false; // Arrêter le chargement en cas d'erreur
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()), // Afficher le message d'erreur précis
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          const Text(
+            'Ajouter du stock',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Expanded(
+            child: ListView.builder(
+              itemCount: nameControllers.length,
+              itemBuilder: (context, index) {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: ReusableSearchDropdown(
+                        items: apiController.items.map((e) => e.name!).toList(),
+                        onPressed: (produit) {
+                          setState(() {
+                            nameControllers[index].text = produit!;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: TextFormField(
+                          controller: quantityControllers[index],
+                          keyboardType: TextInputType.number, // Clavier numérique
+                          decoration: InputDecoration(
+                            hintText: 'Quantité',
+                            fillColor: Colors.grey[200],
+                            filled: true,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          isLoading
+              ? const CircularProgressIndicator()
+              : ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange, // Couleur pour l'ajout
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8 ),
+                  ),
+                  
+                  
+                ), onPressed: () async{await ajouterStock();  }, child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Ajouter tous les stocks',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              addNewRow(); // Ajouter une nouvelle ligne
+            },
+            child: const Text('Ajouter une ligne'),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 
 class CategoryForm extends StatefulWidget {
