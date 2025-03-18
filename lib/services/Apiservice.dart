@@ -4,11 +4,11 @@ import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/Usermodel.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
 import 'package:flutter_application_1/models.dart/historiqueModel.dart';
+import 'package:flutter_application_1/pages/facturePage.dart';
 
 class ApiService {
   final Dio _dio = Dio(
-    BaseOptions(
-        baseUrl: 'https://agricultural-stevana-softart-comp-fab2bc8e.koyeb.app'),
+    BaseOptions(baseUrl: 'https://inventory-app-five-ebon.vercel.app'),
   );
 
   // Inscription d'un utilisateur
@@ -40,7 +40,8 @@ class ApiService {
       throw Exception('Erreur lors de la connexion: $e');
     }
   }
-    Future<Response> updatePassword(String newPassword) async {
+
+  Future<Response> updatePassword(String newPassword) async {
     try {
       final response = await _dio.post(
         '/auth/password/update',
@@ -58,7 +59,6 @@ class ApiService {
       throw Exception('Erreur lors de la mise à jour du mot de passe: $e');
     }
   }
-
 
   // Récupération des catégories
   Future<List<Category>> fetchCategories() async {
@@ -80,12 +80,14 @@ class ApiService {
                 updatedAt: json['updatedAt'] != null
                     ? DateTime.parse(json['updatedAt'])
                     : null,
-                items:(json['items'] != null && json['items'] is List)
-          ? (json['items'] as List)
-              .whereType<Map<String, dynamic>>() // Assure que chaque élément est bien un Map
-              .map((item) => Item.fromJson(item))
-              .toList()
-          : [],
+                items: (json['items'] != null && json['items'] is List)
+                    ? (json['items'] as List)
+                        .whereType<
+                            Map<String,
+                                dynamic>>() // Assure que chaque élément est bien un Map
+                        .map((item) => Item.fromJson(item))
+                        .toList()
+                    : [],
               ))
           .toList();
       return categories;
@@ -132,7 +134,8 @@ class ApiService {
       throw Exception('Erreur lors de la mise à jour de la catégorie: $e');
     }
   }
-Future<Category> fetchCategoryById(String categoryId) async {
+
+  Future<Category> fetchCategoryById(String categoryId) async {
     try {
       final response = await _dio.get('/categories/$categoryId',
           options: Options(
@@ -146,6 +149,7 @@ Future<Category> fetchCategoryById(String categoryId) async {
       throw Exception('Erreur lors de la récupération de la catégorie: $e');
     }
   }
+
   // Suppression d'une catégorie
   Future<Response> deleteCategory(String categoryId) async {
     try {
@@ -193,7 +197,7 @@ Future<Category> fetchCategoryById(String categoryId) async {
     }
   }
 
-Future<List<Item>> fechtRuptureItems() async {
+  Future<List<Item>> fechtRuptureItems() async {
     try {
       final response = await _dio.get('/items/low-stock',
           options: Options(
@@ -222,9 +226,10 @@ Future<List<Item>> fechtRuptureItems() async {
       throw Exception('Erreur lors de la récupération des items: $e');
     }
   }
-Future<Response> retirerStok(Item item,int quantity) async {
+
+  Future<Response> retirerStok(Item item, int quantity) async {
     try {
-      final response = await _dio.patch('/items/${item.id}/remove-stock/${item.categoryId}',
+      final response = await _dio.patch('/items/${item.id}/remove-stock',
           data: {
             'quantity': quantity,
           },
@@ -240,29 +245,30 @@ Future<Response> retirerStok(Item item,int quantity) async {
       throw Exception('Erreur lors de l\'ajout de l\'item: $e');
     }
   }
+
   Future<Response> ajouterStock(Item item, int quantity) async {
-  try {
-    final response = await _dio.patch(
-      '/items/${item.id}/add-stock/${item.categoryId}',
-      data: {
-        'quantity': quantity,
-      },
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+    try {
+      final response = await _dio.patch(
+        '/items/${item.id}/add-stock',
+        data: {
+          'quantity': quantity,
         },
-      ),
-    );
-    return response;
-  } catch (e) {
-    print(e);
-    throw Exception('Erreur lors de l\'ajout du stock: $e');
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      print(e);
+      throw Exception('Erreur lors de l\'ajout du stock: $e');
+    }
   }
-}
 
   // Ajout d'un item
-  Future<Response> addItem(String name, int quantity, int unitPrice,
-       String categoryId) async {
+  Future<Response> addItem(
+      String name, int quantity, int unitPrice, String categoryId) async {
     try {
       final response = await _dio.post('/items/$categoryId',
           data: {
@@ -282,7 +288,8 @@ Future<Response> retirerStok(Item item,int quantity) async {
       throw Exception('Erreur lors de l\'ajout de l\'item: $e');
     }
   }
- Future<Item> fetchItemById(String itemId) async {
+
+  Future<Item> fetchItemById(String itemId) async {
     try {
       final response = await _dio.get('/items/$itemId',
           options: Options(
@@ -296,22 +303,20 @@ Future<Response> retirerStok(Item item,int quantity) async {
       throw Exception('Erreur lors de la récupération de l\'item: $e');
     }
   }
+
   // Mise à jour d'un item
-  Future<Response> updateItem(String itemId,String categoryId, String name, int unitPrice,int quantity) async {
+  Future<Response> updateItem(
+      String itemId, String name, int unitPrice, int quantity) async {
     try {
-      final response = await _dio.put('/items/$itemId/category/$categoryId',
-          data: {
-            'name': name,
-            'unitPrice': unitPrice,
-            'quantity':quantity
-          },
+      final response = await _dio.put('/items/$itemId',
+          data: {'name': name, 'unitPrice': unitPrice, 'quantity': quantity},
           options: Options(
             headers: {
               'Authorization':
                   'Bearer ${userinfo.authmodel.value.access_token}',
             },
           ));
-          print(response.data);
+      print(response.data);
       return response;
     } catch (e) {
       print(e);
@@ -320,9 +325,9 @@ Future<Response> retirerStok(Item item,int quantity) async {
   }
 
   // Suppression d'un item
-  Future<Response> deleteItem(String itemId, String categoryId) async {
+  Future<Response> deleteItem(String itemId) async {
     try {
-      final response = await _dio.delete('/items/$itemId/category/$categoryId',
+      final response = await _dio.delete('/items/$itemId',
           options: Options(
             headers: {
               'Authorization':
@@ -334,6 +339,7 @@ Future<Response> retirerStok(Item item,int quantity) async {
       throw Exception('Erreur lors de la suppression de l\'item: $e');
     }
   }
+
   Future<List<ActionItem>> fetchActionItems() async {
     try {
       final response = await _dio.get('/items/history');
@@ -344,6 +350,32 @@ Future<Response> retirerStok(Item item,int quantity) async {
     } catch (e) {
       print('Erreur lors de la récupération des données: $e');
       return [];
+    }
+  }
+
+  Future<Response> addSales(String custumeranme, String custumerAdress,
+      int discount, List<Map<String, dynamic>> items) async {
+    try {
+      // print(items.toString());
+      final response = await _dio.post(
+        '/sales',
+        data: {
+          'custumerName': 'Abdoul Latif',
+          'custumerAddress': 'Zinder',
+          'items': [
+            {"itemId": "67cffffb2cac972d70320a4e", "quantity": 1},
+            {"itemId": "67d05a5a2cac972d70320a51", "quantity": 3}
+          ],
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de l\'ajout de la catégorie: $e');
     }
   }
 }

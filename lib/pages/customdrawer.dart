@@ -62,18 +62,20 @@ class _SideMenuState extends State<SideMenu> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 10),
-                        _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
+                    _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
                             0, appTypeController.isDesktop.value),
                         _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items",
                             1, appTypeController.isDesktop.value),
                         _buildMenuItem(FontAwesomeIcons.layerGroup,
                             "Categories", 2, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 3,
+                            _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 3,
                             appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 4,
+                            appTypeController.isDesktop.value),
+                            
                         _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
-                            4, appTypeController.isDesktop.value),
-                      ],
+                            5, appTypeController.isDesktop.value),
+                  ],
                     ),
                   ),
                 ),
@@ -105,10 +107,13 @@ class _SideMenuState extends State<SideMenu> {
                             1, appTypeController.isDesktop.value),
                         _buildMenuItem(FontAwesomeIcons.layerGroup,
                             "Categories", 2, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 3,
+                            _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 3,
                             appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 4,
+                            appTypeController.isDesktop.value),
+                            
                         _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
-                            4, appTypeController.isDesktop.value),
+                            5, appTypeController.isDesktop.value),
                   ],
                 ),
               ),
@@ -123,7 +128,7 @@ class _SideMenuState extends State<SideMenu> {
   // Widget pour chaque élément du menu
   Widget _buildMenuItem(IconData icon, String title, int index, bool isdektop) {
     return InkWell(
-      onTap: index == 4
+      onTap: index == 5
           ? () async {
               await userinfo.logout();
               apiController.isCategorySelected.value = false;

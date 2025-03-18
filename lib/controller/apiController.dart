@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/models.dart/historiqueModel.dart';
+import 'package:flutter_application_1/models.dart/saleModel.dart';
 import 'package:get/get.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
@@ -12,6 +13,7 @@ class ApiController extends GetxController {
   final RxList<Category>categories = <Category>[].obs;
   final RxList<Item>items = <Item>[].obs;
   final RxList<Item>itemsRupture = <Item>[].obs;
+  final RxList<Sale>saleList = <Sale>[].obs;
   var historiques = <ActionItem>[].obs;
   var isCategorySelected = false.obs;
   var categorySelected = Category().obs;
@@ -41,7 +43,7 @@ class ApiController extends GetxController {
   final Dio _dio = Dio(
     BaseOptions(
         baseUrl:
-            'https://agricultural-stevana-softart-comp-fab2bc8e.koyeb.app'),
+            'https://inventory-app-five-ebon.vercel.app'),
   );
 
   Future<void> fechAction() async {
@@ -55,7 +57,26 @@ class ApiController extends GetxController {
       isLoading.value = false;
     }
   }
-
+  Future<void> fechSalee()async{
+try {
+      isLoading.value = true;
+      final sales = await fetchSales();
+      saleList.assignAll(sales);
+    } catch (e) {
+      print('An error has occured: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+Future<List<Sale>> fetchSales() async {
+    try {
+      final response = await _dio.get('/sales');
+      List<dynamic> data = response.data;
+      return data.map((json) => Sale.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des ventes: $e');
+    }
+  }
   Future<List<ActionItem>> fetchActionItems() async {
     try {
       final response = await _dio.get('/items/history',
@@ -65,7 +86,7 @@ class ApiController extends GetxController {
                   'Bearer ${userinfo.authmodel.value.access_token}',
             },
           ));
-      print(response.data);
+      // print(response.data);
       List<ActionItem> actionItems = (response.data as List)
           .map((item) => ActionItem.fromJson(item))
           .toList();
@@ -136,6 +157,8 @@ class ApiController extends GetxController {
     await fetchItems();
     await fechAction();
     await fechtRuptureItems();
+    await fechSalee();
+    await invoiceController.refreshInvoices();
     filteredItems.assignAll(items);
     filteredCategory.assignAll(categories);
     itemsRupturefilter.assignAll(itemsRupture);

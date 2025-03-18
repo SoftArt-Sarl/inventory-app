@@ -185,7 +185,7 @@ final header1 = data.first.keys
         buttonKey: buttonKey2,
         width: 300,
         popupContent: DeleteItemForm(
-          categoryId: categoryId!,
+          // categoryId: categoryId!,
           itemId: id,
           isHistoriquePage: false,
         ),
@@ -322,13 +322,10 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
       String itemId = widget.isHistoriquePage == true
           ? selectedItemId! // Utilisation de l'ID sélectionné via le dropdown
           : widget.id!;
-      String categoryId = widget.isHistoriquePage == true
-          ? item!.categoryId! // Valeur par défaut ou saisie manuelle
-          : widget.categoryId!;
+      
 
       await apiService.updateItem(
         itemId,
-        categoryId,
         itemTextController.text.trim(),
         int.parse(unitPriceController.text.trim()),
         int.parse(quantityController.text.trim()),
@@ -469,13 +466,13 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
 
 class DeleteItemForm extends StatefulWidget {
   final String? itemId;
-  final String? categoryId;
+  // final String? categoryId;
   bool? isHistoriquePage = false;
 
   DeleteItemForm(
       {super.key,
       required this.itemId,
-      required this.categoryId,
+      // required this.categoryId,
       this.isHistoriquePage});
 
   @override
@@ -492,7 +489,7 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
 
     ApiService apiService = ApiService();
     try {
-      await apiService.deleteItem(widget.itemId!, widget.categoryId!);
+      await apiService.deleteItem(widget.itemId!,);
       setState(() {
         isLoading = false;
       });

@@ -7,11 +7,11 @@ class ReusableSearchDropdown extends StatelessWidget {
   final String hintText;
 
   const ReusableSearchDropdown({
-    Key? key,
+    super.key,
     required this.items,
     required this.onPressed,
     this.hintText = 'Search options',
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +34,41 @@ class ReusableSearchDropdown extends StatelessWidget {
           const EdgeInsets.symmetric(horizontal: 5, vertical: 9),
       items: items,
       onChanged: onPressed,
+    );
+  }
+}
+
+class ReusableMultiSelectSearchDropdown extends StatelessWidget {
+  final List<String> items;
+  final void Function(List<String>) onPressed;
+  final String hintText;
+
+  const ReusableMultiSelectSearchDropdown({
+    super.key,
+    required this.items,
+    required this.onPressed,
+    this.hintText = 'Search and select options',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomDropdown<String>.multiSelectSearch(
+      headerListBuilder: (context, selectedItems, enabled) =>
+          const Text('Ajouter des items au panier'),
+      closedHeaderPadding:
+          const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: CustomDropdownDecoration(
+        // prefixIcon: const Icon(Icons.add),
+        closedSuffixIcon: const Icon(Icons.add),
+        expandedSuffixIcon: const SizedBox.shrink(),
+        closedBorder: Border.all(color: Colors.orange),
+        hintStyle: const TextStyle(color: Colors.black),
+        closedFillColor: Colors.white,
+      ),
+      hintText: hintText,
+      items: items,
+      canCloseOutsideBounds: true,
+      onListChanged: onPressed,
     );
   }
 }

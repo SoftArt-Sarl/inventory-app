@@ -10,6 +10,7 @@ import 'package:flutter_application_1/widget/categoryWidget.dart';
 import 'package:flutter_application_1/widget/popupButton.dart';
 import 'package:flutter_application_1/widget/reusableTable.dart';
 import 'package:flutter_application_1/widget/searchbarUserwidget.dart';
+import 'package:flutter_application_1/widget/shopincarDialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -390,6 +391,13 @@ class _ButtonListState extends State<ButtonList> {
           ),
         ),
         if (_selectedForm == null) ...[
+          _buildDashboardButton(
+            context,
+            icon: Icons.add_shopping_cart,
+            label: "Shopping Cart",
+            color: Colors.green,
+            onTap: () => showShoppingCartDialog(context),
+          ),
           _buildDashboardButton(
             context,
             icon: Icons.add_shopping_cart,

@@ -45,47 +45,51 @@ class ActionItem {
 
   Color get actionColor {
     return {
-      'Added new': Colors.green,
-      'RemovedFromStock': Colors.orange,
-      'Deleted': Colors.red,
-      'Updated': Colors.blue,
-      'Added To Stock': Colors.yellow,
+      'ADDEDNEW': Colors.green,
+      'REMOVEDFROMSTOCK': Colors.orange,
+      'DELETED': Colors.red,
+      'UPDATED': Colors.blue,
+      'ADDEDTOSTOCK': Colors.yellow,
+      'SOLD':Colors.brown
     }[action] ?? Colors.grey;
   }
 
   IconData get actionIcon {
     return {
-      'Added new': Icons.add,
-      'RemovedFromStock': Icons.remove_outlined,
-      'Deleted': Icons.delete_outline,
-      'Updated': Icons.update,
-      'Added To Stock': Icons.add,
+      'ADDEDNEW': Icons.add,
+      'REMOVEDFROMSTOCK': Icons.remove_outlined,
+      'DELETED': Icons.delete_outline,
+      'UPDATED': Icons.update,
+      'ADDEDTOSTOCK': Icons.add,
+      'SOLD':Icons.sell_outlined
     }[action] ?? Icons.info_outline;
   }
 
     String get title {
-    return item?.name ?? oldValue?.name ?? newValue?.name ??oldValue!. title??newValue!.title?? 'Produit inconnu';
+    return item?.name ?? oldValue?.name ?? newValue?.name ??oldValue!. title??newValue!.title?? 'Vente';
   }
 
 
    String get details {
     switch (action) {
-      case 'Added new':
+      case 'ADDEDNEW':
         return itemId == null
             ? '➕ New category added : ${newValue!.title??''}'
             : '➕ $quantity items added for ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unit';
-      case 'RemovedFromStock':
+      case 'REMOVEDFROMSTOCK':
         return '🔻 $quantity items removed (Old value: ${oldValue?.quantity ?? 0} → new value: ${newValue?.quantity ?? 0})';
-      case 'Deleted':
+      case 'DELETED':
         return itemId == null
         ?'❌ Category deleted'
         :'❌ Item deleted';
-      case 'Updated':
+      case 'UPDATED':
         return itemId==null
         ?'🔄 Category updated'
         :'🔄 Item updated : $updatedDetails';
-      case 'Added To Stock':
+      case 'ADDEDTOSTOCK':
         return '🔻 $quantity items added (Old value: ${oldValue?.quantity ?? 0} → New value: ${newValue?.quantity ?? 0})';
+        case 'SOLD':
+        return 'Amount : ${newValue!.totalAmoun} FCFA , Custumer:${newValue!.custumerName}';
       default:
         return '⚠️ Error';
     }
@@ -155,12 +159,18 @@ class NewValue {
   final int? quantity;
   final String? name;
   final int? unitPrice;
+  final int? totalAmoun;
+ final String? custumerName;
+  final String? custumerAddress;
 
-  const NewValue(this.title, {this.quantity, this.name, this.unitPrice});
+  const NewValue(this.title, this.totalAmoun, this.custumerName, this.custumerAddress, {this.quantity, this.name, this.unitPrice});
 
   factory NewValue.fromJson(Map<String, dynamic> json) {
     return NewValue(
       json['title'],
+      json['totalAmount'],
+      json['custumerName'],
+      json['custumerAddress'],
       quantity: json['quantity'],
       name: json['name'],
       unitPrice: (json['unitPrice'] as num?)?.toInt(),

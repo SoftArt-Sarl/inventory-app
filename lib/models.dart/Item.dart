@@ -12,26 +12,30 @@ class Item {
   String? categoryId;
 
   Item({
-     this.id,
-     this.name,
-     this.quantity,
+    this.id,
+    this.name,
+    this.quantity,
     this.unitPrice,
     this.itemsTotal,
-     this.createdAt,
-     this.createdById,
+    this.createdAt,
+    this.createdById,
     this.updatedAt,
     this.categoryId,
   });
-static int calculateTotalQuantity(List<Item> items) {
-  return items.fold(0, (total, item) => total + (item.quantity ?? 0));
-}
+  static int calculateTotalQuantity(List<Item> items) {
+    return items.fold(0, (total, item) => total + (item.quantity ?? 0));
+  }
 
-static List<Item> getOutOfStockItems(List<Item> items) {
-  return items.where((item) => (item.quantity ?? 0) < 10).toList();
-}
-static int calculateTotalValue(List<Item> items) {
-  return items.fold(0, (total, item) => total + ((item.quantity ?? 0) * (item.unitPrice ?? 0)));
-}
+  static List<Item> getOutOfStockItems(List<Item> items) {
+    return items.where((item) => (item.quantity ?? 0) < 10).toList();
+  }
+
+  static int calculateTotalValue(List<Item> items) {
+    return items.fold(
+        0,
+        (total, item) =>
+            total + ((item.quantity ?? 0) * (item.unitPrice ?? 0)));
+  }
 
   factory Item.fromJson(Map<String, dynamic> json) {
     return Item(
@@ -42,35 +46,38 @@ static int calculateTotalValue(List<Item> items) {
       itemsTotal: json['itemsTotal'],
       createdAt: DateTime.parse(json['createdAt']),
       createdById: json['createdById'],
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       categoryId: json['categoryId'],
     );
   }
 
-Map<String, dynamic> toJson1() {
+  Map<String, dynamic> toJson1() {
     return {
-      'id':id,
-      'categoryId':categoryId,
+      'id': id,
+      'categoryId': categoryId,
       'Nom': name,
       'quantité': quantity,
       'Prix unitaire': '$unitPrice',
       'Total': '$itemsTotal',
-      'Catégorie':categoryId,
-      'Status': quantity!<=10 ? true:false,
+      'Catégorie': categoryId,
+      'Status': quantity! <= 10 ? true : false,
     };
   }
+
   Map<String, dynamic> toJson2() {
     return {
-      'id':id,
-      'categoryId':categoryId,
+      'id': id,
+      'categoryId': categoryId,
       'Nom': name,
       'quantité': quantity,
       'Prix unitaire': '$unitPrice',
       'Total': '$itemsTotal',
       // 'Catégorie':,
-      'Status': quantity!<=10 ? true:false,
+      'Status': quantity! <= 10 ? true : false,
     };
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -82,6 +89,13 @@ Map<String, dynamic> toJson1() {
       'createdById': createdById,
       'updatedAt': updatedAt?.toIso8601String(),
       'categoryId': categoryId,
+    };
+  }
+
+  Map<String, dynamic> toJson3() {
+    return {
+      'itemId': id,
+      'quantity': quantity,
     };
   }
 }

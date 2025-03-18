@@ -1,26 +1,36 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:typed_data';
-
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/models.dart/invoiceModel.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:flutter_application_1/controller/invoiceController.dart';
+import 'package:flutter_application_1/models.dart/invoiceModel.dart';
 
 class InvoicePage extends StatelessWidget {
   const InvoicePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final InvoiceController invoiceController = Get.put(InvoiceController());
+    final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // Left Column
+            // Colonne gauche - Liste des factures
             Expanded(
               flex: 1,
               child: Padding(
@@ -28,6 +38,7 @@ class InvoicePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Titre et boutons d'action
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -42,52 +53,77 @@ class InvoicePage extends StatelessWidget {
                           children: [
                             ElevatedButton(
                               onPressed: () {
-                                printInvoice();
+                                // Ajout d'une nouvelle facture (si nécessaire)
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
+                                backgroundColor: Colors.orange,
                               ),
                               child: const Text('+ New'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton(
                               onPressed: () {
-                                
+                                invoiceController.refreshInvoices();
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey[200],
-                                // : Colors.grey[700],
+                                backgroundColor: Colors.blue,
                               ),
-                              child: const Text('▼'),
+                              child: const Text('⟳'),
                             ),
                           ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
+
+                    // Liste des factures avec Obx
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: List.generate(8, (index) {
-                            return InvoiceItem(
-                              // clientName: 'Client $index',
-                              invoiceNumber: 'INV-00${124 + index}',
-                              date: '08/06/2020',
-                              amount: '\$${(index + 1) * 200}',
-                              status: index % 2 == 0 ? 'SENT' : 'PENDING',
+                      child: Obx(() {
+                        if (invoiceController.isLoading.value) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (invoiceController.invoicesList.isEmpty) {
+                          return const Center(child: Text("Aucune facture disponible"));
+                        }
+
+                        return ListView.builder(
+                          itemCount: invoiceController.invoicesList.length,
+                          itemBuilder: (context, index) {
+                            final invoice = invoiceController.invoicesList[index];
+                            return GestureDetector(
+                              onTap: () {
+                                selectedInvoice.value = invoice;
+                              },
+                              child: InvoiceItem(
+                                invoiceNumber: invoice.seller.name,
+                                date: invoice.createdAt.toString().split(' ')[0], // Format date
+                                amount: '${invoice.finalAmount} FCFA',
+                                 // Pas de statut dans Invoice, à adapter
+                              ),
                             );
-                          }),
-                        ),
-                      ),
+                          },
+                        );
+                      }),
                     ),
                   ],
                 ),
               ),
             ),
-            // Right Column
-            const Expanded(
+
+            // Colonne droite - Détails de la facture sélectionnée
+            Expanded(
               flex: 2,
-              child: InvoicePagee(),
+              child: Obx(() {
+                if (selectedInvoice.value == null) {
+                  return const Center(
+                    child: Text(
+                      "Sélectionnez une facture pour voir les détails",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  );
+                }
+                return InvoicePagee(invoice: selectedInvoice.value!);
+              }),
             ),
           ],
         ),
@@ -96,19 +132,19 @@ class InvoicePage extends StatelessWidget {
   }
 }
 
+// Widget pour afficher chaque facture dans la liste
 class InvoiceItem extends StatelessWidget {
   // final String clientName;
   final String invoiceNumber;
   final String date;
   final String amount;
-  final String status;
 
   const InvoiceItem({super.key, 
     // required this.clientName,
     required this.invoiceNumber,
     required this.date,
     required this.amount,
-    required this.status,
+
   });
 
   @override
@@ -128,7 +164,7 @@ class InvoiceItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(invoiceNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text('$date', style: const TextStyle(color: Colors.grey)),
+                  Text(date, style: const TextStyle(color: Colors.grey)),
                 ],
               ),
             ],
@@ -136,8 +172,7 @@ class InvoiceItem extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(amount, style: const TextStyle(color: Colors.blue)),
-              Text(status, style: TextStyle(color: status == 'PENDING' ? Colors.red : Colors.grey)),
+              Text(amount, style: const TextStyle(color: Colors.red)),
             ],
           ),
         ],
@@ -147,135 +182,138 @@ class InvoiceItem extends StatelessWidget {
 }
 
 
+
+
 class InvoicePagee extends StatelessWidget {
-  const InvoicePagee({super.key});
+  final Invoice invoice;
+  final GlobalKey globalKey = GlobalKey();
+
+  InvoicePagee({super.key, required this.invoice});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(maxWidth: 600), // max-w-2xl
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.network(
-                      'https://storage.googleapis.com/a1aa/image/QEEofiUwIntu6h1MQ_yPjv4QRxzyckaQIFptEznf8YA.jpg',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'FACTURE',
-                          style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                        ),
-                        Text('Facture No. 12345', style: TextStyle(fontSize: 12)),
-                        Text('26 Juillet 2025', style: TextStyle(fontSize: 12)),
-                        Text('14:30', style: TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Table(
-                  border: const TableBorder(
-                    horizontalInside: BorderSide(color: Colors.grey),
-                    verticalInside: BorderSide(color: Colors.grey),
-                  ),
-                  children: [
-                    const TableRow(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Article', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Quantité', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Prix Unitaire', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          RepaintBoundary(
+              key: globalKey,
+              child: Padding(
+                padding: const EdgeInsets.all(2),
+                child: Center(
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
                         ),
                       ],
                     ),
-                    _buildTableRow('Nom de l\'article ici', '1', '215€', '215€'),
-                    _buildTableRow('Nom de l\'article ici', '2', '120€', '240€'),
-                    _buildTableRow('Nom de l\'article ici', '1', '130€', '130€'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _buildTotalRow('Sous-total', '585€'),
-                      _buildTotalRow('Taxe (0%)', '0€'),
-                      const Text(
-                        'Total à payer',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                      ),
-                      const Text('585€', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Center(child: Text('Merci pour votre achat !')),
-                const SizedBox(height: 16),
-                const Text('INFORMATIONS DE PAIEMENT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                const Text('Méthode de paiement : À la caisse ou via MyNita'),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Column(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nom de votre entreprise'),
-                        Text('987 Rue Quelque Part, Toute Ville, Tout État 987655'),
+                        // En-tête facture
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Image.asset(
+                              'assets/logo.jpg',
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text('FACTURE', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text(_formatDate(invoice.createdAt), style: const TextStyle(fontSize: 12)),
+                              ],
+                            ),
+                          ],
+                        ),
+          
+                        const SizedBox(height: 16),
+          
+                        // Infos vendeur & client
+                        Text("Vendeur : ${invoice.seller.name}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Text("Client : ${invoice.sale.custumerName}"),
+                        Text("Adresse : ${invoice.sale.custumerAddress}"),
+          
+                        const SizedBox(height: 16),
+          
+                        // Tableau des articles
+                        Table(
+                          border: TableBorder.all(color: Colors.grey),
+                          children: [
+                            const TableRow(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Article', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Quantité', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Prix Unitaire', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                            for (var item in invoice.sale.items)
+                              _buildTableRow(item.item.name, item.quantity, item.item.unitPrice,item.quantity*item.item.unitPrice ),
+                          ],
+                        ),
+          
+                        const SizedBox(height: 16),
+          
+                        // Totaux
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _buildTotalRow('Sous-total', invoice.totalAmount),
+                              _buildTotalRow('Remise', invoice.discount),
+                              _buildTotalRow('Taxe', invoice.taxAmount),
+                              const Text('Total à payer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                              Text(invoice.finalAmount.toStringAsFixed(0), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+                            ],
+                          ),
+                        ),
+          
+                        const SizedBox(height: 16),
+          
+                        const Center(child: Text('Merci pour votre achat !')),
+          
+                        const SizedBox(height: 16),
+          
+                        // Infos paiement
+                        const Text('INFORMATIONS DE PAIEMENT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                        const Text('Méthode de paiement : À la caisse ou via MyNita'),
                       ],
                     ),
-                    Image.network(
-                      'https://storage.googleapis.com/a1aa/image/x912kkwvucGKJN8W_fSjroBQ_rR1zNMKwgfsfJVA-_k.jpg',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                  ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      );
+        ],
+      ),
+    );
   }
 
-  TableRow _buildTableRow(String article, String quantity, String unitPrice, String total) {
+  TableRow _buildTableRow(String article, int quantity, double unitPrice, double total) {
     return TableRow(
       children: [
         Padding(
@@ -284,189 +322,61 @@ class InvoicePagee extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(quantity),
+          child: Text(quantity.toString()),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(unitPrice),
+          child: Text(unitPrice.toStringAsFixed(0)),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(total),
+          child: Text(total.toStringAsFixed(0)),
         ),
       ],
     );
   }
 
-  Widget _buildTotalRow(String label, String amount) {
+  Widget _buildTotalRow(String label, double amount) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label),
-          Text(amount),
+          Text('${amount.toStringAsFixed(0)} FCFA'),
         ],
       ),
     );
   }
-}
 
-
-Future<void> printInvoice() async {
-  final pdf = pw.Document();
-
-  // Charger les images avant de créer la page
-  Uint8List? logoImage;
-  Uint8List? paymentImage;
-
-  try {
-    final logoResponse = await NetworkAssetBundle(Uri.parse(
-            'https://storage.googleapis.com/a1aa/image/QEEofiUwIntu6h1MQ_yPjv4QRxzyckaQIFptEznf8YA.jpg'))
-        .load('');
-    logoImage = logoResponse.buffer.asUint8List();
-  } catch (e) {
-    print('Erreur lors du chargement de l\'image du logo : $e');
+  String _formatDate(DateTime date) {
+    return "${date.day}/${date.month}/${date.year} - ${date.hour}:${date.minute}";
   }
 
-  try {
-    final paymentResponse = await NetworkAssetBundle(Uri.parse(
-            'https://storage.googleapis.com/a1aa/image/x912kkwvucGKJN8W_fSjroBQ_rR1zNMKwgfsfJVA-_k.jpg'))
-        .load('');
-    paymentImage = paymentResponse.buffer.asUint8List();
-  } catch (e) {
-    print('Erreur lors du chargement de l\'image de paiement : $e');
+  Future<Uint8List> _captureWidgetToImage() async {
+    RenderRepaintBoundary boundary = globalKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
   }
 
-  pdf.addPage(
-    pw.Page(
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                if (logoImage != null)
-                  pw.Image(pw.MemoryImage(logoImage), width: 100),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text('FACTURE',
-                        style: pw.TextStyle(
-                            fontSize: 32, fontWeight: pw.FontWeight.bold)),
-                    pw.Text('Facture No. 12345',
-                        style: const pw.TextStyle(fontSize: 12)),
-                    pw.Text('26 Juillet 2025',
-                        style: const pw.TextStyle(fontSize: 12)),
-                    pw.Text('14:30', style: const pw.TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 16),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(
-                  children: [
-                    _buildTableHeader('Article'),
-                    _buildTableHeader('Quantité'),
-                    _buildTableHeader('Prix Unitaire'),
-                    _buildTableHeader('Total'),
-                  ],
-                ),
-                _buildTableRow('Nom de l\'article ici', '1', '215€', '215€'),
-                _buildTableRow('Nom de l\'article ici', '2', '120€', '240€'),
-                _buildTableRow('Nom de l\'article ici', '1', '130€', '130€'),
-              ],
-            ),
-            pw.SizedBox(height: 16),
-            pw.Align(
-              alignment: pw.Alignment.centerRight,
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.end,
-                children: [
-                  _buildTotalRow('Sous-total', '585€'),
-                  _buildTotalRow('Taxe (0%)', '0€'),
-                  pw.Text('Total à payer',
-                      style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold, fontSize: 20)),
-                  pw.Text('585€',
-                      style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold, fontSize: 20)),
-                ],
-              ),
-            ),
-            pw.SizedBox(height: 16),
-            pw.Center(child: pw.Text('Merci pour votre achat !')),
-            pw.SizedBox(height: 16),
-            pw.Text('INFORMATIONS DE PAIEMENT',
-                style:
-                    pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18)),
-            pw.Text('Méthode de paiement : À la caisse ou via MyNita'),
-            pw.SizedBox(height: 16),
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Nom de votre entreprise'),
-                    pw.Text(
-                        '987 Rue QuelquePart, Toute Ville, Tout État 987655'),
-                  ],
-                ),
-                if (paymentImage != null)
-                  pw.Image(pw.MemoryImage(paymentImage), width: 100),
-              ],
-            ),
-          ],
-        );
-      },
-    ),
-  );
+  Future<void> _captureAndPrintPDF() async {
+    Uint8List imageBytes = await _captureWidgetToImage();
+    final pdf = pw.Document();
+    final image = pw.MemoryImage(imageBytes);
 
-  await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save());
-}
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Center(
+            child: pw.Image(image, fit: pw.BoxFit.contain),
+          );
+        },
+      ),
+    );
 
-pw.TableRow _buildTableRow(
-    String article, String quantity, String unitPrice, String total) {
-  return pw.TableRow(
-    children: [
-      _buildTableCell(article),
-      _buildTableCell(quantity),
-      _buildTableCell(unitPrice),
-      _buildTableCell(total),
-    ],
-  );
-}
-
-pw.Widget _buildTableHeader(String text) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.all(8.0),
-    child: pw.Text(text, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-  );
-}
-
-pw.Widget _buildTableCell(String text) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.all(8.0),
-    child: pw.Text(text),
-  );
-}
-
-pw.Widget _buildTotalRow(String label, String amount) {
-  return pw.Padding(
-    padding: const pw.EdgeInsets.symmetric(vertical: 4.0),
-    child: pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      children: [
-        pw.Text(label),
-        pw.Text(amount),
-      ],
-    ),
-  );
+    await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+  }
 }
 

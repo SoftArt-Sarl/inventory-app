@@ -4,6 +4,8 @@ import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/controller/apptypeController.dart';
 import 'package:flutter_application_1/controller/historiqueController.dart';
 import 'package:flutter_application_1/controller/homeController.dart';
+import 'package:flutter_application_1/controller/invoiceController.dart';
+import 'package:flutter_application_1/controller/sellerController.dart';
 import 'package:flutter_application_1/controller/userInfo.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
@@ -29,6 +31,8 @@ void main() {
   Get.put(HomeController());
   Get.put(AppTypeController());
   Get.put(UpdatePasswordController());
+  Get.put(Sellercontroller());
+  Get.put(InvoiceController());
   runApp(const MyApp());
 }
 
@@ -38,7 +42,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Stock management',
+      title: 'Stock management' ,
       theme: ThemeData(
         appBarTheme:
             const AppBarTheme(iconTheme: IconThemeData(color: Colors.black)),
@@ -137,13 +141,14 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       TablePageWidget(),
+     const InvoicePage(),
       TablePage(
         searchBar: const SizedBox.shrink(),
         header: const SizedBox.shrink(),
         productList: appTypeController.isDesktop.value
             ? PasswordChangeScreen()
             : const UpdatePasswordPage(),
-      )
+      ),
     ]);
   }
 }
