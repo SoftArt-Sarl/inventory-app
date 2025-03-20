@@ -8,6 +8,7 @@ class SearchBarWithFilter<T> extends StatefulWidget {
   final String hintText;
   final bool isDesktop;
   final bool Function(T, String) filterFunction;
+  final Widget? calendarwidget;
 
   const SearchBarWithFilter({
     Key? key,
@@ -15,7 +16,7 @@ class SearchBarWithFilter<T> extends StatefulWidget {
     required this.filteredList,
     required this.filterFunction,
     this.hintText = "Rechercher...",
-    this.isDesktop = false,
+    this.isDesktop = false, this.calendarwidget,
   }) : super(key: key);
 
   @override
@@ -84,6 +85,8 @@ class _SearchBarWithFilterState<T> extends State<SearchBarWithFilter<T>> {
             ),
           ),
         ),
+        if(widget.calendarwidget!=null)
+        widget.calendarwidget!,
         const Spacer(),
         const UserProfile(),
       ],
@@ -109,7 +112,7 @@ class UserProfile extends StatelessWidget {
         // const Text('Jane Cooper',
         //     style: TextStyle(fontWeight: FontWeight.bold)),
         Text(userinfo.authmodel.value.user!.name!,
-            style: const TextStyle(color: Colors.grey)),
+            style: const TextStyle(fontWeight:  FontWeight.bold,fontSize: 16)),
       ],
     );
   }

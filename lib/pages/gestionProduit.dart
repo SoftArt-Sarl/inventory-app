@@ -997,21 +997,7 @@ class _CategoryFormState extends State<CategoryForm> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () async {
-                    // Ajoute une vérification pour la saisie
-                    if (categorieText.text.isNotEmpty) {
-                      await addCategory();
-                    } else {
-                      // Affiche un message d'erreur si le champ est vide
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content:
-                              Text('Veuillez entrer une catégorie valide.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: (){},
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

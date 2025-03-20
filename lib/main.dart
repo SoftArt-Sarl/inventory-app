@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/apiController.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/controller/apptypeController.dart';
+import 'package:flutter_application_1/controller/deliveryController.dart';
 import 'package:flutter_application_1/controller/historiqueController.dart';
 import 'package:flutter_application_1/controller/homeController.dart';
 import 'package:flutter_application_1/controller/invoiceController.dart';
@@ -10,8 +11,10 @@ import 'package:flutter_application_1/controller/userInfo.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
 import 'package:flutter_application_1/pages/ValiderVente.dart';
+import 'package:flutter_application_1/pages/cartPage.dart';
 import 'package:flutter_application_1/pages/coursierPage.dart';
 import 'package:flutter_application_1/pages/customdrawer.dart';
+import 'package:flutter_application_1/pages/deliveryPage.dart';
 import 'package:flutter_application_1/pages/facturePage.dart';
 import 'package:flutter_application_1/pages/gestionProduit.dart';
 import 'package:flutter_application_1/pages/loginPage.dart';
@@ -33,6 +36,7 @@ void main() {
   Get.put(UpdatePasswordController());
   Get.put(Sellercontroller());
   Get.put(InvoiceController());
+  Get.put(DeliveryController());
   runApp(const MyApp());
 }
 
@@ -42,11 +46,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Stock management' ,
+      title: 'Stock management',
       theme: ThemeData(
+        elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(5))))),
+        cardTheme: const CardTheme(
+            shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        )),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.orange),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+        )),
+        // datePickerTheme: DatePickerThemeData(co),
         appBarTheme:
             const AppBarTheme(iconTheme: IconThemeData(color: Colors.black)),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
         useMaterial3: false,
       ),
       home: const Scaffold(
@@ -107,6 +128,7 @@ class _HomePageState extends State<HomePage> {
               TablePageWidget(),
             ],
           )),
+      ShoppingCart(),
       // const PurchaseValidationPage(),
       RotatedBox(
         quarterTurns: appTypeController.isDesktop.value ? 0 : 3,
@@ -140,8 +162,10 @@ class _HomePageState extends State<HomePage> {
           // pagination: Pagination(),
         ),
       ),
+
       TablePageWidget(),
-     const InvoicePage(),
+      const InvoicePage(),
+      DeliveryPage(),
       TablePage(
         searchBar: const SizedBox.shrink(),
         header: const SizedBox.shrink(),

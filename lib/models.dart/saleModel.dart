@@ -1,65 +1,49 @@
-import 'package:dio/dio.dart';
+import 'package:flutter_application_1/models.dart/invoiceModel.dart';
 
 class Sale {
-  final String id;
-  final String sellerId;
-  final String customerName;
-  final String location;
-  final List<SaleItem> items;
-  final int totalAmount;
-  final int discount;
-  final String date;
+  String id;
+  String sellerId;
+  String custumerName;
+  String custumerAddress;
+  double totalAmount;
+  double discount;
+  DateTime createdAt;
+  List<Item> items;
 
   Sale({
     required this.id,
     required this.sellerId,
-    required this.customerName,
-    required this.location,
-    required this.items,
+    required this.custumerName,
+    required this.custumerAddress,
     required this.totalAmount,
     required this.discount,
-    required this.date,
+    required this.createdAt,
+    required this.items,
   });
 
-  factory Sale.fromJson(Map<String, dynamic> json) {
+  factory Sale.fromMap(Map<String, dynamic> map) {
     return Sale(
-      id: json['_id'],
-      sellerId: json['sellerId'],
-      customerName: json['customer']['name'],
-      location: json['customer']['location'],
-      items: (json['items'] as List)
-          .map((item) => SaleItem.fromJson(item))
-          .toList(),
-      totalAmount: json['totalAmount'],
-      discount: json['discount'],
-      date: json['date'],
+      id: map['id'],
+      sellerId: map['sellerId'],
+      custumerName: map['custumerName'],
+      custumerAddress: map['custumerAddress'],
+      totalAmount: map['totalAmount'].toDouble(),
+      discount: map['discount'].toDouble(),
+      createdAt: DateTime.parse(map['createdAt']),
+      items: List<Item>.from(map['items'].map((item) => Item.fromMap(item))),
     );
   }
-}
 
-class SaleItem {
-  final String itemId;
-  final String name;
-  final int quantity;
-  final int price;
-  final int availableQuantity;
-
-  SaleItem({
-    required this.itemId,
-    required this.name,
-    required this.quantity,
-    required this.price,
-    required this.availableQuantity,
-  });
-
-  factory SaleItem.fromJson(Map<String, dynamic> json) {
-    return SaleItem(
-      itemId: json['itemId'],
-      name: json['name'],
-      quantity: json['quantity'],
-      price: json['price'],
-      availableQuantity: json['availableQuantity'],
-    );
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'sellerId': sellerId,
+      'custumerName': custumerName,
+      'custumerAddress': custumerAddress,
+      'totalAmount': totalAmount,
+      'discount': discount,
+      'createdAt': createdAt.toIso8601String(),
+      'items': items.map((item) => item.toMap()).toList(),
+    };
   }
 }
-

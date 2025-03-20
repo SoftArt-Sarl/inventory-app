@@ -7,6 +7,8 @@ class InvoiceController extends GetxController {
   static InvoiceController instance = Get.find();
 
   final RxList<Invoice> invoicesList = <Invoice>[].obs;
+  final RxList<Invoice> invoicesfilteredList = <Invoice>[].obs;
+  final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
   var isLoading = false.obs;
 
   final Dio _dio = Dio(
@@ -49,6 +51,7 @@ class InvoiceController extends GetxController {
   // Rafraîchissement des invoices
   Future<void> refreshInvoices() async {
     await fetchAndStoreInvoices();
+    invoicesfilteredList.assignAll(invoicesList);
   }
 
 }

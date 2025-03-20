@@ -12,9 +12,7 @@ class SideMenu extends StatefulWidget {
 
 class _SideMenuState extends State<SideMenu> {
   int _selectedIndex = 0; // Index de l'élément sélectionné
-  late PageController
-      _pageController; // Contrôleur pour gérer la transition entre les pages
-  // late bool _isDesktop; // Détection si l'écran est un desktop
+  late PageController _pageController; // Contrôleur pour gérer la transition entre les pages
 
   @override
   void initState() {
@@ -34,16 +32,17 @@ class _SideMenuState extends State<SideMenu> {
   @override
   Widget build(BuildContext context) {
     appTypeController.checkScreenType(context);
-    // Détection de la taille de l'écran pour ajuster le comportement du Drawer
-    // / Si l'écran est plus large que 1024px, considérer comme desktop
 
-    // Liste des titres des éléments du menu pour utilisation dans l'AppBar
+    // Liste des titres des éléments du menu
     List<String> menuTitles = [
       "Dashboard",
+      "Shopping cart",
       "Items",
       "Categories",
-      'paramétre'
-          "Sign Out",
+      'Paramètres',
+      "All Invoices",
+      "Deliveries", // Nouvelle entrée pour les livraisons
+      "Sign Out",
     ];
 
     return Scaffold(
@@ -62,20 +61,15 @@ class _SideMenuState extends State<SideMenu> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
-                            0, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items",
-                            1, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.layerGroup,
-                            "Categories", 2, appTypeController.isDesktop.value),
-                            _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 3,
-                            appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 4,
-                            appTypeController.isDesktop.value),
-                            
-                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
-                            5, appTypeController.isDesktop.value),
-                  ],
+                        _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard", 0, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.shopify, "Shopping cart", 1, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items", 2, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.layerGroup, "Categories", 3, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 4, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.truck, "Deliveries", 5, appTypeController.isDesktop.value), // Ajouter l'élément Deliveries
+                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètres", 6, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out", 7, appTypeController.isDesktop.value),
+                      ],
                     ),
                   ),
                 ),
@@ -101,19 +95,14 @@ class _SideMenuState extends State<SideMenu> {
               drawer: Drawer(
                 child: Column(
                   children: [
-                    _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard",
-                            0, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items",
-                            1, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.layerGroup,
-                            "Categories", 2, appTypeController.isDesktop.value),
-                            _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 3,
-                            appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètre", 4,
-                            appTypeController.isDesktop.value),
-                            
-                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out",
-                            5, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard", 0, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.shopify, "Shopping cart", 1, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items", 2, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.layerGroup, "Categories", 3, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 4, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.truck, "Deliveries", 5, appTypeController.isDesktop.value), // Ajouter l'élément Deliveries
+                    _buildMenuItem(FontAwesomeIcons.cogs, "Paramètres", 6, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out", 7, appTypeController.isDesktop.value),
                   ],
                 ),
               ),
@@ -126,14 +115,13 @@ class _SideMenuState extends State<SideMenu> {
   }
 
   // Widget pour chaque élément du menu
-  Widget _buildMenuItem(IconData icon, String title, int index, bool isdektop) {
+  Widget _buildMenuItem(IconData icon, String title, int index, bool isDesktop) {
     return InkWell(
-      onTap: index == 5
+      onTap: index == 7
           ? () async {
               await userinfo.logout();
               apiController.isCategorySelected.value = false;
               homeController.selectedIndex(0);
-              // Déconnexion ou autre action
             }
           : () async {
               homeController.selectedIndex(0);
@@ -142,27 +130,22 @@ class _SideMenuState extends State<SideMenu> {
                 _selectedIndex = index;
               });
 
-              // Vérifiez si le contrôleur est déjà attaché à la page
               if (_pageController.hasClients) {
-                // Utilisez animateToPage avec une durée pour une animation fluide
-                await Future.delayed(const Duration(
-                    milliseconds: 100)); // Ajout d'un petit délai
+                await Future.delayed(const Duration(milliseconds: 100));
                 _pageController.animateToPage(index,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut);
               }
 
-              if (!isdektop) {
-                Navigator.of(context)
-                    .pop(); // Ferme le Drawer si ce n'est pas un desktop
+              if (!isDesktop) {
+                Navigator.of(context).pop();
               }
             },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          curve: Curves
-              .easeInOut, // Courbe de l'animation pour un effet plus fluide
+          curve: Curves.easeInOut,
           decoration: BoxDecoration(
             color: _selectedIndex == index ? Colors.orange : Colors.transparent,
             borderRadius: BorderRadius.circular(5),
@@ -174,16 +157,13 @@ class _SideMenuState extends State<SideMenu> {
                 Icon(
                   icon,
                   size: 18,
-                  color:
-                      _selectedIndex == index ? Colors.white : Colors.grey[700],
+                  color: _selectedIndex == index ? Colors.white : Colors.grey[700],
                 ),
                 const SizedBox(width: 10),
                 Text(
                   title,
                   style: TextStyle(
-                    color: _selectedIndex == index
-                        ? Colors.white
-                        : Colors.grey[700],
+                    color: _selectedIndex == index ? Colors.white : Colors.grey[700],
                     fontSize: 15,
                   ),
                 ),

@@ -13,7 +13,6 @@ class ApiController extends GetxController {
   final RxList<Category>categories = <Category>[].obs;
   final RxList<Item>items = <Item>[].obs;
   final RxList<Item>itemsRupture = <Item>[].obs;
-  final RxList<Sale>saleList = <Sale>[].obs;
   var historiques = <ActionItem>[].obs;
   var isCategorySelected = false.obs;
   var categorySelected = Category().obs;
@@ -57,26 +56,7 @@ class ApiController extends GetxController {
       isLoading.value = false;
     }
   }
-  Future<void> fechSalee()async{
-try {
-      isLoading.value = true;
-      final sales = await fetchSales();
-      saleList.assignAll(sales);
-    } catch (e) {
-      print('An error has occured: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-Future<List<Sale>> fetchSales() async {
-    try {
-      final response = await _dio.get('/sales');
-      List<dynamic> data = response.data;
-      return data.map((json) => Sale.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception('Erreur lors de la récupération des ventes: $e');
-    }
-  }
+
   Future<List<ActionItem>> fetchActionItems() async {
     try {
       final response = await _dio.get('/items/history',
@@ -157,8 +137,8 @@ Future<List<Sale>> fetchSales() async {
     await fetchItems();
     await fechAction();
     await fechtRuptureItems();
-    await fechSalee();
     await invoiceController.refreshInvoices();
+await deliveryController.getDeliveries();
     filteredItems.assignAll(items);
     filteredCategory.assignAll(categories);
     itemsRupturefilter.assignAll(itemsRupture);

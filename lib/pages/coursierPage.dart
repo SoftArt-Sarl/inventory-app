@@ -58,15 +58,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     appTypeController.checkScreenType(context);
     // isDesktop = MediaQuery.of(context).size.width >= 500;
     return Scaffold(
-      floatingActionButton: !appTypeController.isDesktop.value? FloatingActionButton(
-          backgroundColor: Colors.orange,
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            showButtonListBottomSheet(context);
-          }):null,
+      floatingActionButton: !appTypeController.isDesktop.value
+          ? FloatingActionButton(
+              backgroundColor: Colors.orange,
+              child: const Icon(
+                Icons.add,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                showButtonListBottomSheet(context);
+              })
+          : null,
       backgroundColor: const Color(0xFFF0F4F8),
       body: Padding(
         padding: EdgeInsets.all(appTypeController.isDesktop.value ? 16 : 5),
@@ -133,23 +135,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Expanded(flex: 3, child: HistoriqueSection()),
                   if (appTypeController.isDesktop.value)
-                    const Expanded(
-                      flex: 1,
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(5))),
-                        color: Colors.white,
-                        child: SizedBox(
-                          height: double.infinity,
-                          child: SingleChildScrollView(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [ButtonList()],
+                    if (userinfo.authmodel.value.user!.role != 'SELLER')
+                      const Expanded(
+                        flex: 1,
+                        child: Card(
+                          shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5))),
+                          color: Colors.white,
+                          child: SizedBox(
+                            height: double.infinity,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [ButtonList()],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
                 ],
               ),
             )
@@ -168,17 +172,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10,horizontal:isDesktop ? 16 : 2),
-          child: Row(mainAxisAlignment:isDesktop?MainAxisAlignment.start: MainAxisAlignment.center,
+          padding: EdgeInsets.symmetric(
+              vertical: 10, horizontal: isDesktop ? 16 : 2),
+          child: Row(
+            mainAxisAlignment:
+                isDesktop ? MainAxisAlignment.start : MainAxisAlignment.center,
             children: [
               Icon(icon, size: isDesktop ? 32 : 20, color: color),
               SizedBox(width: isDesktop ? 16 : 5),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                 if(isDesktop) Text(title,style: TextStyle(fontSize: isDesktop?15:10),),
+                  if (isDesktop)
+                    Text(
+                      title,
+                      style: TextStyle(fontSize: isDesktop ? 15 : 10),
+                    ),
                   Text(
-                   isDesktop?value: value.split(' ')[0],
+                    isDesktop ? value : value.split(' ')[0],
                     style: TextStyle(
                       fontSize: isDesktop ? 20 : 12,
                       fontWeight: FontWeight.bold,
@@ -282,32 +293,39 @@ class HistoriqueSection extends StatelessWidget {
                 ),
               ],
             ),
-          //  if (appTypeController.isDesktop.value) const SizedBox(height: 16,),
-           const Divider(),
+            //  if (appTypeController.isDesktop.value) const SizedBox(height: 16,),
+            const Divider(),
             if (!appTypeController.isDesktop.value)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Card(
-                elevation: 4,
-                color: Colors.white,
-                child: TextFormField(
-                  decoration: const InputDecoration(
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                      isDense: true,
-                      hintText: 'Search for an action',
-                      border: InputBorder.none
-                      // border: OutlineInputBorder(
-                      //     borderRadius: BorderRadius.all(Radius.circular(10))),
-                      ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Card(
+                  elevation: 4,
+                  color: Colors.white,
+                  child: TextFormField(
+                    decoration: const InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        isDense: true,
+                        hintText: 'Search for an action',
+                        border: InputBorder.none
+                        // border: OutlineInputBorder(
+                        //     borderRadius: BorderRadius.all(Radius.circular(10))),
+                        ),
+                  ),
                 ),
               ),
-            ),
-            Expanded(
-                child: Obx(() => ActionHistoryPage(
-                      // ignore: invalid_use_of_protected_member
-                      actionItems: apiController.historiques.value,
-                    )))
+            Expanded(child: Obx(() {
+              if (apiController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (apiController.historiques.isEmpty) {
+                return const Center(child: Text("Aucune facture disponible"));
+              }
+              return ActionHistoryPage(
+                // ignore: invalid_use_of_protected_member
+                actionItems: apiController.historiques.value,
+              );
+            }))
           ],
         ),
       ),
@@ -391,13 +409,6 @@ class _ButtonListState extends State<ButtonList> {
           ),
         ),
         if (_selectedForm == null) ...[
-          _buildDashboardButton(
-            context,
-            icon: Icons.add_shopping_cart,
-            label: "Shopping Cart",
-            color: Colors.green,
-            onTap: () => showShoppingCartDialog(context),
-          ),
           _buildDashboardButton(
             context,
             icon: Icons.add_shopping_cart,

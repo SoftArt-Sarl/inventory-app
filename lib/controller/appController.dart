@@ -1,6 +1,7 @@
 
 import 'package:flutter_application_1/controller/apiController.dart';
 import 'package:flutter_application_1/controller/apptypeController.dart';
+import 'package:flutter_application_1/controller/deliveryController.dart';
 import 'package:flutter_application_1/controller/historiqueController.dart';
 import 'package:flutter_application_1/controller/homeController.dart';
 import 'package:flutter_application_1/controller/invoiceController.dart';
@@ -15,3 +16,4 @@ HomeController homeController=HomeController.instance;
 AppTypeController appTypeController=AppTypeController.instance;
 Sellercontroller sellerController =Sellercontroller.instance;
 InvoiceController invoiceController=InvoiceController.instance;
+DeliveryController deliveryController=DeliveryController.instance;

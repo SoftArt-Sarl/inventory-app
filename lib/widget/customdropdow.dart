@@ -57,12 +57,12 @@ class ReusableMultiSelectSearchDropdown extends StatelessWidget {
           const Text('Ajouter des items au panier'),
       closedHeaderPadding:
           const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: CustomDropdownDecoration(
+      decoration: const CustomDropdownDecoration(
         // prefixIcon: const Icon(Icons.add),
-        closedSuffixIcon: const Icon(Icons.add),
-        expandedSuffixIcon: const SizedBox.shrink(),
-        closedBorder: Border.all(color: Colors.orange),
-        hintStyle: const TextStyle(color: Colors.black),
+        closedSuffixIcon: Icon(Icons.add),
+        expandedSuffixIcon: SizedBox.shrink(),
+        // closedBorder: Border.all(color: Colors.orange),
+        hintStyle: TextStyle(color: Colors.black),
         closedFillColor: Colors.white,
       ),
       hintText: hintText,
