@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/controller/userInfo.dart';
 import 'package:flutter_application_1/pages/facturePage.dart';
 import 'package:flutter_application_1/widget/popupButton.dart';
 import 'package:get/get.dart';
@@ -17,7 +18,7 @@ class DeliveryPage extends StatelessWidget {
             child: Row(
               children: [
                 const Text(
-                  'Livraison',
+                  'Deliveries',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
@@ -53,7 +54,8 @@ class DeliveryPage extends StatelessWidget {
                                 SizedBox(
                                     width: 120,
                                     child: _buildHeaderCell('Status')),
-                                _buildHeaderCell('Invoices'),
+                                _buildHeaderCell('Invoices'), 
+                                if(userinfo.authmodel.value.user!.role == "SELLER")
                                 SizedBox(
                                     width: 80,
                                     child: _buildHeaderCell(
@@ -94,6 +96,7 @@ class DeliveryPage extends StatelessWidget {
                                       _buildStatusCell(delivery, context),
                                       _builinvoiceCell(
                                           delivery.sale.invoice.id),
+                                          if(userinfo.authmodel.value.user!.role == "SELLER")
                                       _buildActionCell(delivery,
                                           context), // Nouvelle cellule Action
                                     ],
@@ -195,6 +198,7 @@ class DeliveryPage extends StatelessWidget {
       child: InkWell(
         key: buttonKey,
         onTap: () {
+          if(userinfo.authmodel.value.user!.role == 'SELLER')
           PopupHelper.showPopup(
             context: context,
             buttonKey: buttonKey,

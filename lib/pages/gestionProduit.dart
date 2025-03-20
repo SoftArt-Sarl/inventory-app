@@ -349,7 +349,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               controller: quantitytext,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -370,7 +370,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               controller: prixtext,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Prix unitaire',
+                hintText: 'Unit price',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -402,7 +402,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:
-                              Text('Veuillez entrer une catégorie valide.'),
+                              Text('Enter a valid category.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -412,7 +412,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -430,7 +430,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
           children: [
             Expanded(
               child: Text(
-              'Assurez vous que la catégories du produit est créer d\'abord sinon veillez en créer une',
+              'Ensure that the category related to this product is already created',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -474,7 +474,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
     // Vérification que le champ nom est rempli
     String itemName = nametext.text.trim();
     if (itemName.isEmpty) {
-      throw Exception("Veuillez saisir le nom de l'article.");
+      throw Exception("Enter item name.");
     }
 
     // Vérification que l'article existe
@@ -484,13 +484,13 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
         (element) => element.name == itemName,
       );
     } catch (e) {
-      throw Exception("L'article n'existe pas.");
+      throw Exception("This product doesn't exist.");
     }
 
     // Vérification de la quantité
     int? quantity = int.tryParse(quantitytext.text.trim());
     if (quantity == null || quantity <= 0) {
-      throw Exception('Veuillez saisir une quantité valide (supérieure à 0).');
+      throw Exception('Enter a valid input.');
     }
 
     // Exécuter le retrait du stock
@@ -504,7 +504,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Produit retiré avec succès!')),
+      const SnackBar(content: Text('Product removed successfully!')),
     );
   } catch (e) {
     setState(() {
@@ -514,7 +514,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
     // ignore: use_build_context_synchronously
     ScaffoldMessenger.of(context).showSnackBar(
      const  SnackBar(
-        content: Text('Erreur lors du rétrait du stock'), // Afficher le message d'erreur précis
+        content: Text('Something went wrong'), // Afficher le message d'erreur précis
         backgroundColor: Colors.red,
       ),
     );
@@ -529,7 +529,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
       child: Column(
         children: [
           const Text(
-            'Retirer un stock',
+            'Remove a product',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
@@ -549,7 +549,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
               controller: quantitytext,
               keyboardType: TextInputType.number, // Assure que seul un nombre est entré
               decoration: InputDecoration(
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -574,7 +574,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer une quantité valide.'),
+                          content: Text('Enter a valid input.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -584,7 +584,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -620,7 +620,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
     // Vérification que le champ nom est rempli
     String itemName = nametext.text.trim();
     if (itemName.isEmpty) {
-      throw Exception("Veuillez saisir le nom de l'article.");
+      throw Exception("Product name.");
     }
 
     // Vérification que l'article existe
@@ -630,13 +630,13 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
         (element) => element.name == itemName,
       );
     } catch (e) {
-      throw Exception("L'article n'existe pas.");
+      throw Exception("Product doesn't exist.");
     }
 
     // Vérification de la quantité
     int? quantity = int.tryParse(quantitytext.text.trim());
     if (quantity == null || quantity <= 0) {
-      throw Exception('Veuillez saisir une quantité valide (supérieure à 0).');
+      throw Exception('Enter a valid input.');
     }
 
     // Exécuter l’ajout de stock
@@ -650,7 +650,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stock ajouté avec succès!')),
+      const SnackBar(content: Text('Stock added to this item!')),
     );
   } catch (e) {
     setState(() {
@@ -659,7 +659,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Erreur lors de l\'ajout du stock'), // Afficher le message d'erreur précis
+        content: Text('Something went wrong'), // Afficher le message d'erreur précis
         backgroundColor: Colors.red,
       ),
     );
@@ -674,7 +674,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
       child: Column(
         children: [
           const Text(
-            'Ajouter du stock',
+            'Add stock to an item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
@@ -694,7 +694,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
               controller: quantitytext,
               keyboardType: TextInputType.number, // Clavier numérique
               decoration: InputDecoration(
-                hintText: 'Quantité',
+                hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -719,7 +719,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer une quantité valide.'),
+                          content: Text('Enter a valid input.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -729,7 +729,7 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Ajouter',
+                        'Add',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -784,7 +784,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
       for (int i = 0; i < nameControllers.length; i++) {
         String itemName = nameControllers[i].text.trim();
         if (itemName.isEmpty) {
-          throw Exception("Veuillez saisir le nom de l'article.");
+          throw Exception("Enter product name.");
         }
 
         // Vérification que l'article existe
@@ -794,13 +794,13 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
             (element) => element.name == itemName,
           );
         } catch (e) {
-          throw Exception("L'article '$itemName' n'existe pas.");
+          throw Exception("Product '$itemName' doesn't exist.");
         }
 
         // Vérification de la quantité
         int? quantity = int.tryParse(quantityControllers[i].text.trim());
         if (quantity == null || quantity <= 0) {
-          throw Exception('Veuillez saisir une quantité valide (supérieure à 0) pour l\'article "$itemName".');
+          throw Exception('Enter a valid input for "$itemName".');
         }
 
         itemsToAdd.add(item);
@@ -815,7 +815,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stocks ajoutés avec succès!')),
+        const SnackBar(content: Text('Stock added to this item!')),
       );
     } catch (e) {
       setState(() {
@@ -838,7 +838,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
       child: Column(
         children: [
           const Text(
-            'Ajouter du stock',
+            'Add stock to an item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
@@ -866,7 +866,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
                           controller: quantityControllers[index],
                           keyboardType: TextInputType.number, // Clavier numérique
                           decoration: InputDecoration(
-                            hintText: 'Quantité',
+                            hintText: 'Quantity',
                             fillColor: Colors.grey[200],
                             filled: true,
                             border: InputBorder.none,
@@ -896,7 +896,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Ajouter tous les stocks',
+                        'Add stock to items',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -906,7 +906,7 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
             onPressed: () {
               addNewRow(); // Ajouter une nouvelle ligne
             },
-            child: const Text('Ajouter une ligne'),
+            child: const Text('Add new row'),
           ),
         ],
       ),
@@ -943,7 +943,7 @@ class _CategoryFormState extends State<CategoryForm> {
         isLoading = false; // Arrêter le chargement après l'ajout
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie ajoutée avec succès!')),
+        const SnackBar(content: Text('Category added successfully!')),
       );
     } catch (e) {
       setState(() {
@@ -952,7 +952,7 @@ class _CategoryFormState extends State<CategoryForm> {
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Erreur lors de l\'ajout de la catégorie.'),backgroundColor: Colors.red,),
+            content: Text('Something went wrong.'),backgroundColor: Colors.red,),
       );
     }
   }
@@ -964,7 +964,7 @@ class _CategoryFormState extends State<CategoryForm> {
       child: Column(
         children: [
           const Text(
-            'Ajouter une catégorie',
+            'Add a category',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
@@ -974,7 +974,7 @@ class _CategoryFormState extends State<CategoryForm> {
               controller: categorieText,
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
-                hintText: 'Entrez le nom de la catégorie',
+                hintText: 'Category name',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -1002,7 +1002,7 @@ class _CategoryFormState extends State<CategoryForm> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],

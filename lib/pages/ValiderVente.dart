@@ -238,21 +238,21 @@ class PurchaseValidationPage extends StatelessWidget {
                         // Action pour valider et encaisser
                       },
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      child: const Text('Valider et encaisser'),
+                      child: const Text('Confirm the sale'),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         // Action pour enregistrer en attente
                       },
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow),
-                      child: const Text('Enregistrer en attente'),
+                      child: const Text('Save'),
                     ),
                     ElevatedButton(
                       onPressed: () {
                         // Action pour annuler la vente
                       },
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      child: const Text('Annuler la vente'),
+                      child: const Text('Cancel sale'),
                     ),
                   ],
                 ),

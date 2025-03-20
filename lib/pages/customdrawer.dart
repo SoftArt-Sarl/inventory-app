@@ -39,7 +39,7 @@ class _SideMenuState extends State<SideMenu> {
       "Shopping cart",
       "Items",
       "Categories",
-      'Paramètres',
+      'Settings',
       "All Invoices",
       "Deliveries", // Nouvelle entrée pour les livraisons
       "Sign Out",
@@ -62,13 +62,14 @@ class _SideMenuState extends State<SideMenu> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard", 0, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.shopify, "Shopping cart", 1, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items", 2, appTypeController.isDesktop.value),
+                        if(userinfo.authmodel.value.user!.role == 'SELLER')
+                        _buildMenuItem(FontAwesomeIcons.shopify, "Purchase", 1, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.cartShopping, "Items", 2, appTypeController.isDesktop.value),
                         _buildMenuItem(FontAwesomeIcons.layerGroup, "Categories", 3, appTypeController.isDesktop.value),
                         _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 4, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.truck, "Deliveries", 5, appTypeController.isDesktop.value), // Ajouter l'élément Deliveries
-                        _buildMenuItem(FontAwesomeIcons.cogs, "Paramètres", 6, appTypeController.isDesktop.value),
-                        _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out", 7, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.truck, "Deliveries", 5, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.gears, "Settings", 6, appTypeController.isDesktop.value),
+                        _buildMenuItem(FontAwesomeIcons.rightFromBracket, "Sign Out", 7, appTypeController.isDesktop.value),
                       ],
                     ),
                   ),
@@ -96,13 +97,14 @@ class _SideMenuState extends State<SideMenu> {
                 child: Column(
                   children: [
                     _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard", 0, appTypeController.isDesktop.value),
-                    _buildMenuItem(FontAwesomeIcons.shopify, "Shopping cart", 1, appTypeController.isDesktop.value),
-                    _buildMenuItem(FontAwesomeIcons.shoppingCart, "Items", 2, appTypeController.isDesktop.value),
+                    if(userinfo.authmodel.value.user!.role == 'SELLER')
+                    _buildMenuItem(FontAwesomeIcons.shopify, "Purchase", 1, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.cartShopping, "Items", 2, appTypeController.isDesktop.value),
                     _buildMenuItem(FontAwesomeIcons.layerGroup, "Categories", 3, appTypeController.isDesktop.value),
                     _buildMenuItem(FontAwesomeIcons.list, "All Invoices", 4, appTypeController.isDesktop.value),
                     _buildMenuItem(FontAwesomeIcons.truck, "Deliveries", 5, appTypeController.isDesktop.value), // Ajouter l'élément Deliveries
-                    _buildMenuItem(FontAwesomeIcons.cogs, "Paramètres", 6, appTypeController.isDesktop.value),
-                    _buildMenuItem(FontAwesomeIcons.signOutAlt, "Sign Out", 7, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.gears, "Paramètres", 6, appTypeController.isDesktop.value),
+                    _buildMenuItem(FontAwesomeIcons.rightFromBracket, "Sign Out", 7, appTypeController.isDesktop.value),
                   ],
                 ),
               ),

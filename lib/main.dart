@@ -153,10 +153,10 @@ class _HomePageState extends State<HomePage> {
                     )
                     .toList(),
                 onEdit: (context, row) {
-                  print('Édition : $row');
+                  print('Edition mode : $row');
                 },
                 onDelete: (context, row) {
-                  print('Suppression : $row');
+                  print('Deletion : $row');
                 },
               )),
           // pagination: Pagination(),

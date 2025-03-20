@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       )),
                   _buildCard(
                     FontAwesomeIcons.euroSign,
-                    'Total item price',
+                    'Total sales this month',
                     '${Item.calculateTotalValue(apiController.items).toString()} FCFA',
                     Colors.purple,
                     appTypeController.isDesktop.value,
@@ -408,7 +408,7 @@ class _ButtonListState extends State<ButtonList> {
                 fontWeight: FontWeight.bold),
           ),
         ),
-        if (_selectedForm == null) ...[
+        if (_selectedForm == null && userinfo.authmodel.value.user!.role == "ADMIN") ...[
           _buildDashboardButton(
             context,
             icon: Icons.add_shopping_cart,
@@ -433,6 +433,7 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
+          
           _buildDashboardButton(
             context,
             icon: Icons.edit,
@@ -442,6 +443,7 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
+          
           _buildDashboardButton(
             context,
             icon: Icons.category,

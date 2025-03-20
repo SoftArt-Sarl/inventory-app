@@ -130,7 +130,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                 FaIcon(FontAwesomeIcons.tag,
                     color: Colors.black, size: 13), // Taille réduite de l'icône
                 SizedBox(width: 3),
-                Text('Prix unitaire', style: TextStyle(color: Colors.black)),
+                Text('Unit price', style: TextStyle(color: Colors.black)),
               ],
             ),
           ),
@@ -275,25 +275,25 @@ class _ShoppingCartState extends State<ShoppingCart> {
                 ),
               ),
               _buildTextField(
-                hintext: 'exp: Ousmane Barke',
-                label: 'Nom du client',
+                hintext: 'exp: Issa Traoré',
+                label: 'Custumer name',
                 icon: Icons.title_outlined,
                 controller: customerName,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "Le nom du client est requis";
+                    return "Custumer name is required";
                   }
                   return null;
                 },
               ),
               _buildTextField(
-                hintext: 'exp: Niamey, Cité Salou Djibo',
-                label: 'Adresse du client',
+                hintext: 'exp: Niamey, Francophonie',
+                label: 'Custumer address',
                 icon: Icons.home_outlined,
                 controller: customerAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return "L'adresse est requise";
+                    return "Address is required";
                   }
                   return null;
                 },
@@ -309,7 +309,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                     },
                   ),
                   const Text(
-                    'Avec réduction ?',
+                    'Discount ?',
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -322,14 +322,14 @@ class _ShoppingCartState extends State<ShoppingCart> {
                     });
                   },
                   hintext: 'exp: 3500',
-                  label: 'Réduction',
+                  label: 'Discount amount',
                   icon: Icons.discount_outlined,
                   onlyNumbers: true,
                   controller: discountController,
                   validator: (value) {
                     if (value != null && value.isNotEmpty) {
                       if (int.tryParse(value) == null) {
-                        return "Veuillez entrer un nombre valide";
+                        return "Enter a valid input";
                       }
                     }
                     return null;
@@ -365,22 +365,21 @@ class _ShoppingCartState extends State<ShoppingCart> {
         Get.snackbar(
             backgroundColor: Colors.green,
             colorText: Colors.white,
-            'Succées',
-            'Vente éffectuer avec succés');
-        print("Vente créée avec succès ! Sale ID: $saleId");
+            'Success',
+            'Purchase successfull');
         await getInvoicesForSale(saleId);
       } else {
         Get.snackbar(
             colorText: Colors.white,
             backgroundColor: Colors.red,
-            "Erreur",
-            "Échec de la création de la vente");
+            "Error",
+            "Something went wrong");
       }
     } catch (e) {
       Get.snackbar(
           colorText: Colors.white,
           backgroundColor: Colors.red,
-          "Erreur",
+          "Error",
           e.toString());
     }
   }

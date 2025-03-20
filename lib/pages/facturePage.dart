@@ -87,7 +87,7 @@ class InvoicePage extends StatelessWidget {
                           }
                           if (invoiceController.invoicesfilteredList.isEmpty) {
                             return const Center(
-                                child: Text("Aucune facture disponible"));
+                                child: Text("No invoice avalaible"));
                           }
 
                           // 📌 Filtrer les factures par date sélectionnée
@@ -103,7 +103,7 @@ class InvoicePage extends StatelessWidget {
 
                           if (filteredInvoices.isEmpty) {
                             return const Center(
-                                child: Text("Aucune facture à cette date"));
+                                child: Text("No invoice for this period"));
                           }
 
                           // 📌 Regrouper les factures par date
@@ -181,7 +181,7 @@ class InvoicePage extends StatelessWidget {
                         if (invoiceController.selectedInvoice.value == null) {
                           return const Center(
                             child: Text(
-                              "Sélectionnez une facture pour voir les détails",
+                              "Select an invoice to get more details",
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.w500),
                             ),
@@ -237,7 +237,7 @@ class DateFilterWidget extends StatelessWidget {
                     SizedBox(
                       width: 5,
                     ),
-                    Text('Choisir une date'),
+                    Text('Select date'),
                   ],
                 ),
               ),
@@ -354,7 +354,7 @@ class InvoiceItem extends StatelessWidget {
                     const Icon(Icons.store_outlined,
                         size: 18, color: Colors.green),
                     const SizedBox(width: 6),
-                    Text('Vendu par: $sellerName'),
+                    Text('Sold by: $sellerName'),
                   ],
                 ),
                 const Spacer(),
@@ -394,13 +394,14 @@ class InvoicePagee extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Imprimer',
+                      'Print',
                       style: TextStyle(color: Colors.orange),
                     ),
                   ],
                 ),
               ),
               const SizedBox(width: 20,),
+              if(userinfo.authmodel.value.user!.role == "SELLER")
               OutlinedButton(
                 key: buttonKey,
                 style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
@@ -415,8 +416,8 @@ class InvoicePagee extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Livrer',
+                    const Text(
+                      'Deliver',
                       style: TextStyle(color: Colors.orange),
                     ),
                   ],
@@ -460,7 +461,7 @@ class InvoicePagee extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text('FACTURE',
+                          const Text('INVOICE',
                               style: TextStyle(
                                   fontSize: 16, fontWeight: FontWeight.bold)),
                           Text(_formatDate(invoice.createdAt),
@@ -470,10 +471,10 @@ class InvoicePagee extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text("Vendeur : ${invoice.seller.name}",
+                  Text("Seller : ${invoice.seller.name}",
                       style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text("Client : ${invoice.sale.custumerName}"),
-                  Text("Adresse : ${invoice.sale.custumerAddress}"),
+                  Text("Custumer name : ${invoice.sale.custumerName}"),
+                  Text("Address : ${invoice.sale.custumerAddress}"),
                   const SizedBox(height: 16),
                   Table(
                     border: TableBorder.all(color: Colors.grey),
@@ -482,17 +483,17 @@ class InvoicePagee extends StatelessWidget {
                         children: [
                           Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Article',
+                              child: Text('Product',
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold))),
                           Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Quantité',
+                              child: Text('Quantity',
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold))),
                           Padding(
                               padding: EdgeInsets.all(8.0),
-                              child: Text('Prix Unitaire',
+                              child: Text('Unit price',
                                   style:
                                       TextStyle(fontWeight: FontWeight.bold))),
                           Padding(
@@ -516,10 +517,10 @@ class InvoicePagee extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        buildTotalRow('Sous-total', invoice.totalAmount),
-                        buildTotalRow('Remise', invoice.discount),
+                        buildTotalRow('Total amount', invoice.totalAmount),
+                        buildTotalRow('Discount', invoice.discount),
                         buildTotalRow('Taxe', invoice.taxAmount),
-                        const Text('Total à payer',
+                        const Text('Final amount',
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 20)),
                         Text('${invoice.finalAmount.toStringAsFixed(0)} FCFA',
@@ -529,7 +530,7 @@ class InvoicePagee extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Center(child: Text('Merci pour votre achat !')),
+                  const Center(child: Text('Thank your for your purchase !')),
                 ],
               ),
             ),
@@ -600,7 +601,7 @@ class InvoicePagee extends StatelessWidget {
                   pw.Column(
                       mainAxisAlignment: pw.MainAxisAlignment.start,
                       children: [
-                        pw.Text('FACTURE',
+                        pw.Text('Invoice',
                             style: pw.TextStyle(
                                 fontSize: 16, fontWeight: pw.FontWeight.bold)),
                         pw.Text(_formatDate(invoice.createdAt),
@@ -609,19 +610,19 @@ class InvoicePagee extends StatelessWidget {
                 ]),
 
                 pw.SizedBox(height: 16),
-                pw.Text("Vendeur : ${invoice.seller.name}",
+                pw.Text("Seller : ${invoice.seller.name}",
                     style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                pw.Text("Client : ${invoice.sale.custumerName}"),
-                pw.Text("Adresse : ${invoice.sale.custumerAddress}"),
+                pw.Text("Client name : ${invoice.sale.custumerName}"),
+                pw.Text("Address : ${invoice.sale.custumerAddress}"),
                 pw.SizedBox(height: 16),
                 pw.Table(
                   border: pw.TableBorder.all(color: PdfColors.grey),
                   children: [
                     pw.TableRow(
                       children: [
-                        _buildTableHeader("Article"),
-                        _buildTableHeader("Quantité"),
-                        _buildTableHeader("Prix Unitaire"),
+                        _buildTableHeader("Product"),
+                        _buildTableHeader("Quantity"),
+                        _buildTableHeader("Unit Price"),
                         _buildTableHeader("Total"),
                       ],
                     ),
@@ -639,10 +640,10 @@ class InvoicePagee extends StatelessWidget {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      _buildTotalRow('Sous-total', invoice.totalAmount),
-                      _buildTotalRow('Remise', invoice.discount),
+                      _buildTotalRow('Total amount', invoice.totalAmount),
+                      _buildTotalRow('Discount', invoice.discount),
                       _buildTotalRow('Taxe', invoice.taxAmount),
-                      pw.Text('Total à payer',
+                      pw.Text('Final amount',
                           style: pw.TextStyle(
                               fontWeight: pw.FontWeight.bold, fontSize: 20)),
                       pw.Text('${invoice.finalAmount.toStringAsFixed(0)} FCFA',
@@ -652,7 +653,7 @@ class InvoicePagee extends StatelessWidget {
                   ),
                 ),
                 pw.SizedBox(height: 16),
-                pw.Center(child: pw.Text('Merci pour votre achat !')),
+                pw.Center(child: pw.Text('Thank your for your purchase !')),
               ],
             ),
           );
@@ -734,7 +735,7 @@ class DeliveryUploadwidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              'Livraison',
+              'Deliveries',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             // Utilisation de _buildTextField pour Delivery Man
@@ -798,14 +799,14 @@ class DeliveryUploadwidget extends StatelessWidget {
                         );
                       }
                     } else {
-                      Get.snackbar('Erreur', 'Veuillez remplir tous les champs correctement');
+                      Get.snackbar('Error', 'Enter valid inputs');
                     }
                   },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Valider',
+                        'Confirm',
                         style: TextStyle(color: Colors.white),
                       ),
                     ],

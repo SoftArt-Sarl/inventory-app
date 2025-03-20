@@ -335,7 +335,7 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item mis à jour avec succès!')),
+        const SnackBar(content: Text('Item updated!')),
       );
       if (!widget.isHistoriquePage!) {
         PopupHelper.removePopup(context);
@@ -348,7 +348,7 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de la mise à jour de l\'item.'),
+          content: Text('Error when updating item.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -362,13 +362,13 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
       child: Column(
         children: [
           const Text(
-            'Modifier l\'item',
+            'Edit item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
               ? ReusableSearchDropdown(
-                  hintText: 'Selectionné un produit',
+                  hintText: 'Select an item',
                   items: apiController.items.map(
                     (e) {
                       return e.name!;
@@ -390,19 +390,19 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
               : Container(), // Affichage
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
-              ? _buildTextField(itemTextController, 'Nom de l\'item')
+              ? _buildTextField(itemTextController, 'Item name')
               : _buildTextField(
-                  itemTextController, 'Modifier le nom de l\'item'),
+                  itemTextController, 'Edit item name'),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
-              ? _buildTextField(unitPriceController, 'Prix', isNumeric: true)
+              ? _buildTextField(unitPriceController, 'Price', isNumeric: true)
               : _buildTextField(
-                  unitPriceController, 'Modifier le prix du produit',
+                  unitPriceController, 'Edit item price',
                   isNumeric: true),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
-              ? _buildTextField(quantityController, 'Quantité', isNumeric: true)
-              : _buildTextField(quantityController, 'Modifier la quantité',
+              ? _buildTextField(quantityController, 'Quantity', isNumeric: true)
+              : _buildTextField(quantityController, 'Edit item quantity',
                   isNumeric: true),
           const SizedBox(height: 15),
 
@@ -412,8 +412,8 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
           isLoading
               ? const CircularProgressIndicator()
               : ActionButtonsRow(
-                  cancelText: "Annuler",
-                  confirmText: "Valider",
+                  cancelText: "Cancel",
+                  confirmText: "Confirm",
                   onCancel: () {
                     PopupHelper.removePopup(context);
                   },
@@ -423,7 +423,7 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer un nom valide.'),
+                          content: Text('Enter a valid input.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -498,7 +498,7 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
       await apiController.refreshData();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Élément supprimé avec succès!')),
+        const SnackBar(content: Text('Element deleted successfully!')),
       );
     } catch (e) {
       setState(() {
@@ -507,7 +507,7 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de la suppression de l\'élément.'),
+          content: Text('Error when deleting element.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -521,13 +521,13 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
       child: Column(
         children: [
           const Text(
-            'Supprimer l\'élément',
+            'Delete element',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
           if (!widget.isHistoriquePage!)
             const Text(
-              'Voulez-vous vraiment supprimer cet élément ? Cette action est irréversible.',
+              'Do you realy want to delete this element ?',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 15, color: Colors.red),
             ),
@@ -535,8 +535,8 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
           isLoading
               ? const CircularProgressIndicator()
               : ActionButtonsRow(
-                  cancelText: "Annuler",
-                  confirmText: "Supprimer",
+                  cancelText: "Cancel",
+                  confirmText: "Delete",
                   onCancel: () {
                     PopupHelper.removePopup(context);
                   },

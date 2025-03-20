@@ -65,7 +65,7 @@ class CategoryWidget extends StatelessWidget {
             ],
           ),
           child: apiController.isCategorySelected.value?Text(
-                category!.title ?? 'Sans titre',
+                category!.title ?? 'No title',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -77,7 +77,7 @@ class CategoryWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                category!.title ?? 'Sans titre',
+                category!.title ?? 'No title',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -222,7 +222,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
       await apiController.refreshData();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie mise à jour avec succès!')),
+        const SnackBar(content: Text('Category updated')),
       );
     } catch (e) {
       setState(() {
@@ -231,7 +231,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de la mise à jour de la catégorie.'),
+          content: Text('Error when updating.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -245,7 +245,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
       child: Column(
         children: [
           const Text(
-            'Modifier la catégorie',
+            'Edit category',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
@@ -255,7 +255,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
               autofocus: true,
               controller: categorieText,
               decoration: InputDecoration(
-                hintText: 'Modifier le nom de la catégorie',
+                hintText: 'Edit name',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
@@ -268,8 +268,8 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
           isLoading
               ? const CircularProgressIndicator()
               : ActionButtonsRow(
-                  cancelText: "Annuler",
-                  confirmText: "Valider",
+                  cancelText: "Cancel",
+                  confirmText: "Confirm",
                   onCancel: () {
                     PopupHelper.removePopup(context);
                   },
@@ -279,7 +279,7 @@ class _UpdateCategoryFormState extends State<UpdateCategoryForm> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Veuillez entrer un nom valide.'),
+                          content: Text('Enter a valid input.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -326,7 +326,7 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
       await apiController.refreshData();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Catégorie supprimée avec succès!')),
+        const SnackBar(content: Text('Category deleted successfully!')),
       );
     } catch (e) {
       setState(() {
@@ -335,7 +335,7 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Erreur lors de la suppression de la catégorie.'),
+          content: Text('Error when deleted category.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -349,12 +349,12 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
       child: Column(
         children: [
           const Text(
-            'Supprimer la catégorie',
+            'Delete category',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
           Text(
-            'Voulez-vous vraiment supprimer la catégorie "${widget.category!.title}" ? Cette action est irréversible.',
+            'Do you want to delete this categorie "${widget.category!.title}" ? Ensure that no item is inside.',
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 15, color: Colors.red),
           ),
@@ -362,8 +362,8 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
           isLoading
               ? const CircularProgressIndicator()
               : ActionButtonsRow(
-                  cancelText: "Annuler",
-                  confirmText: "Supprimer",
+                  cancelText: "Cancel",
+                  confirmText: "Delete",
                   onCancel: () {
                     PopupHelper.removePopup(context);
                   },
