@@ -1,9 +1,6 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/models.dart/deliveryModel.dart';
@@ -12,12 +9,9 @@ import 'package:flutter_application_1/widget/searchbarUserwidget.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-
 import 'package:get/get.dart';
 import 'package:flutter_application_1/controller/invoiceController.dart';
-
 import 'package:sticky_headers/sticky_headers.dart';
-
 import '../models.dart/invoiceModel.dart';
 
 class InvoicePage extends StatelessWidget {
@@ -26,25 +20,8 @@ class InvoicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final InvoiceController invoiceController = Get.put(InvoiceController());
-    final Rx<DateTime?> selectedDate =
-        Rx<DateTime?>(null); // 🔹 Date sélectionnée
-
-    String _formatDate(DateTime date) {
-      return "${date.day}/${date.month}/${date.year}";
-    }
-
-    Future<void> _selectDate(BuildContext context) async {
-      DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate.value ?? DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime.now(),
-      );
-
-      if (picked != null && picked != selectedDate.value) {
-        selectedDate.value = picked;
-      }
-    }
+    final Rx<DateTime?> selectedDate = Rx<DateTime?>(null);
+    final Rx<DateTimeRange?> selectedRange = Rx<DateTimeRange?>(null);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -55,13 +32,25 @@ class InvoicePage extends StatelessWidget {
             SearchBarWithFilter(
               calendarwidget: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Obx(() {
-                  return DateFilterWidget(
-                    selectedDate: selectedDate.value,
-                    onSelectDate: () => _selectDate(context),
-                    onClearDate: () => selectedDate.value = null,
-                  );
-                }),
+                child: Row(
+                  children: [
+                    Obx(() {
+                      return DateFilterWidget(
+                        selectedDate: selectedDate.value,
+                        onSelectDate: () => _selectDate(context, selectedDate),
+                        onClearDate: () => selectedDate.value = null,
+                      );
+                    }),
+                    const SizedBox(width: 10),
+                    Obx(() {
+                      return DateRangeFilterWidget(
+                        selectedRange: selectedRange.value,
+                        onSelectRange: () => pickDateRange(context, selectedRange),
+                        onClearRange: () => selectedRange.value = null,
+                      );
+                    }),
+                  ],
+                ),
               ),
               originalList: invoiceController.invoicesList,
               filteredList: invoiceController.invoicesfilteredList,
@@ -70,133 +59,220 @@ class InvoicePage extends StatelessWidget {
                   .contains(query.toLowerCase()),
             ),
             Expanded(
-              child: Card(
-                margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 5),
-                elevation: 3,
-                child: Row(
-                  children: [
-                    // 📌 Colonne gauche - Liste des factures avec Sticky Headers
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Obx(() {
-                          if (invoiceController.isLoading.value) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-                          if (invoiceController.invoicesfilteredList.isEmpty) {
-                            return const Center(
-                                child: Text("No invoice avalaible"));
-                          }
-
-                          // 📌 Filtrer les factures par date sélectionnée
-                          List<Invoice> filteredInvoices =
-                              invoiceController.invoicesfilteredList;
-                          if (selectedDate.value != null) {
-                            filteredInvoices = filteredInvoices
-                                .where((invoice) =>
-                                    _formatDate(invoice.createdAt) ==
-                                    _formatDate(selectedDate.value!))
-                                .toList();
-                          }
-
-                          if (filteredInvoices.isEmpty) {
-                            return const Center(
-                                child: Text("No invoice for this period"));
-                          }
-
-                          // 📌 Regrouper les factures par date
-                          final groupedInvoices = <String, List<Invoice>>{};
-                          for (var invoice in filteredInvoices) {
-                            final dateKey = _formatDate(invoice.createdAt);
-                            groupedInvoices
-                                .putIfAbsent(dateKey, () => [])
-                                .add(invoice);
-                          }
-
-                          return ListView(
-                            padding: const EdgeInsets.all(8),
-                            children: groupedInvoices.entries
-                                .toList()
-                                .reversed
-                                .map((entry) {
-                              return StickyHeader(
-                                header: Container(
-                                  color: Colors.orange,
-                                  padding: const EdgeInsets.symmetric(
-                                      vertical: 2, horizontal: 5),
-                                  child: Text(
-                                    entry.key,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 14),
-                                  ),
-                                ),
-                                content: Column(
-                                  children: entry.value.map((invoice) {
-                                    return Obx(() {
-                                      bool isSelected = invoiceController
-                                              .selectedInvoice.value ==
-                                          invoice;
-
-                                      return InkWell(
-                                        onTap: () {
-                                          invoiceController
-                                              .selectedInvoice.value = invoice;
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 4.0),
-                                          child: InvoiceItem(
-                                            sellerName: invoice.seller.name,
-                                            customerName:
-                                                invoice.sale.custumerName,
-                                            date:
-                                                _formatDate(invoice.createdAt),
-                                            amount:
-                                                '${invoice.finalAmount.toStringAsFixed(0)} FCFA',
-                                            productCount: invoice.sale.items
-                                                .fold(
-                                                    0,
-                                                    (total, e) =>
-                                                        total + e.quantity),
-                                            isSelected: isSelected,
-                                          ),
-                                        ),
-                                      );
-                                    });
-                                  }).toList(),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        }),
-                      ),
-                    ),
-                    const VerticalDivider(),
-                    // 📌 Colonne droite - Détails de la facture sélectionnée
-                    Expanded(
-                      flex: 2,
-                      child: Obx(() {
-                        if (invoiceController.selectedInvoice.value == null) {
-                          return const Center(
-                            child: Text(
-                              "Select an invoice to get more details",
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                          );
-                        }
-                        return InvoicePagee(isDeliveryPage: false,
-                            invoice: invoiceController.selectedInvoice.value!);
-                      }),
-                    ),
-                  ],
-                ),
+              child: InvoiceListView(
+                invoiceController: invoiceController,
+                selectedDate: selectedDate,
+                selectedRange: selectedRange,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context, Rx<DateTime?> selectedDate) async {
+  DateTime? picked = await showDatePicker(
+    context: context,
+    initialDate: selectedDate.value ?? DateTime.now(),
+    firstDate: DateTime(2000),
+    lastDate: DateTime.now(),
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.orange, // Couleur du header et des boutons
+            onPrimary: Colors.white, // Couleur du texte sur le header
+            onSurface: Colors.black, // Couleur du texte général
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange, // Couleur des boutons "OK" et "Annuler"
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
+  );
+
+  if (picked != null && picked != selectedDate.value) {
+    selectedDate.value = picked;
+    invoiceController.selectedInvoice.value;
+  }
+}
+
+Future<void> pickDateRange(BuildContext context, Rx<DateTimeRange?> selectedRange) async {
+  if (selectedRange.value != null) return;
+
+  final DateTimeRange? picked = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2000),
+    lastDate: DateTime.now(),
+    builder: (context, child) {
+      return Theme(
+        data: ThemeData(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.orange, // Couleur du header et des boutons
+            onPrimary: Colors.white, // Couleur du texte sur le header
+            onSurface: Colors.black, // Couleur du texte général
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange, // Couleur des boutons "OK" et "Annuler"
+            ),
+          ),
+        ),
+        child: Dialog(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
+
+  if (picked != null) {
+    selectedRange.value = DateTimeRange(
+      start: picked.start,
+      end: picked.end.add(const Duration(hours: 23, minutes: 59, seconds: 59)), // 🔥 Correction ici
+    );
+    invoiceController.selectedInvoice.value == null;
+  }
+}
+
+
+
+}
+
+// Le reste de votre code pour InvoiceListView, DateFilterWidget, DateRangeFilterWidget, et InvoiceItem reste inchangé.
+
+class InvoiceListView extends StatelessWidget {
+  final InvoiceController invoiceController;
+  final Rx<DateTime?> selectedDate;
+  final Rx<DateTimeRange?> selectedRange;
+
+  const InvoiceListView({
+    Key? key,
+    required this.invoiceController,
+    required this.selectedDate,
+    required this.selectedRange,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 5),
+      elevation: 3,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              child: Obx(() {
+                if (invoiceController.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (invoiceController.invoicesfilteredList.isEmpty) {
+                  return const Center(child: Text("No invoice available"));
+                }
+
+                List<Invoice> filteredInvoices = invoiceController.invoicesfilteredList;
+
+                // Filtrer les factures par date sélectionnée
+                if (selectedDate.value != null) {
+                  filteredInvoices = filteredInvoices.where((invoice) {
+                    return invoice.createdAt.year == selectedDate.value!.year &&
+                           invoice.createdAt.month == selectedDate.value!.month &&
+                           invoice.createdAt.day == selectedDate.value!.day;
+                  }).toList();
+                }
+
+                // Filtrer les factures par plage de dates sélectionnée
+                if (selectedRange.value != null) {
+                  filteredInvoices = filteredInvoices.where((invoice) {
+                    return invoice.createdAt.isAfter(selectedRange.value!.start) &&
+                           invoice.createdAt.isBefore(selectedRange.value!.end);
+                  }).toList();
+                }
+
+                if (filteredInvoices.isEmpty) {
+                  return const Center(child: Text("No invoice for this period"));
+                }
+
+                // Trier les factures du plus récent au plus ancien
+                filteredInvoices.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+                // Regrouper les factures par date
+                final groupedInvoices = <String, List<Invoice>>{};
+                for (var invoice in filteredInvoices) {
+                  final dateKey = "${invoice.createdAt.day}/${invoice.createdAt.month}/${invoice.createdAt.year}";
+                  groupedInvoices.putIfAbsent(dateKey, () => []).add(invoice);
+                }
+
+                return ListView(
+                  padding: const EdgeInsets.all(8),
+                  children: groupedInvoices.entries.map((entry) {
+                    return StickyHeader(
+                      header: Container(
+                        color: Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 5),
+                        child: Text(
+                          entry.key,
+                          style: const TextStyle(color: Colors.white, fontSize: 14),
+                        ),
+                      ),
+                      content: Column(
+                        children: entry.value.map((invoice) {
+                          return Obx(() {
+                            bool isSelected = invoiceController.selectedInvoice.value == invoice;
+
+                            return InkWell(
+                              onTap: () {
+                                invoiceController.selectedInvoice.value = invoice;
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                child: InvoiceItem(
+                                  sellerName: invoice.seller.name,
+                                  customerName: invoice.sale.custumerName,
+                                  date: "${invoice.createdAt.day}/${invoice.createdAt.month}/${invoice.createdAt.year}",
+                                  amount: '${invoice.finalAmount.toStringAsFixed(0)} FCFA',
+                                  productCount: invoice.sale.items.fold(0, (total, e) => total + e.quantity),
+                                  isSelected: isSelected,
+                                ),
+                              ),
+                            );
+                          });
+                        }).toList(),
+                      ),
+                    );
+                  }).toList(),
+                );
+              }),
+            ),
+          ),
+          const VerticalDivider(),
+          Expanded(
+            flex: 2,
+            child: Obx(() {
+              if (invoiceController.selectedInvoice.value == null) {
+                return const Center(
+                  child: Text(
+                    "Select an invoice to get more details",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                );
+              }
+              return InvoicePagee(
+                isDeliveryPage: false,
+                invoice: invoiceController.selectedInvoice.value!,
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
@@ -214,10 +290,6 @@ class DateFilterWidget extends StatelessWidget {
     required this.onClearDate,
   }) : super(key: key);
 
-  String _formatDate(DateTime date) {
-    return "${date.day}/${date.month}/${date.year}";
-  }
-
   @override
   Widget build(BuildContext context) {
     return selectedDate == null
@@ -230,13 +302,8 @@ class DateFilterWidget extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.calendar_month_outlined,
-                      color: Colors.orange,
-                    ),
-                    SizedBox(
-                      width: 5,
-                    ),
+                    Icon(Icons.calendar_today, color: Colors.orange),
+                    SizedBox(width: 5),
                     Text('Select date'),
                   ],
                 ),
@@ -246,7 +313,6 @@ class DateFilterWidget extends StatelessWidget {
         : Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              // color: Colors.orange.withOpacity(0.2),
               borderRadius: BorderRadius.circular(5),
               border: Border.all(color: Colors.grey, width: 1),
             ),
@@ -254,7 +320,7 @@ class DateFilterWidget extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _formatDate(selectedDate!),
+                  "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 8),
@@ -268,8 +334,63 @@ class DateFilterWidget extends StatelessWidget {
   }
 }
 
-// Widget pour afficher chaque facture dans la liste
+class DateRangeFilterWidget extends StatelessWidget {
+  final DateTimeRange? selectedRange;
+  final VoidCallback onSelectRange;
+  final VoidCallback onClearRange;
 
+  const DateRangeFilterWidget({
+    Key? key,
+    required this.selectedRange,
+    required this.onSelectRange,
+    required this.onClearRange,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return selectedRange == null
+        ? InkWell(
+            onTap: onSelectRange,
+            child: const Card(
+              elevation: 4,
+              margin: EdgeInsets.zero,
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Colors.orange),
+                    SizedBox(width: 5),
+                    Text('Select date range'),
+                  ],
+                ),
+              ),
+            ),
+          )
+        : Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              border: Border.all(color: Colors.grey, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${selectedRange!.start.day}/${selectedRange!.start.month}/${selectedRange!.start.year} - ${selectedRange!.end.day}/${selectedRange!.end.month}/${selectedRange!.end.year}",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: onClearRange,
+                  child: const Icon(Icons.close, size: 18, color: Colors.red),
+                ),
+              ],
+            ),
+          );
+  }
+}
+
+// Widget pour afficher chaque facture dans la liste
 class InvoiceItem extends StatelessWidget {
   final String date;
   final String customerName;
@@ -299,21 +420,17 @@ class InvoiceItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔹 Nom du client + date 📅 + Checkbox de sélection
             Row(
               children: [
                 Expanded(
                   child: Row(
                     children: [
-                      const Icon(Icons.person_outline,
-                          size: 18, color: Colors.blue),
+                      const Icon(Icons.person_outline, size: 18, color: Colors.blue),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           customerName,
-                          style: const TextStyle(
-                              overflow: TextOverflow.ellipsis,
-                              fontWeight: FontWeight.bold),
+                          style: const TextStyle(overflow: TextOverflow.ellipsis, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -325,43 +442,27 @@ class InvoiceItem extends StatelessWidget {
                   Row(
                     children: [
                       const SizedBox(width: 10),
-                      Checkbox(
-                        value: isSelected,
-                        onChanged: (_) {},
-                      ),
+                      Checkbox(value: isSelected, onChanged: (_) {}),
                     ],
                   )
               ],
             ),
             const SizedBox(height: 8),
-
-            // 🔹 Nombre de produits 🛒
             Row(
               children: [
-                const Icon(Icons.shopping_cart_outlined,
-                    size: 18, color: Colors.orange),
+                const Icon(Icons.shopping_cart_outlined, size: 18, color: Colors.orange),
                 const SizedBox(width: 6),
                 Text('Items: $productCount'),
               ],
             ),
             const SizedBox(height: 8),
-
-            // 🔹 Nom du vendeur 🏪
             Row(
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.store_outlined,
-                        size: 18, color: Colors.green),
-                    const SizedBox(width: 6),
-                    Text('Sold by: $sellerName'),
-                  ],
-                ),
+                const Icon(Icons.store_outlined, size: 18, color: Colors.green),
+                const SizedBox(width: 6),
+                Text('Sold by: $sellerName'),
                 const Spacer(),
-                Text(
-                  amount,
-                  style: const TextStyle(color: Colors.blue, fontSize: 15),
-                ),
+                Text(amount, style: const TextStyle(color: Colors.blue, fontSize: 15)),
               ],
             ),
           ],
@@ -370,6 +471,8 @@ class InvoiceItem extends StatelessWidget {
     );
   }
 }
+
+// Le reste de votre code pour InvoicePagee et DeliveryUploadwidget reste inchangé
 
 class InvoicePagee extends StatelessWidget {
   final Invoice invoice;
@@ -406,17 +509,18 @@ class InvoicePagee extends StatelessWidget {
                 key: buttonKey,
                 style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
                 onPressed: () {
+                  
                   PopupHelper.showPopup(
                     context: context,
                     buttonKey: buttonKey,
                     width: 300,
-                    popupContent: DeliveryUploadwidget(),
+                    popupContent: DeliveryUploadwidget(context: context,),
                   );
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                     Text(
                       'Deliver',
                       style: TextStyle(color: Colors.orange),
                     ),
@@ -711,13 +815,14 @@ class InvoicePagee extends StatelessWidget {
 }
 
 class DeliveryUploadwidget extends StatelessWidget {
+  BuildContext context;
   final TextEditingController deliveryManController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final Delivery? delivery; // Paramètre optionnel pour l'édition d'une livraison
 
   // Constructeur prenant la livraison (si existante)
-  DeliveryUploadwidget({this.delivery});
+  DeliveryUploadwidget({this.delivery,required this.context});
 
   @override
   Widget build(BuildContext context) {
@@ -785,7 +890,7 @@ class DeliveryUploadwidget extends StatelessWidget {
                       // Si une livraison est fournie, on met à jour la livraison, sinon on en crée une nouvelle
                       if (delivery == null) {
                         // Création d'une nouvelle livraison
-                      await  deliveryController.postDelivery(
+                      await  deliveryController.postDelivery(context,
                           invoiceController.selectedInvoice.value!.saleId,
                           deliveryMan,
                           location,
@@ -793,6 +898,7 @@ class DeliveryUploadwidget extends StatelessWidget {
                       } else {
                         // Mise à jour de la livraison existante
                        await deliveryController.updateDeliveryInfo(
+                        context,
                           delivery!.id, // Utilisation de l'id de la livraison
                           deliveryMan,
                           location,

@@ -64,6 +64,7 @@ class ReusableMultiSelectSearchDropdown extends StatelessWidget {
         // closedBorder: Border.all(color: Colors.orange),
         hintStyle: TextStyle(color: Colors.black),
         closedFillColor: Colors.white,
+        closedBorder: Border.symmetric(horizontal: BorderSide(color: Colors.orange),vertical: BorderSide(color: Colors.orange))
       ),
       hintText: hintText,
       items: items,

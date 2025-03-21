@@ -10,15 +10,15 @@ import 'package:flutter_application_1/services/apiService.dart';
 class ApiController extends GetxController {
   static ApiController instance = Get.find();
   // Liste des catégories et des items
-  final RxList<Category>categories = <Category>[].obs;
-  final RxList<Item>items = <Item>[].obs;
-  final RxList<Item>itemsRupture = <Item>[].obs;
+  final RxList<Category> categories = <Category>[].obs;
+  final RxList<Item> items = <Item>[].obs;
+  final RxList<Item> itemsRupture = <Item>[].obs;
   var historiques = <ActionItem>[].obs;
   var isCategorySelected = false.obs;
   var categorySelected = Category().obs;
   final RxList<Item> filteredItems = <Item>[].obs;
   final RxList<Category> filteredCategory = <Category>[].obs;
-  final RxList<Item>itemsRupturefilter = <Item>[].obs;
+  final RxList<Item> itemsRupturefilter = <Item>[].obs;
   var isLoading = false
       .obs; // Variable pour indiquer si les données sont en train de se charger
 
@@ -40,9 +40,7 @@ class ApiController extends GetxController {
   }
 
   final Dio _dio = Dio(
-    BaseOptions(
-        baseUrl:
-            'https://inventory-app-five-ebon.vercel.app'),
+    BaseOptions(baseUrl: 'https://inventory-app-five-ebon.vercel.app'),
   );
 
   Future<void> fechAction() async {
@@ -137,8 +135,9 @@ class ApiController extends GetxController {
     await fetchItems();
     await fechAction();
     await fechtRuptureItems();
+    await salesController.fetchTotalSales();
     await invoiceController.refreshInvoices();
-await deliveryController.getDeliveries();
+    await deliveryController.getDeliveries();
     filteredItems.assignAll(items);
     filteredCategory.assignAll(categories);
     itemsRupturefilter.assignAll(itemsRupture);

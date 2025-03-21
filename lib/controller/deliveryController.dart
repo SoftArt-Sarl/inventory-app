@@ -1,12 +1,14 @@
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/models.dart/deliveryModel.dart';
 import 'package:flutter_application_1/models.dart/invoiceModel.dart';
+import 'package:flutter_application_1/widget/popupButton.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 class DeliveryController extends GetxController {
   static DeliveryController instance = Get.find();
   var deliveries = <Delivery>[].obs;
+  var deliveriefilter = <Delivery>[].obs;
   var isLoading = false.obs;
   var isLoading1 = false.obs;
   var isLoadingMap = <String, bool>{}.obs;
@@ -29,6 +31,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
       if (response.statusCode == 200 || response.statusCode == 201) {
         var data = response.data as List;
         deliveries.value = data.map((e) => Delivery.fromMap(e)).toList();
+        deliveriefilter.assignAll(deliveries);
       } else {
         Get.snackbar('Erreur', 'Impossible de récupérer les livraisons',backgroundColor: Colors.red,colorText: Colors.white);
       }
@@ -39,7 +42,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
     }
   }
 
-  Future<void> postDelivery(String saleId, String deliveryMan, String location) async {
+  Future<void> postDelivery(BuildContext context,String saleId, String deliveryMan, String location) async {
     isLoading.value = true;
     try {
       final response = await _dio.post(
@@ -69,7 +72,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
     }
   }
 
-  Future<void> updateDeliveryStatus(String deliveryId, DeliveryStatus status) async {
+  Future<void> updateDeliveryStatus(BuildContext context,String deliveryId, DeliveryStatus status) async {
     isLoadingMap[deliveryId] = true; // Active le chargement pour cette livraison
     update(); // Met à jour l'UI
 
@@ -87,7 +90,8 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Get.snackbar('Succès', 'Statut de la livraison mis à jour');
+        PopupHelper.removePopup(context);
+        Get.snackbar('Succès', 'Statut de la livraison mis à jour');
 
         // Met à jour localement au lieu de tout recharger
         int index = deliveries.indexWhere((d) => d.id == deliveryId);
@@ -104,7 +108,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
       update(); // Met à jour l'UI
     }
   }
-  Future<void> updateDeliveryInfo(String deliveryId, String? deliveryMan, String? location) async {
+  Future<void> updateDeliveryInfo(BuildContext context,String deliveryId, String? deliveryMan, String? location) async {
   isLoadingMap1[deliveryId] = true; // Active le chargement pour cette livraison
   update(); // Met à jour l'UI
 
@@ -125,6 +129,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      PopupHelper.removePopup(context);
       Get.snackbar('Succès', 'Informations de livraison mises à jour avec succès', backgroundColor: Colors.green, colorText: Colors.white);
 
       // Met à jour localement les données de livraison

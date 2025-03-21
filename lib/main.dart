@@ -6,6 +6,7 @@ import 'package:flutter_application_1/controller/deliveryController.dart';
 import 'package:flutter_application_1/controller/historiqueController.dart';
 import 'package:flutter_application_1/controller/homeController.dart';
 import 'package:flutter_application_1/controller/invoiceController.dart';
+import 'package:flutter_application_1/controller/saleController.dart';
 import 'package:flutter_application_1/controller/sellerController.dart';
 import 'package:flutter_application_1/controller/userInfo.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
@@ -37,6 +38,7 @@ void main() {
   Get.put(Sellercontroller());
   Get.put(InvoiceController());
   Get.put(DeliveryController());
+  Get.put(SalesController());
   runApp(const MyApp());
 }
 

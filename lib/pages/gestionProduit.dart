@@ -65,28 +65,30 @@ class _HeaderState extends State<Header> {
                     const SizedBox(
                       width: 16,
                     ),
-                    ElevatedButton(
-                      key: buttonKey,
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange),
-                      onPressed: () {
-                        widget.isCategory
-                            ? PopupHelper.showPopup(
-                                context: context,
-                                buttonKey: buttonKey,
-                                width: 300,
-                                popupContent: CategoryForm(),
-                              )
-                            : PopupHelper.showPopup(
-                                context: context,
-                                buttonKey: buttonKey,
-                                width: 300,
-                                popupContent: AddProduitForm(isHistoriquePage:false,),
-                              );
-                      },
-                      child: Text(
-                        widget.buttonText,
-                        style: const TextStyle(color: Colors.white),
+                    AbsorbPointer(absorbing: userinfo.authmodel.value.user!.role == "SELLER"?true:false,
+                      child: ElevatedButton(
+                        key: buttonKey,
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange),
+                        onPressed: () {
+                          widget.isCategory
+                              ? PopupHelper.showPopup(
+                                  context: context,
+                                  buttonKey: buttonKey,
+                                  width: 300,
+                                  popupContent: CategoryForm(),
+                                )
+                              : PopupHelper.showPopup(
+                                  context: context,
+                                  buttonKey: buttonKey,
+                                  width: 300,
+                                  popupContent: AddProduitForm(isHistoriquePage:false,),
+                                );
+                        },
+                        child: Text(
+                          widget.buttonText,
+                          style: const TextStyle(color: Colors.white),
+                        ),
                       ),
                     ),
                   ],
@@ -147,7 +149,7 @@ class _Header1State extends State<Header1> {
                       const Icon(Icons.production_quantity_limits, color: Colors.blue),
                       const SizedBox(width: 5),
                       Text(
-                        'Nombre total : ${apiController.categorySelected.value.items!.length} produits',
+                        'Type de produits : ${apiController.categorySelected.value.items!.length}',
                         style: const TextStyle(fontSize: 14,),
                       ),
                     ],

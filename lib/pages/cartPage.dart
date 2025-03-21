@@ -18,29 +18,21 @@ class ShoppingCart extends StatefulWidget {
 
 class _ShoppingCartState extends State<ShoppingCart> {
   bool _isLoading = false; // Indicateur de chargement
-
-  void _updateQuantity(int index, int change) {
-    setState(() {
-      var item = sellerController.itemsList[index];
-      item.quantity = (item.quantity ?? 0) + change;
-
-      if (item.quantity! <= 0) {
-        sellerController.itemsList.removeAt(index);
-      }
-    });
-  }
-
-  
-  String? disount;
+  String? discount;
   bool isDiscountSelected = false;
+
+  // Contrôleurs de texte
   TextEditingController customerName = TextEditingController();
   TextEditingController customerAddress = TextEditingController();
   TextEditingController discountController = TextEditingController();
+
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      color: Colors.grey[200],
+      color: Colors.white,
       margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: Column(
         children: [
@@ -53,13 +45,17 @@ class _ShoppingCartState extends State<ShoppingCart> {
                 const VerticalDivider(),
                 Obx(
                   () => Expanded(
-                      flex: 3,
-                      child: invoiceController.selectedInvoice.value != null
-                          ? Card(shape: const RoundedRectangleBorder(),
-                            child: InvoicePagee(isDeliveryPage: false,
-                                invoice: invoiceController.selectedInvoice.value!),
+                    flex: 3,
+                    child: invoiceController.selectedInvoice.value != null
+                        ? Card(
+                            shape: const RoundedRectangleBorder(),
+                            child: InvoicePagee(
+                              isDeliveryPage: false,
+                              invoice: invoiceController.selectedInvoice.value!,
+                            ),
                           )
-                          : _buildInformation()),
+                        : _buildInformation(),
+                  ),
                 ),
               ],
             ),
@@ -69,6 +65,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
     );
   }
 
+  // **Méthodes de construction des widgets**
+
   Widget _buildProductList() {
     return Expanded(
       flex: 4,
@@ -77,7 +75,6 @@ class _ShoppingCartState extends State<ShoppingCart> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // En-tête de la liste
             _buildTableHeader(),
             const SizedBox(height: 2),
             Obx(
@@ -88,8 +85,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                         .asMap()
                         .entries
                         .map(
-                          (entry) => _buildProductRow(entry.key, entry.value),
-                        )
+                            (entry) => _buildProductRow(entry.key, entry.value))
                         .toList(),
                   ),
                 ),
@@ -106,69 +102,35 @@ class _ShoppingCartState extends State<ShoppingCart> {
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: Colors.white, // Changement de couleur de fond en gris clair
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(5),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          _buildCell(child: _buildHeaderCell('Product', FontAwesomeIcons.cogs)),
           _buildCell(
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FaIcon(FontAwesomeIcons.cogs,
-                    color: Colors.black, size: 13), // Taille réduite de l'icône
-                SizedBox(width: 3),
-                Text('Produit', style: TextStyle(color: Colors.black)),
-              ],
-            ),
-          ),
+              child: _buildHeaderCell('Unit price', FontAwesomeIcons.tag)),
           _buildCell(
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FaIcon(FontAwesomeIcons.tag,
-                    color: Colors.black, size: 13), // Taille réduite de l'icône
-                SizedBox(width: 3),
-                Text('Unit price', style: TextStyle(color: Colors.black)),
-              ],
-            ),
-          ),
+              child: _buildHeaderCell(
+                  'Quantity', FontAwesomeIcons.sortAmountUpAlt)),
           _buildCell(
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FaIcon(FontAwesomeIcons.sortAmountUpAlt,
-                    color: Colors.black, size: 13), // Taille réduite de l'icône
-                SizedBox(width: 3),
-                Text('Quantité', style: TextStyle(color: Colors.black)),
-              ],
-            ),
-          ),
+              child: _buildHeaderCell('Total', FontAwesomeIcons.calculator)),
           _buildCell(
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FaIcon(FontAwesomeIcons.calculator,
-                    color: Colors.black, size: 13), // Taille réduite de l'icône
-                SizedBox(width: 3),
-                Text('Total', style: TextStyle(color: Colors.black)),
-              ],
-            ),
-          ),
-          _buildCell(
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FaIcon(FontAwesomeIcons.trashAlt,
-                    color: Colors.black, size: 13), // Taille réduite de l'icône
-                SizedBox(width: 5),
-                Text('Action', style: TextStyle(color: Colors.black)),
-              ],
-            ),
-          ),
+              child: _buildHeaderCell('Action', FontAwesomeIcons.trashAlt)),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeaderCell(String title, IconData icon) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        FaIcon(icon, color: Colors.black, size: 13),
+        const SizedBox(width: 3),
+        Text(title, style: const TextStyle(color: Colors.black)),
+      ],
     );
   }
 
@@ -176,13 +138,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
     int total = (product.unitPrice ?? 0) * (product.quantity ?? 0);
     return Card(
       elevation: 0,
-      color: Colors.white,
-      // padding: const EdgeInsets.symmetric(vertical: 0),
+      color: Colors.grey[200],
       margin: const EdgeInsets.symmetric(vertical: 3),
-      // decoration: BoxDecoration(
-      //   color: Colors.grey[230],
-      //   borderRadius: BorderRadius.all(const Radius.circular(5)),
-      // ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -191,32 +148,36 @@ class _ShoppingCartState extends State<ShoppingCart> {
                   style: const TextStyle(fontWeight: FontWeight.normal))),
           _buildCell(
               child: Text('${(product.unitPrice ?? 0).toStringAsFixed(0)}')),
-          _buildCell(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  onPressed: () => _updateQuantity(index, -1),
-                  icon: const Icon(Icons.remove),
-                ),
-                Text('${product.quantity ?? 0}'),
-                IconButton(
-                  onPressed: () => _updateQuantity(index, 1),
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ),
+          _buildCell(child: _buildQuantityControls(index, product)),
           _buildCell(child: Text(total.toStringAsFixed(0))),
-          _buildCell(
-            child: IconButton(
-              style: IconButton.styleFrom(minimumSize: const Size(36, 36)),
-              icon: const Icon(Icons.close),
-              onPressed: () => _updateQuantity(index, -(product.quantity ?? 0)),
-            ),
-          ),
+          _buildCell(child: _buildRemoveButton(index, product)),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuantityControls(int index, dynamic product) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          onPressed: () => _updateQuantity(index, -1),
+          icon: const Icon(Icons.remove),
+        ),
+        Text('${product.quantity ?? 0}'),
+        IconButton(
+          onPressed: () => _updateQuantity(index, 1),
+          icon: const Icon(Icons.add),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRemoveButton(int index, dynamic product) {
+    return IconButton(
+      style: IconButton.styleFrom(minimumSize: const Size(36, 36)),
+      icon: const Icon(Icons.close),
+      onPressed: () => _updateQuantity(index, -(product.quantity ?? 0)),
     );
   }
 
@@ -233,15 +194,15 @@ class _ShoppingCartState extends State<ShoppingCart> {
     return SizedBox(
       width: MediaQuery.of(context).size.width / 4,
       child: ReusableMultiSelectSearchDropdown(
-          hintText: 'Cliquez ici pour ajouter des items',
-          items: apiController.items.map((element) => element.name!).toList(),
-          onPressed: (items) {
-            sellerController.addToCar(items);
-          }),
+        hintText: 'Cliquez ici pour ajouter des items',
+        items: apiController.items.map((element) => element.name!).toList(),
+        onPressed: (items) {
+          sellerController.addToCar(items);
+        },
+      ),
     );
   }
 
-  final _formKey = GlobalKey<FormState>();
   Widget _buildInformation() {
     return Form(
       key: _formKey,
@@ -254,26 +215,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
           child: Wrap(
             runSpacing: 5,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 7),
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FaIcon(FontAwesomeIcons.cogs,
-                        color: Colors.black, size: 13),
-                    SizedBox(width: 10),
-                    Text(
-                      'Information de vente',
-                      style: TextStyle(fontSize: 16, color: Colors.black),
-                    ),
-                  ],
-                ),
-              ),
+              _buildInformationHeader(),
               _buildTextField(
                 hintext: 'exp: Issa Traoré',
                 label: 'Custumer name',
@@ -298,43 +240,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
                   return null;
                 },
               ),
-              Row(
-                children: [
-                  Checkbox(
-                    value: isDiscountSelected,
-                    onChanged: (value) {
-                      setState(() {
-                        isDiscountSelected = value!;
-                      });
-                    },
-                  ),
-                  const Text(
-                    'Discount ?',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-              if (isDiscountSelected)
-                _buildTextField(
-                  onChanged: (value) {
-                    setState(() {
-                      disount = value;
-                    });
-                  },
-                  hintext: 'exp: 3500',
-                  label: 'Discount amount',
-                  icon: Icons.discount_outlined,
-                  onlyNumbers: true,
-                  controller: discountController,
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      if (int.tryParse(value) == null) {
-                        return "Enter a valid input";
-                      }
-                    }
-                    return null;
-                  },
-                ),
+              _buildDiscountCheckbox(),
+              if (isDiscountSelected) _buildDiscountField(),
               const Divider(),
               _buildOrderSummary(),
             ],
@@ -342,6 +249,79 @@ class _ShoppingCartState extends State<ShoppingCart> {
         ),
       ),
     );
+  }
+
+  Widget _buildInformationHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 7),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      ),
+      child: const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FaIcon(FontAwesomeIcons.cogs, color: Colors.black, size: 13),
+          SizedBox(width: 10),
+          Text(
+            'Information de vente',
+            style: TextStyle(fontSize: 16, color: Colors.black),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDiscountCheckbox() {
+    return Row(
+      children: [
+        Checkbox(
+          value: isDiscountSelected,
+          onChanged: (value) {
+            setState(() {
+              isDiscountSelected = value!;
+            });
+          },
+        ),
+        const Text(
+          'Discount ?',
+          style: TextStyle(fontSize: 16),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDiscountField() {
+    return _buildTextField(
+      onChanged: (value) {
+        sellerController.setDiscount(double.parse(value));
+      },
+      hintext: 'exp: 3500',
+      label: 'Discount amount',
+      icon: Icons.discount_outlined,
+      onlyNumbers: true,
+      controller: discountController,
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          if (int.tryParse(value) == null) {
+            return "Enter a valid input";
+          }
+        }
+        return null;
+      },
+    );
+  }
+
+  void _updateQuantity(int index, int change) {
+    setState(() {
+      var item = sellerController.itemsList[index];
+      item.quantity = (item.quantity ?? 0) + change;
+
+      if (item.quantity! <= 0) {
+        sellerController.itemsList.removeAt(index);
+      }
+    });
   }
 
   void createAndFetchInvoices() async {
@@ -363,25 +343,36 @@ class _ShoppingCartState extends State<ShoppingCart> {
 
       if (saleId != null) {
         Get.snackbar(
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-            'Success',
-            'Purchase successfull');
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          'Success',
+          'Purchase successful',
+        );
+
         await getInvoicesForSale(saleId);
+
+        // Vider les champs et le tableau après succès // Assurez-vous que cela est appelé ici
       } else {
-        Get.snackbar(
-            colorText: Colors.white,
-            backgroundColor: Colors.red,
-            "Error",
-            "Something went wrong");
+        print('erreur');
       }
     } catch (e) {
       Get.snackbar(
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
-          "Error",
-          e.toString());
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+        "Error",
+        e.toString(),
+      );
     }
+  }
+
+  Future<void> clearFormFields() async {
+    customerName.clear();
+    customerAddress.clear();
+    discountController.clear();
+    sellerController.itemsList
+        .clear(); // Assurez-vous que cette méthode vide la liste des articles
+    isDiscountSelected = false;
+    setState(() {});
   }
 
   Future<String?> createSale({
@@ -399,7 +390,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
       final Map<String, dynamic> data = {
         'custumerName': customerName,
         'custumerAddress': customerAddress,
-        if (discount != null) 'discount': discount,
+        'discount': sellerController.discount.value.toInt(),
         'items': items ?? [],
       };
 
@@ -426,15 +417,15 @@ class _ShoppingCartState extends State<ShoppingCart> {
         _isLoading = false;
       });
       Get.snackbar(
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
-          "Erreur",
-          e.response?.data['message'] ?? "Une erreur est survenue");
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+        "Erreur",
+        e.response?.data['message'] ?? "Une erreur est survenue",
+      );
       return null;
     }
   }
 
-  // Invoice? invoiceData;
   Future<void> getInvoicesForSale(String saleId) async {
     final Dio _dio = Dio();
 
@@ -447,79 +438,60 @@ class _ShoppingCartState extends State<ShoppingCart> {
           },
         ),
       );
+
       Invoice invoice = Invoice.fromMap(response.data);
-
       invoiceController.selectedInvoice.value = invoice;
-
+      clearFormFields();
       await apiController.refreshData();
-      // Affiche la réponse (les factures) dans la console ou traite-la comme nécessaire
       print('voici la facture :${response.data}');
     } on DioException catch (e) {
       Get.snackbar(
-          colorText: Colors.white,
-          backgroundColor: Colors.red,
-          'Erreur',
-          '${e.response?.data['message']}');
-      throw Exception(' ${e.response?.data['message']}');
+        colorText: Colors.white,
+        backgroundColor: Colors.red,
+        'Erreur',
+        '${e.response?.data['message']}',
+      );
+      throw Exception('${e.response?.data['message']}');
     }
   }
-
-  // void createAndFetchInvoices() async {
-  //   String? saleId = await createSale(
-  //     customerName: customerName.text.trim(),
-  //     customerAddress: customerAddress.text.trim(),
-  //     discount: isDiscountSelected ? int.parse(discountController.text) : null,
-  //     items: sellerController.itemsList
-  //         .map(
-  //           (element) => element.toJson3(),
-  //         )
-  //         .toList(),
-  //   );
-
-  //   if (saleId != null) {
-  //     print("Vente créée avec succès ! Sale ID: $saleId");
-  //     // Maintenant, récupère les factures pour cette vente
-  //     await getInvoicesForSale(saleId);
-  //   } else {
-  //     print("Échec de la création de la vente");
-  //   }
-  // }
 
   Widget _buildOrderSummary() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Obx(() => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSummaryRow('Total Items', '${sellerController.totalItems} items'),
-          _buildSummaryRow(
-              'Sous-total', '${sellerController.subtotal.toStringAsFixed(0)} FCFA'),
-          if (isDiscountSelected)
-            if (isDiscountSelected)
-              _buildSummaryRow('Réduction (10%)', '$disount FCFA'),
-          const Divider(),
-          _buildSummaryRow('Total', '${sellerController.total.toStringAsFixed(0)} FCFA',
-              isBold: true),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : createAndFetchInvoices,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                minimumSize: const Size(double.infinity, 48),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSummaryRow(
+                  'Total Items', '${sellerController.totalItems} items'),
+              _buildSummaryRow('Sub-total',
+                  '${sellerController.subtotal.toStringAsFixed(0)} FCFA'),
+              if (isDiscountSelected)
+                _buildSummaryRow('Réduction',
+                    '${sellerController.discount.value.toStringAsFixed(0)} FCFA'),
+              const Divider(),
+              _buildSummaryRow(
+                  'Total', '${sellerController.total.toStringAsFixed(0)} FCFA',
+                  isBold: true),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : createAndFetchInvoices,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Checkout'),
+                ),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Checkout'),
-            ),
-          ),
-        ],
-      ),),
+            ],
+          )),
     );
   }
 
@@ -527,8 +499,8 @@ class _ShoppingCartState extends State<ShoppingCart> {
     return Container(
       margin: const EdgeInsets.only(bottom: 5),
       decoration: const BoxDecoration(
-          // color: Colors.grey[200],
-          borderRadius: BorderRadius.all(Radius.circular(5))),
+        borderRadius: BorderRadius.all(Radius.circular(5)),
+      ),
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -578,7 +550,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
               isDense: true,
               filled: true,
               hintText: hintext,
-              fillColor: Colors.white,
+              fillColor: Colors.grey[200],
               prefixIcon: Icon(icon, color: Colors.orange),
               border: InputBorder.none,
               focusedBorder: const UnderlineInputBorder(

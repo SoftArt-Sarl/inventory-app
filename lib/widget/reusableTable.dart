@@ -35,9 +35,9 @@ class ReusableTable extends StatelessWidget {
     }
 
     final headers = data.first.keys
-        .where((key) => key != 'id' && key != 'categoryId'&& key != 'Status')
+        .where((key) => key != 'id' && key != 'categoryId' && key != 'Status')
         .toList();
-final header1 = data.first.keys
+    final header1 = data.first.keys
         .where((key) => key != 'id' && key != 'categoryId')
         .toList();
     return Column(
@@ -45,20 +45,23 @@ final header1 = data.first.keys
         // En-tête
         Table(
           children: [
-            appTypeController.isDesktop.value?
-            TableRow(
-              children: [
-                ...header1.map((header) => _buildHeaderCell(
-                    header, appTypeController.isDesktop.value)),
-                _buildHeaderCell('Actions', appTypeController.isDesktop.value),
-              ],
-            ):TableRow(
-              children: [
-                ...headers.map((header) => _buildHeaderCell(
-                    header, appTypeController.isDesktop.value)),
-                _buildHeaderCell('Actions', appTypeController.isDesktop.value),
-              ],
-            )
+            appTypeController.isDesktop.value
+                ? TableRow(
+                    children: [
+                      ...header1.map((header) => _buildHeaderCell(
+                          header, appTypeController.isDesktop.value)),
+                      _buildHeaderCell(
+                          'Actions', appTypeController.isDesktop.value),
+                    ],
+                  )
+                : TableRow(
+                    children: [
+                      ...headers.map((header) => _buildHeaderCell(
+                          header, appTypeController.isDesktop.value)),
+                      _buildHeaderCell(
+                          'Actions', appTypeController.isDesktop.value),
+                    ],
+                  )
           ],
         ),
         // Contenu défilable
@@ -69,7 +72,10 @@ final header1 = data.first.keys
               border: TableBorder.all(
                   color: Colors.grey.withOpacity(0.3), width: 1),
               children: data
-                  .map((rowData) => _buildRow(rowData,appTypeController.isDesktop.value? header1:headers, context))
+                  .map((rowData) => _buildRow(
+                      rowData,
+                      appTypeController.isDesktop.value ? header1 : headers,
+                      context))
                   .toList(),
             ),
           ),
@@ -197,38 +203,43 @@ final header1 = data.first.keys
         padding: isdektop
             ? const EdgeInsets.symmetric(vertical: 10, horizontal: 8)
             : const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            OutlinedButton(
-              key: buttonKey1,
-              style: OutlinedButton.styleFrom(
-                shape:
-                    const CircleBorder(side: BorderSide(color: Colors.orange)),
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(36, 36),
+        child: AbsorbPointer(
+          absorbing:
+              userinfo.authmodel.value.user!.role == "SELLER" ? true : false,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton(
+                key: buttonKey1,
+                style: OutlinedButton.styleFrom(
+                  shape: const CircleBorder(
+                      side: BorderSide(color: Colors.orange)),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(36, 36),
+                ),
+                onPressed: () {
+                  updateItem(context);
+                },
+                child: const Icon(Icons.edit_outlined,
+                    size: 18, color: Colors.orange),
               ),
-              onPressed: () {
-                updateItem(context);
-              },
-              child: const Icon(Icons.edit_outlined,
-                  size: 18, color: Colors.orange),
-            ),
-            const SizedBox(width: 10),
-            OutlinedButton(
-              key: buttonKey2,
-              style: OutlinedButton.styleFrom(
-                shape: const CircleBorder(side: BorderSide(color: Colors.red)),
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(36, 36),
+              const SizedBox(width: 10),
+              OutlinedButton(
+                key: buttonKey2,
+                style: OutlinedButton.styleFrom(
+                  shape:
+                      const CircleBorder(side: BorderSide(color: Colors.red)),
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(36, 36),
+                ),
+                onPressed: () {
+                  deletedItem(context);
+                },
+                child: const Icon(Icons.delete_outline,
+                    size: 18, color: Colors.red),
               ),
-              onPressed: () {
-                deletedItem(context);
-              },
-              child:
-                  const Icon(Icons.delete_outline, size: 18, color: Colors.red),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -322,7 +333,6 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
       String itemId = widget.isHistoriquePage == true
           ? selectedItemId! // Utilisation de l'ID sélectionné via le dropdown
           : widget.id!;
-      
 
       await apiService.updateItem(
         itemId,
@@ -391,13 +401,11 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
               ? _buildTextField(itemTextController, 'Item name')
-              : _buildTextField(
-                  itemTextController, 'Edit item name'),
+              : _buildTextField(itemTextController, 'Edit item name'),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
               ? _buildTextField(unitPriceController, 'Price', isNumeric: true)
-              : _buildTextField(
-                  unitPriceController, 'Edit item price',
+              : _buildTextField(unitPriceController, 'Edit item price',
                   isNumeric: true),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
@@ -489,7 +497,9 @@ class _DeleteItemFormState extends State<DeleteItemForm> {
 
     ApiService apiService = ApiService();
     try {
-      await apiService.deleteItem(widget.itemId!,);
+      await apiService.deleteItem(
+        widget.itemId!,
+      );
       setState(() {
         isLoading = false;
       });

@@ -123,41 +123,44 @@ class CategoryWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                            key: buttonKey1,
-                            style: OutlinedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(36, 36),
+              AbsorbPointer(
+                absorbing: userinfo.authmodel.value.user!.role == "SELLER"?true:false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                              key: buttonKey1,
+                              style: OutlinedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(36, 36),
+                              ),
+                              onPressed: () {
+                                // PopupHelper.removePopup(context);
+                                updateCategory(context);
+                              },
+                              child: const Icon(
+                                Icons.edit_outlined,
+                                size: 18,
+                              ),
                             ),
-                            onPressed: () {
-                              // PopupHelper.removePopup(context);
-                              updateCategory(context);
-                            },
-                            child: const Icon(
-                              Icons.edit_outlined,
-                              size: 18,
+                            const SizedBox(width: 5),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                shape: const CircleBorder(),
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(36, 36),
+                              ),
+                              onPressed: () {
+                                deleteCategory(context);
+                              },
+                              child: const Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              shape: const CircleBorder(),
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(36, 36),
-                            ),
-                            onPressed: () {
-                              deleteCategory(context);
-                            },
-                            child: const Icon(
-                              Icons.delete_outline,
-                              size: 18,
-                            ),
-                          ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

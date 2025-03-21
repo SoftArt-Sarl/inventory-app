@@ -56,9 +56,9 @@ class Item {
     return {
       'id': id,
       'categoryId': categoryId,
-      'Nom': name,
-      'quantité': quantity,
-      'Prix unitaire': '$unitPrice',
+      'Product': name,
+      'quantity': quantity,
+      'Unit price': '$unitPrice',
       'Total': '$itemsTotal',
       'Catégorie': categoryId,
       'Status': quantity! <= 10 ? true : false,

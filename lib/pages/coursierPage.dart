@@ -119,14 +119,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           homeController.changeIndex(1);
                         },
                       )),
-                  _buildCard(
+                  Obx(() => _buildCard(daterange:Text(salesController.selectedRange.value != null
+                            ? '${DateFormat('dd MMM yyyy').format(salesController.selectedRange.value!.start)} - '
+                                '${DateFormat('dd MMM yyyy').format(salesController.selectedRange.value!.end)}'
+                            : 'Sélectionnez une période'),
+                    
+                    progressIndicator: salesController.isLoading.value
+                        ? const SizedBox(
+                            height: 15,
+                            width: 15,
+                            child: CircularProgressIndicator(strokeWidth:2,))
+                        : null,
                     FontAwesomeIcons.euroSign,
-                    'Total sales this month',
-                    '${Item.calculateTotalValue(apiController.items).toString()} FCFA',
+                    'Total sales',
+                    salesController.totalSales.value,
                     Colors.purple,
                     appTypeController.isDesktop.value,
-                    () {},
-                  ),
+                    () {
+                      salesController.pickDateRange(
+                          context); // Ouvre le date picker au clic
+                    },
+                  )),
                 ],
               ),
             ),
@@ -164,7 +177,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildCard(IconData icon, String title, String value, Color color,
-      bool isDesktop, VoidCallback onTap) {
+      bool isDesktop, VoidCallback onTap,
+      {Widget? progressIndicator, Widget? daterange}) {
     return InkWell(
       onTap: onTap,
       child: Card(
@@ -181,20 +195,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Icon(icon, size: isDesktop ? 32 : 20, color: color),
               SizedBox(width: isDesktop ? 16 : 5),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (isDesktop)
+                  if(daterange!=null)
+                        daterange,
+                        if(daterange==null)
                     Text(
                       title,
                       style: TextStyle(fontSize: isDesktop ? 15 : 10),
                     ),
-                  Text(
-                    isDesktop ? value : value.split(' ')[0],
-                    style: TextStyle(
-                      fontSize: isDesktop ? 20 : 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  progressIndicator != null
+                      ? Center(child: progressIndicator)
+                      : Text(
+                          isDesktop ? value : value.split(' ')[0],
+                          style: TextStyle(
+                            fontSize: isDesktop ? 20 : 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ],
               ),
             ],
@@ -408,7 +427,8 @@ class _ButtonListState extends State<ButtonList> {
                 fontWeight: FontWeight.bold),
           ),
         ),
-        if (_selectedForm == null && userinfo.authmodel.value.user!.role == "ADMIN") ...[
+        if (_selectedForm == null &&
+            userinfo.authmodel.value.user!.role == "ADMIN") ...[
           _buildDashboardButton(
             context,
             icon: Icons.add_shopping_cart,
@@ -433,7 +453,6 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
-          
           _buildDashboardButton(
             context,
             icon: Icons.edit,
@@ -443,7 +462,6 @@ class _ButtonListState extends State<ButtonList> {
               isHistoriquePage: true,
             )),
           ),
-          
           _buildDashboardButton(
             context,
             icon: Icons.category,
@@ -564,6 +582,64 @@ class ActionHistoryPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class DateRangePickerWidget extends StatefulWidget {
+  final Function(String, String) onDateRangeSelected;
+
+  const DateRangePickerWidget({Key? key, required this.onDateRangeSelected})
+      : super(key: key);
+
+  @override
+  _DateRangePickerWidgetState createState() => _DateRangePickerWidgetState();
+}
+
+class _DateRangePickerWidgetState extends State<DateRangePickerWidget> {
+  DateTime? _startDate;
+  DateTime? _endDate;
+  final DateFormat _dateFormat = DateFormat('yyyy-MM-dd');
+
+  Future<void> _selectDateRange(BuildContext context) async {
+    DateTime now = DateTime.now();
+    DateTime firstDate = DateTime(now.year - 2); // 2 ans en arrière
+    DateTime lastDate = DateTime(now.year + 2); // 2 ans en avant
+
+    DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: firstDate,
+      lastDate: lastDate,
+      initialDateRange: _startDate != null && _endDate != null
+          ? DateTimeRange(start: _startDate!, end: _endDate!)
+          : null,
+    );
+
+    if (picked != null) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+
+      // Appel du callback avec les dates formatées
+      widget.onDateRangeSelected(
+        _dateFormat.format(_startDate!),
+        _dateFormat.format(_endDate!),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () => _selectDateRange(context),
+          child: Text(_startDate != null && _endDate != null
+              ? 'Période: ${_dateFormat.format(_startDate!)} - ${_dateFormat.format(_endDate!)}'
+              : 'Sélectionner une période'),
+        ),
+      ],
     );
   }
 }
