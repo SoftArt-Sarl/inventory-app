@@ -75,7 +75,7 @@ class ActionItem {
       case 'ADDEDNEW':
         return itemId == null
             ? '➕ New category added : ${newValue!.title??''}'
-            : '➕ $quantity items added for ${item?.unitPrice?.toStringAsFixed(2) ?? 'N/A'} FCFA/unit';
+            : '➕ $quantity items added for ${item?.unitPrice?.toStringAsFixed(0) ?? 'N/A'} FCFA/unit';
       case 'REMOVEDFROMSTOCK':
         return '🔻 $quantity items removed (Old value: ${oldValue?.quantity ?? 0} → new value: ${newValue?.quantity ?? 0})';
       case 'DELETED':

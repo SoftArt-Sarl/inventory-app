@@ -65,7 +65,10 @@ class _HeaderState extends State<Header> {
                     const SizedBox(
                       width: 16,
                     ),
-                    AbsorbPointer(absorbing: userinfo.authmodel.value.user!.role == "SELLER"?true:false,
+                    AbsorbPointer(
+                      absorbing: userinfo.authmodel.value.user!.role == "SELLER"
+                          ? true
+                          : false,
                       child: ElevatedButton(
                         key: buttonKey,
                         style: ElevatedButton.styleFrom(
@@ -82,7 +85,9 @@ class _HeaderState extends State<Header> {
                                   context: context,
                                   buttonKey: buttonKey,
                                   width: 300,
-                                  popupContent: AddProduitForm(isHistoriquePage:false,),
+                                  popupContent: AddProduitForm(
+                                    isHistoriquePage: false,
+                                  ),
                                 );
                         },
                         child: Text(
@@ -143,14 +148,19 @@ class _Header1State extends State<Header1> {
                       const SizedBox(width: 5),
                       Text(
                         'Valeur totale : ${apiController.categorySelected.value.total} FCFA',
-                        style: const TextStyle(fontSize: 14, ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(width: 20),
-                      const Icon(Icons.production_quantity_limits, color: Colors.blue),
+                      const Icon(Icons.production_quantity_limits,
+                          color: Colors.blue),
                       const SizedBox(width: 5),
                       Text(
                         'Type de produits : ${apiController.categorySelected.value.items!.length}',
-                        style: const TextStyle(fontSize: 14,),
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   )
@@ -213,7 +223,6 @@ class Pagination extends StatelessWidget {
               );
             }),
           ),
-          TextButton(onPressed: () {}, child: const Text('Next')),
         ],
       ),
     );
@@ -223,11 +232,7 @@ class Pagination extends StatelessWidget {
 class AddProduitForm extends StatefulWidget {
   bool? isHistoriquePage;
   bool? isdektop;
-  AddProduitForm({
-    super.key,
-    this.isHistoriquePage=false,
-    this.isdektop
-  });
+  AddProduitForm({super.key, this.isHistoriquePage = false, this.isdektop});
 
   @override
   State<AddProduitForm> createState() => _AddProduitFormState();
@@ -274,21 +279,26 @@ class _AddProduitFormState extends State<AddProduitForm> {
       quantitytext.clear();
       prixtext.clear();
       categorieText.clear();
-      !widget.isdektop!? Get.back():null;
+      !widget.isdektop! ? Get.back() : null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produit ajouté avec succès!',),),
+        const SnackBar(
+          content: Text(
+            'Produit ajouté avec succès!',
+          ),
+        ),
       );
     } catch (e) {
       setState(() {
         isLoading = false; // Arrêter le chargement en cas d'erreur
       });
-      !widget.isdektop!? Get.back():null;
+      !widget.isdektop! ? Get.back() : null;
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erreur lors de l\'ajout du produit.')),
       );
     }
   }
+
   final buttonKey = GlobalKey();
 
   @override
@@ -403,8 +413,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                       // Affiche un message d'erreur si le champ est vide
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content:
-                              Text('Enter a valid category.'),
+                          content: Text('Enter a valid category.'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -420,32 +429,344 @@ class _AddProduitFormState extends State<AddProduitForm> {
                     ],
                   ),
                 ),
+          const SizedBox(
+            height: 16,
+          ),
+          TextButton(
+            onPressed: () {
+              Get.defaultDialog(
+                  title: 'Add muptiple produtct',
+                  content: AddMultipleProductsForm());
+            },
+            child: const Text('Ajouter plusieurs produit'),
+          ),
           if (widget.isHistoriquePage!)
             Center(
               child: Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-              'Ensure that the category related to this product is already created',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey[800],
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Ensure that the category related to this product is already created',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[800],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+            )
+        ],
+      ),
+    );
+  }
+}
+
+class AddMultipleProductsForm extends StatefulWidget {
+  @override
+  _AddMultipleProductsFormState createState() =>
+      _AddMultipleProductsFormState();
+}
+
+class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
+  List<Map<String, TextEditingController>> products = [];
+  bool isLoading = false;
+  bool sameCategoryForAll = false;
+  TextEditingController commonCategoryController = TextEditingController();
+  final _formKey =
+      GlobalKey<FormState>(); // Clé pour gérer les validations du formulaire
+
+  @override
+  void initState() {
+    super.initState();
+    addProductField();
+  }
+
+  void addProductField() {
+    setState(() {
+      products.add({
+        'name': TextEditingController(),
+        'quantity': TextEditingController(),
+        'price': TextEditingController(),
+        'category': TextEditingController(),
+      });
+    });
+  }
+
+  void removeProductField(int index) {
+    setState(() {
+      products.removeAt(index);
+    });
+  }
+
+  Future<void> addProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    // Validation du formulaire
+    if (!_formKey.currentState!.validate()) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      bool hasEmptyField = products.any((product) {
+        // Vérification des champs 'name', 'quantity', 'price', et 'category'
+        bool categoryEmpty = sameCategoryForAll
+            ? commonCategoryController
+                .text.isEmpty // Vérification de la catégorie commune
+            : product['category']!
+                .text
+                .isEmpty; // Vérification de la catégorie spécifique au produit
+
+        return product['name']!.text.isEmpty ||
+            product['quantity']!.text.isEmpty ||
+            product['price']!.text.isEmpty ||
+            categoryEmpty; // Si un champ est vide, retourne true
+      });
+
+      if (hasEmptyField) {
+        throw Exception("Tous les champs doivent être remplis.");
+      }
+
+      // Ajout des produits après validation
+      for (var product in products) {
+        await ApiService().addItem(
+          product['name']!.text.trim(),
+          int.tryParse(product['quantity']!.text.trim()) ??
+              0, // Vérifie que c'est un nombre
+          int.tryParse(product['price']!.text.trim()) ??
+              0, // Vérifie que c'est un nombre
+          sameCategoryForAll
+              ? commonCategoryController.text.trim()
+              : product['category']!.text.trim(),
+        );
+      }
+
+      setState(() => isLoading = false);
+      Get.back();
+      Get.snackbar('Done', 'Products added successfully!',
+          backgroundColor: Colors.green, colorText: Colors.white);
+
+      apiController.refreshData();
+    } catch (e) {
+      setState(() => isLoading = false);
+      Get.snackbar('Done', e.toString(),
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height - 150,
+        width: MediaQuery.of(context).size.width / 2.5,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Checkbox(
+                  value: sameCategoryForAll,
+                  onChanged: (value) {
+                    setState(() {
+                      sameCategoryForAll = value!;
+                    });
+                  },
+                ),
+                const Text("Même catégorie pour tous"),
+                const SizedBox(width: 50),
+                if (sameCategoryForAll)
+                  Expanded(
+                    child: ReusableSearchDropdown(
+                      hintText: 'Sélectionner une catégorie',
+                      items: apiController.categories
+                          .map((e) => e.title!)
+                          .toList(),
+                      onPressed: (categorie) {
+                        setState(() {
+                          commonCategoryController.text = apiController
+                              .categories
+                              .firstWhere(
+                                  (element) => element.title == categorie!)
+                              .id!;
+                        });
+                      },
+                    ),
+                  ),
+              ],
+            ),
+            const Divider(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Form(
+                  key:
+                      _formKey, // Attacher le formulaire à la clé de validation
+                  child: Column(
+                    children: products.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      var product = entry.value;
+
+                      return Column(
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    if (!sameCategoryForAll)
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ReusableSearchDropdown(
+                                              hintText:
+                                                  'Sélectionner une catégorie',
+                                              items: apiController.categories
+                                                  .map((e) => e.title!)
+                                                  .toList(),
+                                              onPressed: (categorie) {
+                                                setState(() {
+                                                  product['category']!.text =
+                                                      apiController.categories
+                                                          .firstWhere(
+                                                              (element) =>
+                                                                  element
+                                                                      .title ==
+                                                                  categorie!)
+                                                          .id!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['name']!, 'Nom')),
+                                        ],
+                                      ),
+                                    if (sameCategoryForAll)
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['name']!, 'Nom')),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['quantity']!,
+                                                  'Quantité')),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['price']!,
+                                                  'Prix unitaire')),
+                                        ],
+                                      ),
+                                    const SizedBox(height: 10),
+                                    if (!sameCategoryForAll)
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['quantity']!,
+                                                  'Quantité')),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                              child: _buildTextField(
+                                                  product['price']!,
+                                                  'Prix unitaire')),
+                                        ],
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    color: Colors.red),
+                                onPressed: () => removeProductField(index),
+                              ),
+                            ],
+                          ),
+                          const Divider(),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: addProductField,
+                  child: const Text('Add item row'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: isLoading ? null : addProducts,
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Submit'),
+                      ],
+                    ),
             ),
           ],
         ),
       ),
-    ),
-            )
-        ],
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: hint,
+          fillColor: Colors.grey[200],
+          filled: true,
+          isDense: true,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+        // Validation spécifique pour chaque champ
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Le champ $hint est requis'; // Affichage du message d'erreur
+          }
+          return null;
+        },
       ),
     );
   }
@@ -464,65 +785,65 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
   final TextEditingController quantitytext = TextEditingController();
 
   Future<void> retirerStock() async {
-  if (isLoading) return; // Éviter les doubles soumissions
+    if (isLoading) return; // Éviter les doubles soumissions
 
-  setState(() {
-    isLoading = true; // Lancer le chargement
-  });
+    setState(() {
+      isLoading = true; // Lancer le chargement
+    });
 
-  try {
-    ApiService apiService = ApiService();
-
-    // Vérification que le champ nom est rempli
-    String itemName = nametext.text.trim();
-    if (itemName.isEmpty) {
-      throw Exception("Enter item name.");
-    }
-
-    // Vérification que l'article existe
-    Item? item;
     try {
-      item = apiController.items.firstWhere(
-        (element) => element.name == itemName,
+      ApiService apiService = ApiService();
+
+      // Vérification que le champ nom est rempli
+      String itemName = nametext.text.trim();
+      if (itemName.isEmpty) {
+        throw Exception("Enter item name.");
+      }
+
+      // Vérification que l'article existe
+      Item? item;
+      try {
+        item = apiController.items.firstWhere(
+          (element) => element.name == itemName,
+        );
+      } catch (e) {
+        throw Exception("This product doesn't exist.");
+      }
+
+      // Vérification de la quantité
+      int? quantity = int.tryParse(quantitytext.text.trim());
+      if (quantity == null || quantity <= 0) {
+        throw Exception('Enter a valid input.');
+      }
+
+      // Exécuter le retrait du stock
+      await apiService.retirerStok(item, quantity);
+
+      // Rafraîchir les données
+      await apiController.refreshData();
+
+      setState(() {
+        isLoading = false; // Arrêter le chargement
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Product removed successfully!')),
       );
     } catch (e) {
-      throw Exception("This product doesn't exist.");
+      setState(() {
+        isLoading = false; // Arrêter le chargement en cas d'erreur
+      });
+
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Something went wrong'), // Afficher le message d'erreur précis
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    // Vérification de la quantité
-    int? quantity = int.tryParse(quantitytext.text.trim());
-    if (quantity == null || quantity <= 0) {
-      throw Exception('Enter a valid input.');
-    }
-
-    // Exécuter le retrait du stock
-    await apiService.retirerStok(item, quantity);
-
-    // Rafraîchir les données
-    await apiController.refreshData();
-
-    setState(() {
-      isLoading = false; // Arrêter le chargement
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product removed successfully!')),
-    );
-  } catch (e) {
-    setState(() {
-      isLoading = false; // Arrêter le chargement en cas d'erreur
-    });
-
-    // ignore: use_build_context_synchronously
-    ScaffoldMessenger.of(context).showSnackBar(
-     const  SnackBar(
-        content: Text('Something went wrong'), // Afficher le message d'erreur précis
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -534,7 +855,8 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
             'Remove a product',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
+          if (!apiController.isCategorySelected.value)
+            const SizedBox(height: 15),
           if (!apiController.isCategorySelected.value)
             ReusableSearchDropdown(
               items: apiController.items.map((e) => e.name!).toList(),
@@ -549,13 +871,15 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
             borderRadius: BorderRadius.circular(10),
             child: TextFormField(
               controller: quantitytext,
-              keyboardType: TextInputType.number, // Assure que seul un nombre est entré
+              keyboardType:
+                  TextInputType.number, // Assure que seul un nombre est entré
               decoration: InputDecoration(
                 hintText: 'Quantity',
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -597,6 +921,7 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
     );
   }
 }
+
 class AjouterStockForm extends StatefulWidget {
   const AjouterStockForm({Key? key}) : super(key: key);
 
@@ -610,64 +935,64 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
   final TextEditingController quantitytext = TextEditingController();
 
   Future<void> ajouterStock() async {
-  if (isLoading) return; // Éviter les doubles soumissions
+    if (isLoading) return; // Éviter les doubles soumissions
 
-  setState(() {
-    isLoading = true; // Début du chargement
-  });
+    setState(() {
+      isLoading = true; // Début du chargement
+    });
 
-  try {
-    ApiService apiService = ApiService();
-
-    // Vérification que le champ nom est rempli
-    String itemName = nametext.text.trim();
-    if (itemName.isEmpty) {
-      throw Exception("Product name.");
-    }
-
-    // Vérification que l'article existe
-    Item? item;
     try {
-      item = apiController.items.firstWhere(
-        (element) => element.name == itemName,
+      ApiService apiService = ApiService();
+
+      // Vérification que le champ nom est rempli
+      String itemName = nametext.text.trim();
+      if (itemName.isEmpty) {
+        throw Exception("Product name.");
+      }
+
+      // Vérification que l'article existe
+      Item? item;
+      try {
+        item = apiController.items.firstWhere(
+          (element) => element.name == itemName,
+        );
+      } catch (e) {
+        throw Exception("Product doesn't exist.");
+      }
+
+      // Vérification de la quantité
+      int? quantity = int.tryParse(quantitytext.text.trim());
+      if (quantity == null || quantity <= 0) {
+        throw Exception('Enter a valid input.');
+      }
+
+      // Exécuter l’ajout de stock
+      await apiService.ajouterStock(item, quantity);
+
+      // Rafraîchir les données
+      await apiController.refreshData();
+
+      setState(() {
+        isLoading = false; // Fin du chargement
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Stock added to this item!')),
       );
     } catch (e) {
-      throw Exception("Product doesn't exist.");
+      setState(() {
+        isLoading = false; // Arrêter le chargement en cas d'erreur
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Something went wrong'), // Afficher le message d'erreur précis
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    // Vérification de la quantité
-    int? quantity = int.tryParse(quantitytext.text.trim());
-    if (quantity == null || quantity <= 0) {
-      throw Exception('Enter a valid input.');
-    }
-
-    // Exécuter l’ajout de stock
-    await apiService.ajouterStock(item, quantity);
-
-    // Rafraîchir les données
-    await apiController.refreshData();
-
-    setState(() {
-      isLoading = false; // Fin du chargement
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Stock added to this item!')),
-    );
-  } catch (e) {
-    setState(() {
-      isLoading = false; // Arrêter le chargement en cas d'erreur
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Something went wrong'), // Afficher le message d'erreur précis
-        backgroundColor: Colors.red,
-      ),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -679,7 +1004,8 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
             'Add stock to an item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          if (!apiController.isCategorySelected.value) const SizedBox(height: 15),
+          if (!apiController.isCategorySelected.value)
+            const SizedBox(height: 15),
           if (!apiController.isCategorySelected.value)
             ReusableSearchDropdown(
               items: apiController.items.map((e) => e.name!).toList(),
@@ -700,7 +1026,8 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                 fillColor: Colors.grey[200],
                 filled: true,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -737,32 +1064,42 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     ],
                   ),
                 ),
-                ElevatedButton(onPressed: (){
-                  Get.defaultDialog(content: const AjouterStockFormmultiple());
-                }, child: const Text('text'),)
+          SizedBox(
+            height: 20,
+          ),
+          TextButton(
+            onPressed: () {
+              Get.defaultDialog(
+                  title: 'Add muptiple',
+                  content: const AjouterStockFormmultiple());
+            },
+            child: const Text('Ajouter plusieurs produit'),
+          )
         ],
       ),
     );
   }
 }
 
-
 class AjouterStockFormmultiple extends StatefulWidget {
   const AjouterStockFormmultiple({Key? key}) : super(key: key);
 
   @override
-  State<AjouterStockFormmultiple> createState() => _AjouterStockFormmultipleState();
+  State<AjouterStockFormmultiple> createState() =>
+      _AjouterStockFormmultipleState();
 }
 
 class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
   bool isLoading = false;
   final List<TextEditingController> nameControllers = [];
   final List<TextEditingController> quantityControllers = [];
+  bool applySameQuantity = false;
+  final TextEditingController commonQuantityController =
+      TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Ajout d'une ligne initiale
     addNewRow();
   }
 
@@ -772,150 +1109,179 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
     setState(() {});
   }
 
+  void removeRow(int index) {
+    if (nameControllers.length > 1) {
+      nameControllers[index].dispose();
+      quantityControllers[index].dispose();
+      nameControllers.removeAt(index);
+      quantityControllers.removeAt(index);
+      setState(() {});
+    }
+  }
+
+  void applyCommonQuantity() {
+    if (applySameQuantity) {
+      for (var controller in quantityControllers) {
+        controller.text = commonQuantityController.text;
+      }
+      setState(() {});
+    }
+  }
+
   Future<void> ajouterStock() async {
-    if (isLoading) return; // Éviter les doubles soumissions
-
-    setState(() {
-      isLoading = true; // Début du chargement
-    });
-
+    if (isLoading) return;
+    setState(() => isLoading = true);
     try {
       ApiService apiService = ApiService();
       List<Item> itemsToAdd = [];
 
       for (int i = 0; i < nameControllers.length; i++) {
         String itemName = nameControllers[i].text.trim();
-        if (itemName.isEmpty) {
-          throw Exception("Enter product name.");
-        }
+        if (itemName.isEmpty) throw Exception("Enter product name.");
 
-        // Vérification que l'article existe
-        Item? item;
-        try {
-          item = apiController.items.firstWhere(
-            (element) => element.name == itemName,
-          );
-        } catch (e) {
-          throw Exception("Product '$itemName' doesn't exist.");
-        }
+        Item? item =
+            apiController.items.firstWhereOrNull((e) => e.name == itemName);
+        if (item == null) throw Exception("Product '$itemName' doesn't exist.");
 
-        // Vérification de la quantité
         int? quantity = int.tryParse(quantityControllers[i].text.trim());
-        if (quantity == null || quantity <= 0) {
+        if (quantity == null || quantity <= 0)
           throw Exception('Enter a valid input for "$itemName".');
-        }
 
         itemsToAdd.add(item);
         await apiService.ajouterStock(item, quantity);
       }
 
-      // Rafraîchir les données
-      await apiController.refreshData();
-
-      setState(() {
-        isLoading = false; // Fin du chargement
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Stock added to this item!')),
-      );
+      setState(() => isLoading = false);
+      Get.back();
+      apiController.refreshData();
+      Get.snackbar('Done', 'stock added successfully!',
+          backgroundColor: Colors.green, colorText: Colors.white);
     } catch (e) {
-      setState(() {
-        isLoading = false; // Arrêter le chargement en cas d'erreur
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString()), // Afficher le message d'erreur précis
-          backgroundColor: Colors.red,
-        ),
-      );
+      setState(() => isLoading = false);
+    // Get.back();
+    Get.snackbar('Done', 'Something wrong',
+        backgroundColor: Colors.green, colorText: Colors.red);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Add stock to an item',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          const Text('Manage Stock',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Checkbox(
+                value: applySameQuantity,
+                onChanged: (value) {
+                  setState(() {
+                    applySameQuantity = value!;
+                    applyCommonQuantity();
+                  });
+                },
+              ),
+              const Text('Apply same quantity to all items'),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: TextFormField(
+                    controller: commonQuantityController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      hintText: 'Enter quantity',
+                      filled: true,
+                      fillColor: Colors.grey[200],
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (value) => applyCommonQuantity(),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
-          Expanded(
+          SizedBox(
+            width: 400,
+            height: 300,
             child: ListView.builder(
               itemCount: nameControllers.length,
               itemBuilder: (context, index) {
-                return Row(
-                  children: [
-                    Expanded(
-                      child: ReusableSearchDropdown(
-                        items: apiController.items.map((e) => e.name!).toList(),
-                        onPressed: (produit) {
-                          setState(() {
-                            nameControllers[index].text = produit!;
-                          });
-                        },
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ReusableSearchDropdown(
+                          items:
+                              apiController.items.map((e) => e.name!).toList(),
+                          onPressed: (produit) {
+                            setState(
+                                () => nameControllers[index].text = produit!);
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: TextFormField(
-                          controller: quantityControllers[index],
-                          keyboardType: TextInputType.number, // Clavier numérique
-                          decoration: InputDecoration(
-                            hintText: 'Quantity',
-                            fillColor: Colors.grey[200],
-                            filled: true,
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 40,
+                        width: 100,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: TextFormField(
+                            controller: quantityControllers[index],
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              hintText: 'Qty',
+                              filled: true,
+                              // isDense: true,
+                              fillColor: Colors.grey[200],
+                              border: InputBorder.none,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      IconButton(
+                        onPressed: () => removeRow(index),
+                        icon:
+                            const Icon(Icons.delete_outline, color: Colors.red),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 16),
-          isLoading
-              ? const CircularProgressIndicator()
-              : ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange, // Couleur pour l'ajout
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8 ),
-                  ),
-                  
-                  
-                ), onPressed: () async{await ajouterStock();  }, child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Add stock to items',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              addNewRow(); // Ajouter une nouvelle ligne
-            },
-            child: const Text('Add new row'),
+          const SizedBox(height: 10),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: addNewRow,
+              child: const Text('Add Item'),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Align(
+            alignment: Alignment.center,
+            child: ElevatedButton(
+              onPressed: ajouterStock,
+              child: isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text('Add to stock')]),
+            ),
           ),
         ],
       ),
     );
   }
 }
-
 
 class CategoryForm extends StatefulWidget {
   bool? isHistoriquePage = false;
@@ -954,7 +1320,9 @@ class _CategoryFormState extends State<CategoryForm> {
       // Affiche un message d'erreur
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Something went wrong.'),backgroundColor: Colors.red,),
+          content: Text('Something went wrong.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -999,7 +1367,7 @@ class _CategoryFormState extends State<CategoryForm> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: (){},
+                  onPressed: () {},
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

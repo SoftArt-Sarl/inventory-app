@@ -9,7 +9,7 @@ class SalesController extends GetxController {
   static SalesController instance = Get.find();
 
   Rxn<DateRange?> selectedRange = Rxn<DateRange?>(null);
-  RxString totalSales = 'No result'.obs; // Valeur par défaut "Erreur"
+  RxString totalSales = 'No result'.obs; 
   RxBool isLoading = false.obs;
 
   final Dio dio = Dio();
@@ -29,10 +29,16 @@ class SalesController extends GetxController {
   Future<void> fetchTotalSales() async {
     if (selectedRange.value == null || isLoading.value) return;
 
+    final token = userinfo.authmodel.value?.access_token;
+    if (token == null) {
+      totalSales.value = 'No result';
+      return;
+    }
+
     isLoading.value = true;
 
     final DateTime startDate = selectedRange.value!.start;
-    final DateTime endDate = selectedRange.value!.end;
+    final DateTime endDate = selectedRange.value!.end.add(const Duration(days: 1)); // ✅ Inclure la dernière date
 
     try {
       final response = await dio.get(
@@ -42,19 +48,18 @@ class SalesController extends GetxController {
           'endDate': DateFormat('yyyy-MM-dd').format(endDate),
         },
         options: Options(
-          headers: {
-            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
-          },
+          headers: {'Authorization': 'Bearer $token'},
         ),
       );
 
       if (response.statusCode == 200 && response.data['totalSales'] != null) {
-        totalSales.value = '${response.data['totalSales'].toString()} FCFA';
+        totalSales.value = '${response.data['totalSales']} FCFA';
       } else {
         totalSales.value = 'No result';
       }
     } catch (e) {
       totalSales.value = 'No result';
+      debugPrint('Erreur lors de la récupération des ventes : $e');
     } finally {
       isLoading.value = false;
     }
