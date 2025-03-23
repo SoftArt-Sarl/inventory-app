@@ -59,7 +59,7 @@ class SalesController extends GetxController {
       }
     } catch (e) {
       totalSales.value = 'No result';
-      debugPrint('Erreur lors de la récupération des ventes : $e');
+      debugPrint('Something went wrong : $e');
     } finally {
       isLoading.value = false;
     }

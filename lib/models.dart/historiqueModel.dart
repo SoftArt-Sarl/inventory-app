@@ -66,7 +66,7 @@ class ActionItem {
   }
 
     String get title {
-    return item?.name ?? oldValue?.name ?? newValue?.name ??oldValue!. title??newValue!.title?? 'Vente';
+    return item?.name ?? oldValue?.name ?? newValue?.name ??oldValue!. title??newValue!.title?? 'Sale';
   }
 
 

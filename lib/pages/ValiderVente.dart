@@ -9,14 +9,14 @@ class PurchaseValidationPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Validation de l\'achat'),
+        title: const Text('Validate Purchase'),
         actions: [
           TextButton(
             onPressed: () {
               // Action pour "Nouvelle vente"
             },
             child: const Text(
-              'Nouvelle vente',
+              'New purchase',
               style: TextStyle(color: Colors.white),
             ),
           ),
