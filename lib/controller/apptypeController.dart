@@ -7,6 +7,6 @@ class AppTypeController extends GetxController {
   var isDesktop = false.obs;
 
   void checkScreenType(BuildContext context) {
-    isDesktop.value = MediaQuery.of(context).size.width >= 900;
+    isDesktop.value = MediaQuery.of(context).size.width >= 800;
   }
 }

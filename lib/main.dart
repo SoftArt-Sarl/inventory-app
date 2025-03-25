@@ -132,37 +132,34 @@ class _HomePageState extends State<HomePage> {
           )),
       ShoppingCart(),
       // const PurchaseValidationPage(),
-      RotatedBox(
-        quarterTurns: appTypeController.isDesktop.value ? 0 : 3,
-        child: TablePage(
-          searchBar: !appTypeController.isDesktop.value
-              ? const SizedBox.shrink()
-              : SearchBarWithFilter(
-                  originalList: apiController.items,
-                  filteredList: apiController.filteredItems,
-                  filterFunction: (item, query) =>
-                      item.name!.toLowerCase().contains(query.toLowerCase()),
-                ),
-          header: const Header(
-            isCategory: false,
-            title: 'Items',
-            buttonText: 'Add new Item',
-          ),
-          productList: Obx(() => ReusableTable(
-                data: apiController.filteredItems
-                    .map(
-                      (element) => element.toJson1(),
-                    )
-                    .toList(),
-                onEdit: (context, row) {
-                  print('Edition mode : $row');
-                },
-                onDelete: (context, row) {
-                  print('Deletion : $row');
-                },
-              )),
-          // pagination: Pagination(),
+      TablePage(
+        searchBar: !appTypeController.isDesktop.value
+            ? const SizedBox.shrink()
+            : SearchBarWithFilter(
+                originalList: apiController.items,
+                filteredList: apiController.filteredItems,
+                    filterFunction: (item, query) =>
+                    item.name!.toLowerCase().contains(query.toLowerCase()),
+              ),
+        header: const Header(
+          isCategory: false,
+          title: 'Items',
+          buttonText: 'Add new Item',
         ),
+        productList: Obx(() => ReusableTable(
+              data: apiController.filteredItems
+                  .map(
+                    (element) => element.toJson1(),
+                  )
+                  .toList(),
+              onEdit: (context, row) {
+                print('Edition mode : $row');
+              },
+              onDelete: (context, row) {
+                print('Deletion : $row');
+              },
+            )),
+        // pagination: Pagination(),
       ),
 
       TablePageWidget(),
