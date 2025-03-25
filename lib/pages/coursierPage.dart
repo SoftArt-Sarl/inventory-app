@@ -86,7 +86,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: double.infinity,
               child: ResponsiveGrid(
                 columnsMobile: 2,
-                columnsTablet: 3,
+                columnsTablet: 4,
                 runSpacing: 5,
                 columnsDesktop: 4,
                 spacing: 0,
@@ -120,8 +120,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         },
                       )),
                   Obx(() => _buildCard(daterange:Text(salesController.selectedRange.value != null
-                            ? '${DateFormat('dd MMM yyyy').format(salesController.selectedRange.value!.start)} - '
-                                '${DateFormat('dd MMM yyyy').format(salesController.selectedRange.value!.end)}'
+                            ? '${DateFormat('dd/MM/yyyy').format(salesController.selectedRange.value!.start)} - '
+'${DateFormat('dd/MM/yyyy').format(salesController.selectedRange.value!.end)}'
+
                             : 'Sélectionnez une période'),
                     
                     progressIndicator: salesController.isLoading.value
@@ -176,52 +177,70 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCard(IconData icon, String title, String value, Color color,
-      bool isDesktop, VoidCallback onTap,
-      {Widget? progressIndicator, Widget? daterange}) {
-    return InkWell(
-      onTap: onTap,
-      child: Card(
-        color: Colors.white,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-              vertical: 10, horizontal: isDesktop ? 16 : 2),
-          child: Row(
-            mainAxisAlignment:
-                isDesktop ? MainAxisAlignment.start : MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: isDesktop ? 32 : 20, color: color),
-              SizedBox(width: isDesktop ? 16 : 5),
-              Column(
+  Widget _buildCard(
+  IconData icon,
+  String title,
+  String value,
+  Color color,
+  bool isDesktop,
+  VoidCallback onTap, {
+  Widget? progressIndicator,
+  Widget? daterange,
+}) {
+  return InkWell(
+    onTap: onTap,
+    child: Card(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: 10,
+          horizontal: isDesktop ? 16 : 10,
+        ),
+        child: Row(
+          mainAxisAlignment:
+              isDesktop ? MainAxisAlignment.start : MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: isDesktop ? 25 : 20, color: color),
+            SizedBox(width: isDesktop ? 10 : 5),
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   if (isDesktop)
-                  if(daterange!=null)
-                        daterange,
-                        if(daterange==null)
-                    Text(
-                      title,
-                      style: TextStyle(fontSize: isDesktop ? 15 : 10),
-                    ),
+                    if (daterange != null)
+                      daterange
+                    else
+                      Text(
+                        title,
+                        style: TextStyle(fontSize: isDesktop ? 15 : 10),
+                        overflow: TextOverflow.ellipsis, // Coupe si nécessaire
+                        maxLines: 1, // Évite l'overflow
+                        textAlign: TextAlign.center,
+                      ),
                   progressIndicator != null
                       ? Center(child: progressIndicator)
                       : Text(
                           isDesktop ? value : value.split(' ')[0],
                           style: TextStyle(
-                            fontSize: isDesktop ? 20 : 12,
+                            fontSize: isDesktop ? 16 : 12,
                             fontWeight: FontWeight.bold,
                           ),
+                          overflow: TextOverflow.ellipsis, // Coupe si nécessaire
+                          maxLines: 1, // Évite l'overflow
+                          textAlign: TextAlign.center,
                         ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
 
 class HeaderSection extends StatelessWidget {
@@ -252,10 +271,10 @@ class HistoriqueSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     appTypeController.checkScreenType(context);
-    return Card(
+    return Card(elevation: 0,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(5))),
-      color: Colors.white,
+      color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -547,37 +566,40 @@ class ActionHistoryPage extends StatelessWidget {
             ),
           ),
           beforeLineStyle: LineStyle(color: action.actionColor),
-          endChild: Padding(
-            padding: const EdgeInsets.all(5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      action.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    Text(
-                      DateFormat('dd MMM yyyy, HH:mm')
-                          .format(action.createdAt!),
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  action.details,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  action.user!.name,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const Divider()
-              ],
+          endChild: Card(
+            // padding: const EdgeInsets.all(5),
+            child: Padding(
+              padding: const EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        action.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      Text(
+                        DateFormat('dd MMM yyyy, HH:mm')
+                            .format(action.createdAt!),
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    action.details,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    action.user!.name,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  // const Divider()
+                ],
+              ),
             ),
           ),
         );

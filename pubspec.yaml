@@ -67,18 +67,18 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
-    image_path: "assets/logo.jpg"
+    image_path: "assets/shoptrak.jpg"
   windows:
     generate: true
-    image_path: "assets/logo.jpg"
+    image_path: "assets/shoptrak.jpg"
   macos:
     generate: true
-    image_path: "assets/logo.jpg"
-  image_path: "assets/logo.jpg"
+    image_path: "assets/shoptrak.jpg"
+  image_path: "assets/shoptrak.jpg"
 
 # Définir le nom de l'application ici
 launcher_name:
-  default: "FelMaurice"
+  default: "Shoptrak "
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -93,7 +93,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/logo.jpg
+    - assets/shoptrak.jpg
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

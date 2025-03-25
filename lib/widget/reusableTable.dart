@@ -34,55 +34,138 @@ class ReusableTable extends StatelessWidget {
       );
     }
 
+    if (appTypeController.isDesktop.value) {
+      return _buildDesktopTable(context);
+    } else {
+      return _buildMobileList();
+    }
+  }
+
+  Widget _buildDesktopTable(BuildContext context) {
     final headers = data.first.keys
         .where((key) => key != 'id' && key != 'categoryId' && key != 'Status')
         .toList();
     final header1 = data.first.keys
         .where((key) => key != 'id' && key != 'categoryId')
         .toList();
+
     return Column(
       children: [
-        // En-tête
         Table(
           children: [
-            appTypeController.isDesktop.value
-                ? TableRow(
-                    children: [
-                      ...header1.map((header) => _buildHeaderCell(
-                          header, appTypeController.isDesktop.value)),
-                      _buildHeaderCell(
-                          'Actions', appTypeController.isDesktop.value),
-                    ],
-                  )
-                : TableRow(
-                    children: [
-                      ...headers.map((header) => _buildHeaderCell(
-                          header, appTypeController.isDesktop.value)),
-                      _buildHeaderCell(
-                          'Actions', appTypeController.isDesktop.value),
-                    ],
-                  )
+            TableRow(
+              children: [
+                ...header1.map((header) => _buildHeaderCell(header, true)),
+                _buildHeaderCell('Actions', true),
+              ],
+            )
           ],
         ),
-        // Contenu défilable
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Table(
-              border: TableBorder.all(
-                  color: Colors.grey.withOpacity(0.3), width: 1),
-              children: data
-                  .map((rowData) => _buildRow(
+              border: TableBorder.all(color: Colors.grey.withOpacity(0.3), width: 1),
+              children: data.map((rowData) => _buildRow(
                       rowData,
                       appTypeController.isDesktop.value ? header1 : headers,
-                      context))
-                  .toList(),
+                      context)).toList(),
             ),
           ),
         ),
       ],
     );
   }
+
+  Widget _buildMobileList() {
+  return ListView.builder(
+    itemCount: data.length,
+    itemBuilder: (context, index) {
+      final rowData = data[index];
+      final quantity = rowData['quantity'];
+      final unitPrice = rowData['Unit price'];
+      final total = rowData['Total'];
+
+      return Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(const Radius.circular(5))),
+        child: ExpansionTile(
+          dense: true,
+          title: Text(
+            rowData['Product'],
+            style: const TextStyle(fontSize: 16),
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Tableau avec bordures et titre
+                  Table(
+                    border: TableBorder.all(
+                      color: Colors.grey.withOpacity(0.4),
+                      width: 1,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(2),
+                      2: FlexColumnWidth(2),
+                      3: FlexColumnWidth(1),
+                    },
+                    children: [
+                      // Ligne des titres
+                      TableRow(
+                        decoration:  BoxDecoration(
+                          color: Colors.grey[200],
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('Quantité', style: TextStyle(fontSize: 12, )),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('Prix Unitaire', style: TextStyle(fontSize: 12)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('Total', style: TextStyle(fontSize: 12, )),
+                          ),
+                          
+                        ],
+                      ),
+                      // Ligne des valeurs
+                      TableRow(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('$quantity', style: const TextStyle(fontSize: 12)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('$unitPrice', style: const TextStyle(fontSize: 12)),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text('$total', style: const TextStyle(fontSize: 12)),
+                          ),
+                          
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildActionButtons(rowData, context, true),
+                ],
+              ),
+            )
+          ],
+        ),
+      );
+    },
+  );
+}
+
 
   TableRow _buildRow(Map<String, dynamic> rowData, List<String> headers,
       BuildContext context) {
@@ -118,38 +201,22 @@ class ReusableTable extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderCell(String text, bool isdektop) {
+  Widget _buildHeaderCell(String text, bool isDesktop) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(text,
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: isdektop ? 16 : 14,
-                fontWeight: isdektop ? FontWeight.bold : FontWeight.normal)),
+        child: Text(text, style: TextStyle(fontSize: isDesktop ? 16 : 14, fontWeight: FontWeight.bold)),
       ),
     );
   }
 
-  Widget _buildCell(dynamic value, bool isdektop) {
+  Widget _buildCell(dynamic value, bool isDesktop) {
     return Center(
       child: Container(
-        alignment: Alignment.center,
-        width: double.infinity,
-        padding: isdektop
-            ? const EdgeInsets.symmetric(vertical: 10, horizontal: 8)
-            : const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+        padding: const EdgeInsets.all(8),
         child: value is bool
-            ? Icon(
-                !value
-                    ? Icons.check_circle_outline
-                    : Icons.remove_shopping_cart_outlined,
-                color: !value ? Colors.green : Colors.red,
-              )
-            : Text(
-                value != null ? value.toString() : 'Aucune donnée',
-                style: const TextStyle(fontSize: 16),
-              ),
+            ? Icon(value ? Icons.check_circle_outline : Icons.remove_shopping_cart_outlined, color: value ? Colors.green : Colors.red)
+            : Text(value != null ? value.toString() : 'Aucune donnée'),
       ),
     );
   }
@@ -237,7 +304,7 @@ class ReusableTable extends StatelessWidget {
                 },
                 child: const Icon(Icons.delete_outline,
                     size: 18, color: Colors.red),
-              ),
+                ),
             ],
           ),
         ),
@@ -245,6 +312,7 @@ class ReusableTable extends StatelessWidget {
     );
   }
 }
+
 
 class FutureWidget<T> extends StatelessWidget {
   final Future<T> Function() fetchFunction;

@@ -1294,37 +1294,48 @@ class CategoryForm extends StatefulWidget {
 class _CategoryFormState extends State<CategoryForm> {
   bool isLoading = false;
   final TextEditingController categorieText = TextEditingController();
+
   Future<void> addCategory() async {
     setState(() {
       isLoading = true; // Lancer le chargement
     });
+
     ApiService apiService = ApiService();
+
     try {
       await apiService.addCategory(categorieText.text.trim());
 
-      // if (!widget.isHistoriquePage!) {
-      //   PopupHelper.removePopup(context);
-      // }
+      await apiController.refreshData(); // Correction ici
 
-      await apiController.refreshData();
       setState(() {
         isLoading = false; // Arrêter le chargement après l'ajout
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Category added successfully!')),
-      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Category added successfully!')),
+        );
+      }
     } catch (e) {
       setState(() {
         isLoading = false; // Arrêter le chargement en cas d'erreur
       });
-      // Affiche un message d'erreur
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Something went wrong.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Something went wrong.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    categorieText.dispose(); // Éviter les fuites mémoire
+    super.dispose();
   }
 
   @override
@@ -1343,7 +1354,6 @@ class _CategoryFormState extends State<CategoryForm> {
             child: TextFormField(
               controller: categorieText,
               decoration: InputDecoration(
-                // labelText: 'Nom de la catégorie',
                 hintText: 'Category name',
                 fillColor: Colors.grey[200],
                 filled: true,
@@ -1351,9 +1361,6 @@ class _CategoryFormState extends State<CategoryForm> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              onChanged: (value) {
-                // Gestion dynamique si nécessaire
-              },
             ),
           ),
           const SizedBox(height: 16),
@@ -1367,7 +1374,7 @@ class _CategoryFormState extends State<CategoryForm> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: isLoading ? null : addCategory, // Correction ici
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -1383,3 +1390,4 @@ class _CategoryFormState extends State<CategoryForm> {
     );
   }
 }
+
