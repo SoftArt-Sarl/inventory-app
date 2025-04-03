@@ -29,16 +29,16 @@ class TablePage extends StatelessWidget {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
+                  // boxShadow: [
+                  //   // BoxShadow(
+                  //   //   color: Colors.grey.withOpacity(0.2),
+                  //   //   spreadRadius: 2,
+                  //   //   blurRadius: 5,
+                  //   //   offset: const Offset(0, 3),
+                  //   // ),
+                  // ],
                 ),
                 child: Column(
                   children: [

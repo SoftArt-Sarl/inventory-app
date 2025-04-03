@@ -14,11 +14,22 @@ import 'package:flutter_application_1/controller/invoiceController.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 import '../models.dart/invoiceModel.dart';
 
-class InvoicePage extends StatelessWidget {
+class InvoicePage extends StatefulWidget {
   const InvoicePage({super.key});
 
   @override
+  State<InvoicePage> createState() => _InvoicePageState();
+}
+
+class _InvoicePageState extends State<InvoicePage> {
+  @override
+  void initState() {
+    super.initState();
+    invoiceController.selectedInvoice.value=null;
+  }
+  @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     final InvoiceController invoiceController = Get.put(InvoiceController());
     final Rx<DateTime?> selectedDate = Rx<DateTime?>(null);
     final Rx<DateTimeRange?> selectedRange = Rx<DateTimeRange?>(null);
@@ -26,39 +37,70 @@ class InvoicePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             SearchBarWithFilter(
-              calendarwidget: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Obx(() {
-                      return DateFilterWidget(
-                        selectedDate: selectedDate.value,
-                        onSelectDate: () => _selectDate(context, selectedDate),
-                        onClearDate: () => selectedDate.value = null,
-                      );
-                    }),
-                    const SizedBox(width: 10),
-                    Obx(() {
-                      return DateRangeFilterWidget(
-                        selectedRange: selectedRange.value,
-                        onSelectRange: () =>
-                            pickDateRange(context, selectedRange),
-                        onClearRange: () => selectedRange.value = null,
-                      );
-                    }),
-                  ],
-                ),
-              ),
+              calendarwidget: !appTypeController.isDesktop.value
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Obx(() {
+                            return DateFilterWidget(
+                              selectedDate: selectedDate.value,
+                              onSelectDate: () =>
+                                  _selectDate(context, selectedDate),
+                              onClearDate: () => selectedDate.value = null,
+                            );
+                          }),
+                          const SizedBox(width: 10),
+                          Obx(() {
+                            return DateRangeFilterWidget(
+                              selectedRange: selectedRange.value,
+                              onSelectRange: () =>
+                                  pickDateRange(context, selectedRange),
+                              onClearRange: () => selectedRange.value = null,
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
               originalList: invoiceController.invoicesList,
               filteredList: invoiceController.invoicesfilteredList,
               filterFunction: (invoice, query) => invoice.sale.custumerName
                   .toLowerCase()
                   .contains(query.toLowerCase()),
             ),
+            if (!appTypeController.isDesktop.value)
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 5,
+                  ),
+                  Obx(() {
+                    return Expanded(
+                      child: DateFilterWidget(
+                        selectedDate: selectedDate.value,
+                        onSelectDate: () => _selectDate(context, selectedDate),
+                        onClearDate: () => selectedDate.value = null,
+                      ),
+                    );
+                  }),
+                  const SizedBox(width: 10),
+                  Obx(() {
+                    return Expanded(
+                      child: DateRangeFilterWidget(
+                        selectedRange: selectedRange.value,
+                        onSelectRange: () =>
+                            pickDateRange(context, selectedRange),
+                        onClearRange: () => selectedRange.value = null,
+                      ),
+                    );
+                  }),
+                ],
+              ),
             Expanded(
               child: InvoiceListView(
                 invoiceController: invoiceController,
@@ -165,6 +207,7 @@ class InvoiceListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 5),
       elevation: 3,
@@ -225,7 +268,9 @@ class InvoiceListView extends StatelessWidget {
                   children: groupedInvoices.entries.map((entry) {
                     return StickyHeader(
                       header: Container(
-                        color: Colors.orange,
+                        decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            borderRadius: BorderRadius.all(Radius.circular(5))),
                         padding: const EdgeInsets.symmetric(
                             vertical: 2, horizontal: 5),
                         child: Text(
@@ -245,6 +290,15 @@ class InvoiceListView extends StatelessWidget {
                               onTap: () {
                                 invoiceController.selectedInvoice.value =
                                     invoice;
+                                !appTypeController.isDesktop.value
+                                    ? Get.bottomSheet(
+                                        InvoicePagee(
+                                          isDeliveryPage: false,
+                                          invoice: invoiceController
+                                              .selectedInvoice.value!,
+                                        ),
+                                        isScrollControlled: true)
+                                    : null;
                               },
                               child: Padding(
                                 padding:
@@ -271,24 +325,26 @@ class InvoiceListView extends StatelessWidget {
               }),
             ),
           ),
-          const VerticalDivider(),
-          Expanded(
-            flex: 2,
-            child: Obx(() {
-              if (invoiceController.selectedInvoice.value == null) {
-                return const Center(
-                  child: Text(
-                    "Select an invoice to get more details",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
+          if (appTypeController.isDesktop.value) const VerticalDivider(),
+          if (appTypeController.isDesktop.value)
+            Expanded(
+              flex: 2,
+              child: Obx(() {
+                if (invoiceController.selectedInvoice.value == null) {
+                  return const Center(
+                    child: Text(
+                      "Select an invoice to get more details",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  );
+                }
+                return InvoicePagee(
+                  isDeliveryPage: false,
+                  invoice: invoiceController.selectedInvoice.value!,
                 );
-              }
-              return InvoicePagee(
-                isDeliveryPage: false,
-                invoice: invoiceController.selectedInvoice.value!,
-              );
-            }),
-          ),
+              }),
+            ),
         ],
       ),
     );
@@ -313,7 +369,7 @@ class DateFilterWidget extends StatelessWidget {
         ? InkWell(
             onTap: onSelectDate,
             child: const Card(
-              elevation: 4,
+              elevation:4,
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
@@ -321,7 +377,8 @@ class DateFilterWidget extends StatelessWidget {
                   children: [
                     Icon(Icons.calendar_today, color: Colors.orange),
                     SizedBox(width: 5),
-                    Text('Select date'),
+                    Text(' Date'),
+                    SizedBox(width: 5),
                   ],
                 ),
               ),
@@ -369,7 +426,8 @@ class DateRangeFilterWidget extends StatelessWidget {
         ? InkWell(
             onTap: onSelectRange,
             child: const Card(
-              elevation: 4,
+              elevation: 2,
+              color: Colors.white,
               margin: EdgeInsets.zero,
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
@@ -377,7 +435,8 @@ class DateRangeFilterWidget extends StatelessWidget {
                   children: [
                     Icon(Icons.calendar_today, color: Colors.orange),
                     SizedBox(width: 5),
-                    Text('Select date range'),
+                    Text('Range'),
+                    SizedBox(width: 5),
                   ],
                 ),
               ),
@@ -392,9 +451,11 @@ class DateRangeFilterWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  "${selectedRange!.start.day}/${selectedRange!.start.month}/${selectedRange!.start.year} - ${selectedRange!.end.day}/${selectedRange!.end.month}/${selectedRange!.end.year}",
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                Expanded(
+                  child: Text(
+                    "${selectedRange!.start.day}/${selectedRange!.start.month}/${selectedRange!.start.year} - ${selectedRange!.end.day}/${selectedRange!.end.month}/${selectedRange!.end.year}",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 InkWell(
@@ -505,165 +566,172 @@ class InvoicePagee extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     final buttonKey = GlobalKey();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10, top: 5, left: 10),
-          child: Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(backgroundColor: Colors.white),
-                onPressed: _generateAndPrintPDF,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Print',
-                      style: TextStyle(color: Colors.orange),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                width: 20,
-              ),
-              if (userinfo.authmodel.value.user!.role == "SELLER")
+    return Container(
+      margin: EdgeInsets.only(top: appTypeController.isDesktop.value ? 0 : 20),
+      color: Colors.white,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10, top: 5, left: 10),
+            child: Row(
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 OutlinedButton(
-                  key: buttonKey,
                   style:
                       OutlinedButton.styleFrom(backgroundColor: Colors.white),
-                  onPressed: () {
-                    PopupHelper.showPopup(
-                      context: context,
-                      buttonKey: buttonKey,
-                      width: 300,
-                      popupContent: DeliveryUploadwidget(
-                        context: context,
-                      ),
-                    );
-                  },
+                  onPressed: _generateAndPrintPDF,
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Deliver',
+                        'Print',
                         style: TextStyle(color: Colors.orange),
                       ),
                     ],
                   ),
                 ),
-              Spacer(),
-              // const Spacer(),
-              InkWell(
-                onTap: () {
-                  isDeliveryPage
-                      ? deliveryController.selectedInvoice.value = null
-                      : invoiceController.selectedInvoice.value = null;
-                },
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                  ),
-                  child: const Icon(
-                    Icons.close,
-                    color: Colors.orange,
-                    size: 30,
-                  ),
+                const SizedBox(
+                  width: 20,
                 ),
-              )
-            ],
-          ),
-        ),
-        Expanded(
-          child: Container(
-            margin: EdgeInsets.all(5),
-            color: Colors.white,
-            padding: const EdgeInsets.all(10),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Image.asset('assets/logo.jpg', width: 50, height: 50),
-                      const Text('INVOICE',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(_formatDate(invoice.createdAt),
-                          style: const TextStyle(fontSize: 12)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text("Seller : ${invoice.seller.name}",
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text("Custumer name : ${invoice.sale.custumerName}"),
-                  Text("Address : ${invoice.sale.custumerAddress}"),
-                  const SizedBox(height: 16),
-                  Table(
-                    border: TableBorder.all(color: Colors.grey),
-                    children: [
-                      const TableRow(
-                        children: [
-                          Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Product',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold))),
-                          Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Quantity',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold))),
-                          Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Unit price',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold))),
-                          Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text('Total',
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold))),
-                        ],
-                      ),
-                      for (var item in invoice.sale.items)
-                        buildTableRow(
-                            item.item.name,
-                            item.quantity,
-                            item.item.unitPrice,
-                            item.quantity * item.item.unitPrice),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                if (userinfo.authmodel.value.user!.role == "SELLER" &&!isDeliveryPage)
+                  OutlinedButton(
+                    key: buttonKey,
+                    style:
+                        OutlinedButton.styleFrom(backgroundColor: Colors.white),
+                    onPressed: () {
+                      PopupHelper.showPopup(
+                        context: context,
+                        buttonKey: buttonKey,
+                        width: 300,
+                        popupContent: DeliveryUploadwidget(
+                          context: context,
+                        ),
+                      );
+                    },
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        buildTotalRow('Total amount', invoice.totalAmount),
-                        buildTotalRow('Discount', invoice.discount),
-                        buildTotalRow('Taxe', invoice.taxAmount),
-                        const Text('Final amount',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
-                        Text('${invoice.finalAmount.toStringAsFixed(0)} FCFA',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 20)),
+                        Text(
+                          'Deliver',
+                          style: TextStyle(color: Colors.orange),
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Center(child: Text('Thank your for your purchase !')),
-                ],
+                Spacer(),
+                // const Spacer(),
+                InkWell(
+                  onTap: () {
+                    isDeliveryPage
+                        ? deliveryController.selectedInvoice.value = null
+                        : invoiceController.selectedInvoice.value = null;
+                    appTypeController.isDesktop.value ? null : null;
+                  },
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.orange,
+                      size: 30,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.all(5),
+              color: Colors.white,
+              padding: const EdgeInsets.all(10),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Image.asset('assets/logo.jpg', width: 50, height: 50),
+                        const Text('INVOICE',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(_formatDate(invoice.createdAt),
+                            style: const TextStyle(fontSize: 12)),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text("Seller : ${invoice.seller.name}",
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text("Custumer name : ${invoice.sale.custumerName}"),
+                    Text("Address : ${invoice.sale.custumerAddress}"),
+                    const SizedBox(height: 16),
+                    Table(
+                      border: TableBorder.all(color: Colors.grey),
+                      children: [
+                        const TableRow(
+                          children: [
+                            Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Product',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
+                            Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Quantity',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
+                            Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Unit price',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
+                            Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text('Total',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold))),
+                          ],
+                        ),
+                        for (var item in invoice.sale.items)
+                          buildTableRow(
+                              item.item.name,
+                              item.quantity,
+                              item.item.unitPrice,
+                              item.quantity * item.item.unitPrice),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          buildTotalRow('Total amount', invoice.totalAmount),
+                          buildTotalRow('Discount', invoice.discount),
+                          buildTotalRow('Taxe', invoice.taxAmount),
+                          const Text('Final amount',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20)),
+                          Text('${invoice.finalAmount.toStringAsFixed(0)} FCFA',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Center(child: Text('Thank your for your purchase !')),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -835,15 +903,14 @@ class InvoicePagee extends StatelessWidget {
 }
 
 class DeliveryUploadwidget extends StatelessWidget {
-  BuildContext context;
+  final BuildContext context; // Correction ici
   final TextEditingController deliveryManController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final Delivery?
-      delivery; // Paramètre optionnel pour l'édition d'une livraison
+  final Delivery? delivery; // Paramètre optionnel pour l'édition d'une livraison
 
   // Constructeur prenant la livraison (si existante)
-  DeliveryUploadwidget({this.delivery, required this.context});
+  DeliveryUploadwidget({required this.context, this.delivery});
 
   @override
   Widget build(BuildContext context) {
@@ -903,8 +970,7 @@ class DeliveryUploadwidget extends StatelessWidget {
                 }
                 return ElevatedButton(
                   onPressed: () async {
-                    if (_formKey.currentState!.validate() &&
-                        invoiceController.selectedInvoice.value != null) {
+                    if (_formKey.currentState!.validate()) {
                       final deliveryMan = deliveryManController.text;
                       final location = locationController.text;
 

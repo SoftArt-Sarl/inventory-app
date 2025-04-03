@@ -7,6 +7,7 @@ import 'package:flutter_application_1/controller/homeController.dart';
 import 'package:flutter_application_1/controller/invoiceController.dart';
 import 'package:flutter_application_1/controller/saleController.dart';
 import 'package:flutter_application_1/controller/sellerController.dart';
+import 'package:flutter_application_1/controller/statisticController.dart';
 import 'package:flutter_application_1/controller/userInfo.dart';
 import 'package:flutter_application_1/widget/reusableTable.dart';
 
@@ -19,3 +20,4 @@ Sellercontroller sellerController =Sellercontroller.instance;
 InvoiceController invoiceController=InvoiceController.instance;
 DeliveryController deliveryController=DeliveryController.instance;
 SalesController salesController=SalesController.instance;
+StatisticsController statisticsController =StatisticsController.instance;

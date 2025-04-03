@@ -10,73 +10,163 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class ShoppingCart extends StatefulWidget {
-  const ShoppingCart({super.key});
+  bool? isFromDashbord;
+  ShoppingCart({super.key,this.isFromDashbord});
 
   @override
   _ShoppingCartState createState() => _ShoppingCartState();
 }
 
 class _ShoppingCartState extends State<ShoppingCart> {
-  bool _isLoading = false; // Indicateur de chargement
-  String? discount;
+  @override
+  void initState() {
+    super.initState();
+    invoiceController.selectedInvoice.value=null;
+  }
+  bool _isLoading = false;
   bool isDiscountSelected = false;
 
-  // Contrôleurs de texte
   TextEditingController customerName = TextEditingController();
   TextEditingController customerAddress = TextEditingController();
   TextEditingController discountController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
-
+  PageController pageController = PageController();
+  int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 4,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+    appTypeController.checkScreenType(context);
+    return !appTypeController.isDesktop.value ||widget.isFromDashbord!
+        ? Obx(
+            () => Container(
+              color: Colors.grey[200],
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: pageController,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentIndex = index; // Met à jour l'index actuel
+                        });
+                      },
+                      children: [
+                        _buildProductSection(),
+                        invoiceController.selectedInvoice.value != null
+                            ? InvoicePagee(
+                                invoice:
+                                    invoiceController.selectedInvoice.value!,
+                                isDeliveryPage: false,
+                              )
+                            : _buildInformation(),
+                      ],
+                    ),
+                  ),
+                  const Divider(),
+                  _buildPageIndicator(),
+                ],
+              ),
+            ),
+          )
+        : Card(
+            elevation: 4,
+            color: Colors.white,
+            margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Container(
+              color: Colors.grey[200],
+              child: Column(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildProductList(),
+                        const VerticalDivider(),
+                        Obx(
+                          () => Expanded(
+                            flex: 3,
+                            child: invoiceController.selectedInvoice.value != null
+                                ? InvoicePagee(
+                                    invoice:
+                                        invoiceController.selectedInvoice.value!,
+                                    isDeliveryPage: false,
+                                  )
+                                : _buildInformation(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+  }
+
+  Widget _buildProductSection() {
+    return Container(
+      height: double.maxFinite,
+      color: Colors.grey[200],
       child: Column(
         children: [
-          Expanded(
-            flex: 4,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProductList(),
-                const VerticalDivider(),
-                Obx(
-                  () => Expanded(
-                    flex: 3,
-                    child: invoiceController.selectedInvoice.value != null
-                        ? Card(
-                            shape: const RoundedRectangleBorder(),
-                            child: InvoicePagee(
-                              isDeliveryPage: false,
-                              invoice: invoiceController.selectedInvoice.value!,
-                            ),
-                          )
-                        : _buildInformation(),
-                  ),
-                ),
-              ],
+          Padding(
+              padding: const EdgeInsets.only(left: 10,right: 5,top: 5,bottom: 5),
+              child: _buildInformationHeader('Information de vente', const FaIcon(FontAwesomeIcons.list, color: Colors.black, size: 13)),
+            ),
+                    Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: sellerController.itemsList
+                    .asMap()
+                    .entries
+                    .map((entry) =>
+                        _buildProductRowMobile(entry.key, entry.value))
+                    .toList(),
+              ),
             ),
           ),
+          _buildAddItemDropdown()
         ],
       ),
     );
   }
 
-  // **Méthodes de construction des widgets**
+  Widget _buildPageIndicator() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(2, (index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _currentIndex == index ? Colors.orange : Colors.white,
+            ),
+          );
+        }),
+      ),
+    );
+  }
 
   Widget _buildProductList() {
     return Expanded(
       flex: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(5),
+      child: Container(
+        color: Colors.grey[200],
+        // padding: const EdgeInsets.all(5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTableHeader(),
-            const SizedBox(height: 2),
+            // _buildTableHeader(),
+            // const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.only(left: 10,right: 5,top: 5,bottom: 5),
+              child: _buildInformationHeader('Information de vente', const FaIcon(FontAwesomeIcons.list, color: Colors.black, size: 13)),
+            ),
             Obx(
               () => Expanded(
                 child: SingleChildScrollView(
@@ -85,7 +175,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
                         .asMap()
                         .entries
                         .map(
-                            (entry) => _buildProductRow(entry.key, entry.value))
+                            (entry) => _buildProductRowMobile(entry.key, entry.value))
                         .toList(),
                   ),
                 ),
@@ -99,6 +189,16 @@ class _ShoppingCartState extends State<ShoppingCart> {
   }
 
   Widget _buildTableHeader() {
+    return _buildHeaderRow([
+      _buildHeaderCell('Product', FontAwesomeIcons.cogs),
+      _buildHeaderCell('Unit price', FontAwesomeIcons.tag),
+      _buildHeaderCell('Quantity', FontAwesomeIcons.sortAmountUpAlt),
+      _buildHeaderCell('Total', FontAwesomeIcons.calculator),
+      _buildHeaderCell('Action', FontAwesomeIcons.trashAlt),
+    ]);
+  }
+
+  Widget _buildHeaderRow(List<Widget> cells) {
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -107,18 +207,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _buildCell(child: _buildHeaderCell('Product', FontAwesomeIcons.cogs)),
-          _buildCell(
-              child: _buildHeaderCell('Unit price', FontAwesomeIcons.tag)),
-          _buildCell(
-              child: _buildHeaderCell(
-                  'Quantity', FontAwesomeIcons.sortAmountUpAlt)),
-          _buildCell(
-              child: _buildHeaderCell('Total', FontAwesomeIcons.calculator)),
-          _buildCell(
-              child: _buildHeaderCell('Action', FontAwesomeIcons.trashAlt)),
-        ],
+        children: cells,
       ),
     );
   }
@@ -143,15 +232,70 @@ class _ShoppingCartState extends State<ShoppingCart> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCell(
-              child: Text(product.name ?? 'N/A',
-                  style: const TextStyle(fontWeight: FontWeight.normal))),
-          _buildCell(
-              child: Text('${(product.unitPrice ?? 0).toStringAsFixed(0)}')),
-          _buildCell(child: _buildQuantityControls(index, product)),
-          _buildCell(child: Text(total.toStringAsFixed(0))),
-          _buildCell(child: _buildRemoveButton(index, product)),
+          _buildCell(Text(product.name ?? 'N/A')),
+          _buildCell(Text('${(product.unitPrice ?? 0).toStringAsFixed(0)}')),
+          _buildCell(_buildQuantityControls(index, product)),
+          _buildCell(Text(total.toStringAsFixed(0))),
+          _buildCell(_buildRemoveButton(index, product)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCell(Widget child) {
+    return Expanded(
+      child: Container(
+        alignment: Alignment.center,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildProductRowMobile(int index, dynamic product) {
+    int total = (product.unitPrice ?? 0) * (product.quantity ?? 0);
+    return Card(
+      elevation: 0,
+      // color: Colors.grey[200],
+      margin: const EdgeInsets.only(bottom: 5, top: 5,left: 10,right: 5),
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name ?? 'N/A',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text('Unit price: ${(product.unitPrice ?? 0).toStringAsFixed(0)}'),
+                  Text('Total: ${total.toStringAsFixed(0)}'),
+                ],
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () => _updateQuantity(index, -1),
+                  icon: const Icon(Icons.remove),
+                ),
+                Text('${product.quantity ?? 0}',
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+                IconButton(
+                  onPressed: () => _updateQuantity(index, 1),
+                  icon: const Icon(Icons.add),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: () =>
+                      _updateQuantity(index, -(product.quantity ?? 0)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -181,23 +325,15 @@ class _ShoppingCartState extends State<ShoppingCart> {
     );
   }
 
-  Widget _buildCell({required Widget child}) {
-    return Expanded(
-      child: Container(
-        alignment: Alignment.center,
-        child: child,
-      ),
-    );
-  }
-
   Widget _buildAddItemDropdown() {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width / 4,
-      child: ReusableMultiSelectSearchDropdown(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      // width: MediaQuery.of(context).size.width / 4,
+      child: MultiSelectDropdownButton(
         hintText: 'Cliquez ici pour ajouter des items',
-        items: apiController.items.map((element) => element.name!).toList(),
+        items: apiController.items,
         onPressed: (items) {
-          sellerController.addToCar(items);
+          sellerController.addToCar(context,items.map((e) => e.id!,).toList(),);
         },
       ),
     );
@@ -209,36 +345,31 @@ class _ShoppingCartState extends State<ShoppingCart> {
       child: Container(
         margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
+          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(8),
         ),
         child: SingleChildScrollView(
           child: Wrap(
             runSpacing: 5,
             children: [
-              _buildInformationHeader(),
+              _buildInformationHeader('Information de vente',const FaIcon(FontAwesomeIcons.cogs, color: Colors.black, size: 13)),
               _buildTextField(
                 hintext: 'exp: Issa Traoré',
                 label: 'Custumer name',
                 icon: Icons.title_outlined,
                 controller: customerName,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Custumer name is required";
-                  }
-                  return null;
-                },
+                validator: (value) => value == null || value.isEmpty
+                    ? "Custumer name is required"
+                    : null,
               ),
               _buildTextField(
                 hintext: 'exp: Niamey, Francophonie',
                 label: 'Custumer address',
                 icon: Icons.home_outlined,
                 controller: customerAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Address is required";
-                  }
-                  return null;
-                },
+                validator: (value) => value == null || value.isEmpty
+                    ? "Address is required"
+                    : null,
               ),
               _buildDiscountCheckbox(),
               if (isDiscountSelected) _buildDiscountField(),
@@ -251,22 +382,22 @@ class _ShoppingCartState extends State<ShoppingCart> {
     );
   }
 
-  Widget _buildInformationHeader() {
+  Widget _buildInformationHeader(String title,Widget icon) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 7),
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(Radius.circular(5)),
       ),
-      child: const Row(
+      child:  Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FaIcon(FontAwesomeIcons.cogs, color: Colors.black, size: 13),
-          SizedBox(width: 10),
+          icon,
+          const SizedBox(width: 10),
           Text(
-            'Information de vente',
-            style: TextStyle(fontSize: 16, color: Colors.black),
+            title,
+            style:const  TextStyle(fontSize: 16, color: Colors.black),
           ),
         ],
       ),
@@ -274,21 +405,28 @@ class _ShoppingCartState extends State<ShoppingCart> {
   }
 
   Widget _buildDiscountCheckbox() {
-    return Row(
-      children: [
-        Checkbox(
-          value: isDiscountSelected,
-          onChanged: (value) {
-            setState(() {
-              isDiscountSelected = value!;
-            });
-          },
+    return Card(
+      margin: EdgeInsets.only(top: 5),
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          children: [
+            Checkbox(
+              value: isDiscountSelected,
+              onChanged: (value) {
+                setState(() {
+                  isDiscountSelected = value!;
+                });
+              },
+            ),
+            const Text(
+              'Discount ?',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
         ),
-        const Text(
-          'Discount ?',
-          style: TextStyle(fontSize: 16),
-        ),
-      ],
+      ),
     );
   }
 
@@ -324,6 +462,111 @@ class _ShoppingCartState extends State<ShoppingCart> {
     });
   }
 
+  Widget _buildOrderSummary() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Obx(() => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSummaryRow(
+                  'Total Items', '${sellerController.totalItems} items'),
+              _buildSummaryRow('Sub -total',
+                  '${sellerController.subtotal.toStringAsFixed(0)} FCFA'),
+              if (isDiscountSelected)
+                _buildSummaryRow('Réduction',
+                    '${sellerController.discount.value.toStringAsFixed(0)} FCFA'),
+              const Divider(),
+              _buildSummaryRow(
+                  'Total', '${sellerController.total.toStringAsFixed(0)} FCFA',
+                  isBold: true),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : createAndFetchInvoices,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Checkout'),
+                ),
+              ),
+            ],
+          )),
+    );
+  }
+
+  Widget _buildSummaryRow(String title, String value, {bool isBold = false}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title,
+              style: TextStyle(
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 16)),
+          Text(value,
+              style: TextStyle(
+                  color: isBold ? Colors.red : Colors.black,
+                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                  fontSize: 16)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required IconData icon,
+    required String hintext,
+    required TextEditingController controller,
+    bool onlyNumbers = false,
+    void Function(String)? onChanged,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 15),
+        ),
+        const SizedBox(height: 5),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: TextFormField(
+            onChanged: onChanged,
+            controller: controller,
+            validator: validator,
+            keyboardType:
+                onlyNumbers ? TextInputType.number : TextInputType.text,
+            inputFormatters:
+                onlyNumbers ? [FilteringTextInputFormatter.digitsOnly] : [],
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              hintText: hintext,
+              fillColor: Colors.white,
+              prefixIcon: Icon(icon, color: Colors.orange),
+              border: InputBorder.none,
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.orange),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   void createAndFetchInvoices() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -350,8 +593,6 @@ class _ShoppingCartState extends State<ShoppingCart> {
         );
 
         await getInvoicesForSale(saleId);
-
-        // Vider les champs et le tableau après succès // Assurez-vous que cela est appelé ici
       } else {
         print('erreur');
       }
@@ -369,8 +610,7 @@ class _ShoppingCartState extends State<ShoppingCart> {
     customerName.clear();
     customerAddress.clear();
     discountController.clear();
-    sellerController.itemsList
-        .clear(); // Assurez-vous que cette méthode vide la liste des articles
+    sellerController.itemsList.clear();
     isDiscountSelected = false;
     setState(() {});
   }
@@ -438,7 +678,6 @@ class _ShoppingCartState extends State<ShoppingCart> {
           },
         ),
       );
-
       Invoice invoice = Invoice.fromMap(response.data);
       invoiceController.selectedInvoice.value = invoice;
       clearFormFields();
@@ -453,113 +692,5 @@ class _ShoppingCartState extends State<ShoppingCart> {
       );
       throw Exception('${e.response?.data['message']}');
     }
-  }
-
-  Widget _buildOrderSummary() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Obx(() => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSummaryRow(
-                  'Total Items', '${sellerController.totalItems} items'),
-              _buildSummaryRow('Sub-total',
-                  '${sellerController.subtotal.toStringAsFixed(0)} FCFA'),
-              if (isDiscountSelected)
-                _buildSummaryRow('Réduction',
-                    '${sellerController.discount.value.toStringAsFixed(0)} FCFA'),
-              const Divider(),
-              _buildSummaryRow(
-                  'Total', '${sellerController.total.toStringAsFixed(0)} FCFA',
-                  isBold: true),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : createAndFetchInvoices,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Checkout'),
-                ),
-              ),
-            ],
-          )),
-    );
-  }
-
-  Widget _buildSummaryRow(String title, String value, {bool isBold = false}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 5),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title,
-              style: TextStyle(
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16)),
-          Text(value,
-              style: TextStyle(
-                  color: isBold ? Colors.red : Colors.black,
-                  fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required IconData icon,
-    required String hintext,
-    required TextEditingController controller,
-    bool onlyNumbers = false,
-    void Function(String)? onChanged,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 15),
-        ),
-        const SizedBox(height: 5),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: TextFormField(
-            onChanged: onChanged,
-            controller: controller,
-            validator: validator,
-            keyboardType:
-                onlyNumbers ? TextInputType.number : TextInputType.text,
-            inputFormatters:
-                onlyNumbers ? [FilteringTextInputFormatter.digitsOnly] : [],
-            decoration: InputDecoration(
-              isDense: true,
-              filled: true,
-              hintText: hintext,
-              fillColor: Colors.grey[200],
-              prefixIcon: Icon(icon, color: Colors.orange),
-              border: InputBorder.none,
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.orange),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 }

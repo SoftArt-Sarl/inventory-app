@@ -11,6 +11,13 @@ class ApiService {
     BaseOptions(baseUrl: 'https://inventory-app-five-ebon.vercel.app'),
   );
 
+  // Récupération du token d'accès
+  String get _accessToken => userinfo.authmodel.value.access_token;
+
+  // ============================
+  // 1. Gestion des utilisateurs
+  // ============================
+
   // Inscription d'un utilisateur
   Future<Response> registerUser(User user) async {
     try {
@@ -41,6 +48,7 @@ class ApiService {
     }
   }
 
+  // Mise à jour du mot de passe
   Future<Response> updatePassword(String newPassword) async {
     try {
       final response = await _dio.post(
@@ -50,7 +58,7 @@ class ApiService {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+            'Authorization': 'Bearer $_accessToken',
           },
         ),
       );
@@ -60,35 +68,110 @@ class ApiService {
     }
   }
 
+  // Créer un Seller (accessible uniquement par l'admin)
+  Future<Response> createSeller(String email, String password, String name) async {
+    try {
+      final response = await _dio.post(
+        '/auth/register-seller',
+        data: {
+          'email': email,
+          'password': password,
+          'name': name,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de la création du Seller: $e');
+    }
+  }
+
+  // ============================
+  // 2. Gestion de l'entreprise
+  // ============================
+
+  // Modifier le logo de l'entreprise
+  Future<Response> updateCompanyLogo(String filePath) async {
+    try {
+      FormData formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath, filename: 'company_logo.png'),
+      });
+
+      final response = await _dio.put(
+        '/user/update/company-logo',
+        data: formData,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du logo de l\'entreprise: $e');
+    }
+  }
+
+  // Modifier le nom de l'entreprise
+  Future<Response> updateCompanyName(String name) async {
+    try {
+      final response = await _dio.put(
+        '/user/update/company-name',
+        data: {
+          'name': name,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
+      print(response.data);
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du nom de l\'entreprise: $e');
+    }
+  }
+
+  // Récupération des informations de l'utilisateur ou de l'entreprise
+  Future<Response> fetchCompanyUserInfo() async {
+    try {
+      final response = await _dio.get(
+        '/user/comp-user',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken', // Ajout du token d'accès
+          },
+        ),
+      );
+      print(response.data);
+      return response;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des informations de l\'utilisateur ou de l\'entreprise: $e');
+    }
+  }
+
+  // ============================
+  // 3. Gestion des catégories
+  // ============================
+
   // Récupération des catégories
   Future<List<Category>> fetchCategories() async {
     try {
-      final response = await _dio.get('/categories',
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
-      // print(response.data.toString());
+      final response = await _dio.get(
+        '/categories',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
       List<Category> categories = (response.data as List)
-          .map((json) => Category(
-                id: json['id'],
-                total: json['total'],
-                title: json['title'],
-                createdById: json['createdById'],
-                updatedAt: json['updatedAt'] != null
-                    ? DateTime.parse(json['updatedAt'])
-                    : null,
-                items: (json['items'] != null && json['items'] is List)
-                    ? (json['items'] as List)
-                        .whereType<
-                            Map<String,
-                                dynamic>>() // Assure que chaque élément est bien un Map
-                        .map((item) => Item.fromJson(item))
-                        .toList()
-                    : [],
-              ))
+          .map((json) => Category.fromJson(json))
           .toList();
       return categories;
     } catch (e) {
@@ -106,7 +189,7 @@ class ApiService {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+            'Authorization': 'Bearer $_accessToken',
           },
         ),
       );
@@ -119,16 +202,17 @@ class ApiService {
   // Mise à jour d'une catégorie
   Future<Response> updateCategory(String categoryId, String title) async {
     try {
-      final response = await _dio.put('/categories/$categoryId',
-          data: {
-            'title': title,
+      final response = await _dio.put(
+        '/categories/$categoryId',
+        data: {
+          'title': title,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
           },
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+        ),
+      );
       return response;
     } catch (e) {
       throw Exception('Erreur lors de la mise à jour de la catégorie: $e');
@@ -140,8 +224,7 @@ class ApiService {
       final response = await _dio.get('/categories/$categoryId',
           options: Options(
             headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
+              'Authorization': 'Bearer $_accessToken',
             },
           ));
       return Category.fromJson(response.data);
@@ -153,43 +236,37 @@ class ApiService {
   // Suppression d'une catégorie
   Future<Response> deleteCategory(String categoryId) async {
     try {
-      final response = await _dio.delete('/categories/$categoryId',
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+      final response = await _dio.delete(
+        '/categories/$categoryId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
       return response;
     } catch (e) {
       throw Exception('Erreur lors de la suppression de la catégorie: $e');
     }
   }
 
+  // ============================
+  // 4. Gestion des items
+  // ============================
+
   // Récupération des items
   Future<List<Item>> fetchItems() async {
     try {
-      final response = await _dio.get('/items',
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+      final response = await _dio.get(
+        '/items',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
       List<Item> items = (response.data as List)
-          .map((json) => Item(
-                id: json['id'],
-                name: json['name'],
-                quantity: json['quantity'],
-                unitPrice: json['unitPrice'],
-                itemsTotal: json['itemsTotal'],
-                createdAt: DateTime.parse(json['createdAt']),
-                createdById: json['createdById'],
-                updatedAt: json['updatedAt'] != null
-                    ? DateTime.parse(json['updatedAt'])
-                    : null,
-                categoryId: json['categoryId'],
-              ))
+          .map((json) => Item.fromJson(json))
           .toList();
       return items;
     } catch (e) {
@@ -202,8 +279,7 @@ class ApiService {
       final response = await _dio.get('/items/low-stock',
           options: Options(
             headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
+              'Authorization': 'Bearer $_accessToken',
             },
           ));
       List<Item> items = (response.data as List)
@@ -235,8 +311,7 @@ class ApiService {
           },
           options: Options(
             headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
+              'Authorization': 'Bearer $_accessToken',
             },
           ));
       return response;
@@ -255,7 +330,7 @@ class ApiService {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+            'Authorization': 'Bearer $_accessToken',
           },
         ),
       );
@@ -267,21 +342,21 @@ class ApiService {
   }
 
   // Ajout d'un item
-  Future<Response> addItem(
-      String name, int quantity, int unitPrice, String categoryId) async {
+  Future<Response> addItem(String name, int quantity, int unitPrice, String categoryId) async {
     try {
-      final response = await _dio.post('/items/$categoryId',
-          data: {
-            'name': name,
-            'quantity': quantity,
-            'unitPrice': unitPrice,
+      final response = await _dio.post(
+        '/items/$categoryId',
+        data: {
+          'name': name,
+          'quantity': quantity,
+          'unitPrice': unitPrice,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
           },
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+        ),
+      );
       return response;
     } catch (e) {
       print(e);
@@ -294,8 +369,7 @@ class ApiService {
       final response = await _dio.get('/items/$itemId',
           options: Options(
             headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
+              'Authorization': 'Bearer $_accessToken',
             },
           ));
       return Item.fromJson(response.data);
@@ -305,17 +379,21 @@ class ApiService {
   }
 
   // Mise à jour d'un item
-  Future<Response> updateItem(
-      String itemId, String name, int unitPrice, int quantity) async {
+  Future<Response> updateItem(String itemId, String name, int unitPrice, int quantity) async {
     try {
-      final response = await _dio.put('/items/$itemId',
-          data: {'name': name, 'unitPrice': unitPrice, 'quantity': quantity},
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+      final response = await _dio.put(
+        '/items/$itemId',
+        data: {
+          'name': name,
+          'unitPrice': unitPrice,
+          'quantity': quantity,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
       print(response.data);
       return response;
     } catch (e) {
@@ -327,13 +405,14 @@ class ApiService {
   // Suppression d'un item
   Future<Response> deleteItem(String itemId) async {
     try {
-      final response = await _dio.delete('/items/$itemId',
-          options: Options(
-            headers: {
-              'Authorization':
-                  'Bearer ${userinfo.authmodel.value.access_token}',
-            },
-          ));
+      final response = await _dio.delete(
+        '/items/$itemId',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $_accessToken',
+          },
+        ),
+      );
       return response;
     } catch (e) {
       throw Exception('Erreur lors de la suppression de l\'item: $e');
@@ -369,7 +448,7 @@ class ApiService {
         },
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${userinfo.authmodel.value.access_token}',
+            'Authorization': 'Bearer $_accessToken',
           },
         ),
       );

@@ -60,7 +60,7 @@ class ItemDetailsPage extends StatelessWidget {
             // Header - Détails de l'élément
             // Card(
             //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            //   elevation: 4,
+            //   elevation: 2,
             //   child: Padding(
             //     padding: const EdgeInsets.all(16.0),
             //     child: Column(

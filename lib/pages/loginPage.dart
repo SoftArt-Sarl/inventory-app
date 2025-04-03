@@ -68,25 +68,27 @@ class _LoginPageState extends State<LoginPage> {
   required IconData icon,
   required TextEditingController controller,
   bool obscureText = false,
-  Widget? suffixIcon, // Ajout du suffixIcon en paramètre
+  Widget? suffixIcon,
+  String? Function(String?)? validator, // Ajout du paramètre validator
 }) {
   return ClipRRect(
     borderRadius: BorderRadius.circular(10),
     child: TextFormField(
       controller: controller,
       obscureText: obscureText,
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "This field is required";
-        }
-        return null;
-      },
+      validator: validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return "This field is required";
+            }
+            return null;
+          },
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.grey[300],
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.orange),
-        suffixIcon: suffixIcon, // Ajout du suffixIcon ici
+        suffixIcon: suffixIcon,
         border: InputBorder.none,
         focusedBorder: const UnderlineInputBorder(
           borderSide: BorderSide(color: Colors.orange),
@@ -145,7 +147,16 @@ bool obscurePassword = true;
                           label: "Password",
                           icon: Icons.lock,
                           controller: _passwordController,
-                          obscureText: obscurePassword),
+                          obscureText: obscurePassword,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "This field is required";
+                            }
+                            if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$').hasMatch(value)) {
+                              return "least one lowercase letter, one uppercase letter, and one number";
+                            }
+                            return null;
+                          },),
                       const SizedBox(height: 16),
                       _isLoading
                           ? const CircularProgressIndicator()

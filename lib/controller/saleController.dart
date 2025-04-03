@@ -29,7 +29,7 @@ class SalesController extends GetxController {
   Future<void> fetchTotalSales() async {
     if (selectedRange.value == null || isLoading.value) return;
 
-    final token = userinfo.authmodel.value?.access_token;
+    final token = userinfo.authmodel.value.access_token;
     if (token == null) {
       totalSales.value = 'No result';
       return;

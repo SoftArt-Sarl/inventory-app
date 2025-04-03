@@ -64,106 +64,112 @@ class CategoryWidget extends StatelessWidget {
               ),
             ],
           ),
-          child: apiController.isCategorySelected.value?Text(
-                category!.title ?? 'No title',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[900],
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ): Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category!.title ?? 'No title',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[900],
-                ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(Icons.shopping_cart,
-                        'Items: ${category!.items?.length ?? 0}'),
+          child: apiController.isCategorySelected.value &&
+                  appTypeController.isDesktop.value
+              ? Text(
+                  category!.title ?? 'No title',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[900],
                   ),
-                  const Spacer(),
-                  Expanded(
-                    child: _buildInfoItem(
-                        Icons.warning_amber_rounded,
-                        'Almost Out of stock: ${apiController.itemsRupture.where(
-                              (element) => element.categoryId == category!.id!,
-                            ).toList().length}',
-                        Colors.red),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: _buildInfoItem(
-                        Icons.attach_money,
-                        'Total: ${category!.total?.toStringAsFixed(2) ?? "0.00"} FCFA',
-                        Colors.green),
-                  ),
-                  const Spacer(),
-                  Expanded(
-                    child: _buildInfoItem(Icons.store,
-                        'Stock: ${category!.items!.length}', Colors.blue),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              AbsorbPointer(
-                absorbing: userinfo.authmodel.value.user!.role == "SELLER"?true:false,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    OutlinedButton(
-                              key: buttonKey1,
-                              style: OutlinedButton.styleFrom(
-                                shape: const CircleBorder(),
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(36, 36),
-                              ),
-                              onPressed: () {
-                                // PopupHelper.removePopup(context);
-                                updateCategory(context);
-                              },
-                              child: const Icon(
-                                Icons.edit_outlined,
-                                size: 18,
-                              ),
+                    Text(
+                      category!.title ?? 'No title',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[900],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: _buildInfoItem(Icons.shopping_cart,
+                              'Items: ${category!.items?.length ?? 0}'),
+                        ),
+                        const Spacer(),
+                        Expanded(
+                          child: _buildInfoItem(
+                              Icons.warning_amber_rounded,
+                              'Almost Out of stock: ${apiController.itemsRupture.where(
+                                    (element) =>
+                                        element.categoryId == category!.id!,
+                                  ).toList().length}',
+                              Colors.red),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: _buildInfoItem(
+                              Icons.attach_money,
+                              'Total: ${category!.total?.toStringAsFixed(2) ?? "0.00"} FCFA',
+                              Colors.green),
+                        ),
+                        const Spacer(),
+                        Expanded(
+                          child: _buildInfoItem(Icons.store,
+                              'Stock: ${category!.items!.length}', Colors.blue),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    AbsorbPointer(
+                      absorbing: userinfo.authmodel.value.user!.role == "SELLER"
+                          ? true
+                          : false,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton(
+                            key: buttonKey1,
+                            style: OutlinedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(36, 36),
                             ),
-                            const SizedBox(width: 5),
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                shape: const CircleBorder(),
-                                padding: EdgeInsets.zero,
-                                minimumSize: const Size(36, 36),
-                              ),
-                              onPressed: () {
-                                deleteCategory(context);
-                              },
-                              child: const Icon(
-                                Icons.delete_outline,
-                                size: 18,
-                              ),
+                            onPressed: () {
+                              // PopupHelper.removePopup(context);
+                              updateCategory(context);
+                            },
+                            child: const Icon(
+                              Icons.edit_outlined,
+                              size: 18,
                             ),
+                          ),
+                          const SizedBox(width: 5),
+                          OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              shape: const CircleBorder(),
+                              padding: EdgeInsets.zero,
+                              minimumSize: const Size(36, 36),
+                            ),
+                            onPressed: () {
+                              deleteCategory(context);
+                            },
+                            child: const Icon(
+                              Icons.delete_outline,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
         ));
   }
 
@@ -185,9 +191,7 @@ class CategoryWidget extends StatelessWidget {
       ],
     );
   }
-
 }
-
 
 class UpdateCategoryForm extends StatefulWidget {
   final Category? category;
@@ -379,4 +383,3 @@ class _DeleteCategoryFormState extends State<DeleteCategoryForm> {
     );
   }
 }
-

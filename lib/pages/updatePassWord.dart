@@ -81,7 +81,7 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
         },
         decoration: InputDecoration(
           filled: true,
-          fillColor: Colors.grey[300],
+          fillColor: Colors.white,
           labelText: label,
           prefixIcon: Icon(icon, color: Colors.orange),
           suffixIcon: suffixIcon,
@@ -96,53 +96,56 @@ class _UpdatePasswordPageState extends State<UpdatePasswordPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-          key: controller.formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(
-                label: 'New password',
-                icon: Icons.lock,
-                controller: controller.passwordController,
-                obscureText: obscurePassword,
-                suffixIcon: IconButton(
-                  icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => obscurePassword = !obscurePassword),
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Form(
+            key: controller.formKey,
+            child: Column(mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(
+                  label: 'New password',
+                  icon: Icons.lock,
+                  controller: controller.passwordController,
+                  obscureText: obscurePassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => obscurePassword = !obscurePassword),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              _buildTextField(
-                
-                label: 'Confirm password',
-                icon: Icons.lock,
-                controller: controller.confirmPasswordController,
-                obscureText: obscureConfirmPassword,
-                suffixIcon: IconButton(
-                  icon: Icon(obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => obscureConfirmPassword = !obscureConfirmPassword),
+                const SizedBox(height: 10),
+                _buildTextField(
+                  
+                  label: 'Confirm password',
+                  icon: Icons.lock,
+                  controller: controller.confirmPasswordController,
+                  obscureText: obscureConfirmPassword,
+                  suffixIcon: IconButton(
+                    icon: Icon(obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => obscureConfirmPassword = !obscureConfirmPassword),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Obx(() => SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orange[600],
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8)),
-                              ),
-                      onPressed: controller.isLoading.value ? null : controller.updatePassword,
-                      child: controller.isLoading.value
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Update'),
-                    ),
-                  )),
-            ],
+                const SizedBox(height: 20),
+                Obx(() => SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange[600],
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
+                                ),
+                        onPressed: controller.isLoading.value ? null : controller.updatePassword,
+                        child: controller.isLoading.value
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text('Update'),
+                      ),
+                    )),
+              ],
+            ),
           ),
-        );
+    );
   }
 }
 

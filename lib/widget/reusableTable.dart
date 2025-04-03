@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
+import 'package:flutter_application_1/pages/gestionProduit.dart';
+import 'package:flutter_application_1/pages/responsiveGrid.dart';
 import 'package:flutter_application_1/services/Apiservice.dart';
 import 'package:flutter_application_1/widget/ActionbuttonRow.dart';
 import 'package:flutter_application_1/widget/categoryWidget.dart';
@@ -10,16 +12,18 @@ import 'package:flutter_application_1/widget/popupButton.dart';
 import 'package:get/get.dart';
 
 class ReusableTable extends StatelessWidget {
+  bool? isFromDashbord = false;
   final List<Map<String, dynamic>> data;
   final Function(BuildContext, Map<String, dynamic>)? onEdit;
   final Function(BuildContext, Map<String, dynamic>)? onDelete;
 
-  ReusableTable({
-    Key? key,
-    required this.data,
-    this.onEdit,
-    this.onDelete,
-  }) : super(key: key);
+  ReusableTable(
+      {Key? key,
+      required this.data,
+      this.onEdit,
+      this.onDelete,
+      this.isFromDashbord = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +38,11 @@ class ReusableTable extends StatelessWidget {
       );
     }
 
-    if (appTypeController.isDesktop.value) {
+    if (appTypeController.isDesktop.value && !isFromDashbord!) {
       return _buildDesktopTable(context);
     } else {
-      return _buildMobileList();
+      return _buildMobileList(appTypeController.isDesktop.value, context,
+          isFromDashbordd: isFromDashbord);
     }
   }
 
@@ -54,140 +59,175 @@ class ReusableTable extends StatelessWidget {
         Table(
           children: [
             TableRow(
+              decoration: const BoxDecoration(color: Colors.white),
               children: [
                 ...header1.map((header) => _buildHeaderCell(header, true)),
-                _buildHeaderCell('Actions', true),
+                if (userinfo.authmodel.value.user!.role == 'ADMIN')
+                  _buildHeaderCell('Actions', true),
               ],
             )
           ],
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Table(
-              border: TableBorder.all(color: Colors.grey.withOpacity(0.3), width: 1),
-              children: data.map((rowData) => _buildRow(
-                      rowData,
-                      appTypeController.isDesktop.value ? header1 : headers,
-                      context)).toList(),
-            ),
-          ),
-        ),
+        isFromDashbord!
+            ? Table(
+                border: TableBorder.all(
+                    color: Colors.grey.withOpacity(0.3), width: 1),
+                children: data
+                    .map((rowData) => _buildRow(
+                        isFromDashbord: isFromDashbord,
+                        rowData,
+                        appTypeController.isDesktop.value ? header1 : headers,
+                        context))
+                    .toList(),
+              )
+            : Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Table(
+                    border: TableBorder.all(
+                        color: Colors.grey.withOpacity(0.3), width: 1),
+                    children: data
+                        .map((rowData) => _buildRow(
+                            isFromDashbord: isFromDashbord,
+                            rowData,
+                            appTypeController.isDesktop.value
+                                ? header1
+                                : headers,
+                            context))
+                        .toList(),
+                  ),
+                ),
+              ),
       ],
     );
   }
 
-  Widget _buildMobileList() {
-  return ListView.builder(
-    itemCount: data.length,
-    itemBuilder: (context, index) {
-      final rowData = data[index];
-      final quantity = rowData['quantity'];
-      final unitPrice = rowData['Unit price'];
-      final total = rowData['Total'];
+  Widget _buildMobileList(bool isDesktop, BuildContext context,
+      {bool? isFromDashbordd}) {
+    if (isFromDashbordd!) {
+      // Mode tableau de bord : Utiliser ResponsiveGrid
+      return ResponsiveGrid(
+        spacing:0,
+        runSpacing:0,
+        columnsMobile: 2,
+        columnsTablet: 3,
+        columnsDesktop: 4,
+        children: data.map((rowData) {
+          final quantity = rowData['quantity'];
+          final unitPrice = rowData['Unit price'];
+          final total = rowData['Total'];
 
-      return Card(shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(const Radius.circular(5))),
-        child: ExpansionTile(
-          dense: true,
-          title: Text(
-            rowData['Product'],
-            style: const TextStyle(fontSize: 16),
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
+          return Card(
+            elevation: 0,
+            margin: const EdgeInsets.all(2),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Tableau avec bordures et titre
-                  Table(
-                    border: TableBorder.all(
-                      color: Colors.grey.withOpacity(0.4),
-                      width: 1,
-                      borderRadius: BorderRadius.circular(5),
+                  Text(rowData['name'],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text('Quantity: $quantity'),
+                  Text('Unit price: $unitPrice'),
+                  Text('Total: $total'),
+                  const SizedBox(height: 10),
+                  if (userinfo.authmodel.value.user!.role == 'ADMIN')
+                    _buildActionButtons(rowData, context, isDesktop,
+                        isfrmdashbord: isFromDashbordd),
+                  if (userinfo.authmodel.value.user!.role == 'SELLER')
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)))),
+                      onPressed: () {
+                        sellerController.addItemToCar(rowData['name'], context);
+                      },
+                      child: const Text('Add to cart'),
                     ),
-                    columnWidths: const {
-                      0: FlexColumnWidth(2),
-                      1: FlexColumnWidth(2),
-                      2: FlexColumnWidth(2),
-                      3: FlexColumnWidth(1),
-                    },
-                    children: [
-                      // Ligne des titres
-                      TableRow(
-                        decoration:  BoxDecoration(
-                          color: Colors.grey[200],
-                        ),
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('Quantité', style: TextStyle(fontSize: 12, )),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('Prix Unitaire', style: TextStyle(fontSize: 12)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('Total', style: TextStyle(fontSize: 12, )),
-                          ),
-                          
-                        ],
-                      ),
-                      // Ligne des valeurs
-                      TableRow(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('$quantity', style: const TextStyle(fontSize: 12)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('$unitPrice', style: const TextStyle(fontSize: 12)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('$total', style: const TextStyle(fontSize: 12)),
-                          ),
-                          
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  _buildActionButtons(rowData, context, true),
                 ],
               ),
-            )
-          ],
-        ),
+            ),
+          );
+        }).toList(),
       );
-    },
-  );
-}
+    } else {
+      // Mode normal : Utiliser ListView.builder
+      return ListView.builder(
+        padding: const EdgeInsets.only(top: 5),
+        itemCount: data.length,
+        itemBuilder: (context, index) {
+          final rowData = data[index];
+          final quantity = rowData['quantity'];
+          final unitPrice = rowData['Unit price'];
+          final total = rowData['Total'];
 
+          return Card(
+            elevation: 0,
+            margin: const EdgeInsets.only(bottom: 5, top: 5, left: 5, right: 5),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(rowData['name'],
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 14)),
+                        Text('Quantity: $quantity'),
+                        Text('Unit price: $unitPrice'),
+                        Text('Total: $total'),
+                      ],
+                    ),
+                  ),
+                  if (userinfo.authmodel.value.user!.role == 'ADMIN')
+                    _buildActionButtons(rowData, context, isDesktop,
+                        isfrmdashbord: isFromDashbordd),
+                  if (userinfo.authmodel.value.user!.role == 'SELLER')
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)))),
+                      onPressed: () {
+                        sellerController.addItemToCar(rowData['name'], context);
+                      },
+                      child: const Text('Add to cart'),
+                    )
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
 
-  TableRow _buildRow(Map<String, dynamic> rowData, List<String> headers,
-      BuildContext context) {
+  TableRow _buildRow(
+      Map<String, dynamic> rowData, List<String> headers, BuildContext context,
+      {bool? isFromDashbord}) {
     ApiService apiService = ApiService();
     return TableRow(
+      decoration: BoxDecoration(color: Colors.white),
       children: [
         ...headers.map((header) {
           if (header == 'Catégorie') {
             final categoryId = rowData[header];
-            if (categoryId == null) {
-              return const Text('Aucune catégorie');
-            }
+
+            String category = apiController.categories
+                .firstWhere(
+                  (element) => element.id == categoryId,
+                )
+                .title!;
             return Center(
-              child: FutureWidget<Category>(
-                fetchFunction: () => apiService.fetchCategoryById(categoryId),
-                builder: (category) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(category.title ?? 'Titre inconnu',
-                        style: const TextStyle(fontSize: 16)),
-                  );
-                },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(category, style: const TextStyle(fontSize: 16)),
               ),
             );
           } else {
@@ -195,8 +235,10 @@ class ReusableTable extends StatelessWidget {
                 rowData[header], appTypeController.isDesktop.value);
           }
         }),
-        _buildActionButtons(
-            rowData, context, appTypeController.isDesktop.value),
+        if (userinfo.authmodel.value.user!.role == 'ADMIN')
+          _buildActionButtons(
+              rowData, context, appTypeController.isDesktop.value,
+              isfrmdashbord: isFromDashbord),
       ],
     );
   }
@@ -205,7 +247,9 @@ class ReusableTable extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Text(text, style: TextStyle(fontSize: isDesktop ? 16 : 14, fontWeight: FontWeight.bold)),
+        child: Text(text,
+            style: TextStyle(
+                fontSize: isDesktop ? 16 : 14, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -215,22 +259,29 @@ class ReusableTable extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         child: value is bool
-            ? Icon(value ? Icons.check_circle_outline : Icons.remove_shopping_cart_outlined, color: value ? Colors.green : Colors.red)
+            ? Icon(
+                !value
+                    ? Icons.check_circle_outline
+                    : Icons.remove_shopping_cart_outlined,
+                color: !value ? Colors.green : Colors.red)
             : Text(value != null ? value.toString() : 'Aucune donnée'),
       ),
     );
   }
 
   Widget _buildActionButtons(
-      Map<String, dynamic> rowData, BuildContext context, bool isdektop) {
+      Map<String, dynamic> rowData, BuildContext context, bool isdektop,
+      {bool? isfrmdashbord}) {
     final buttonKey1 = GlobalKey();
     final buttonKey2 = GlobalKey();
+    final buttonKey3 = GlobalKey();
+
 
     final String? id = rowData['id'];
-    final String? name = rowData['Nom'];
-    final String? unitPrice = rowData['Prix unitaire'];
+    final String? name = rowData['name'];
+    final String? unitPrice = rowData['Unit price'];
     final String? categoryId = rowData['categoryId'];
-    final String? quantity = rowData['quantité'].toString();
+    final String? quantity = rowData['quantity'].toString();
 
     if (id == null) {
       return const SizedBox.shrink(); // Si pas d'ID, ne rien afficher
@@ -249,6 +300,14 @@ class ReusableTable extends StatelessWidget {
           unitPrice: unitPrice,
           quantity: quantity,
         ),
+      );
+    }
+    void addstok(BuildContext context) {
+      PopupHelper.showPopup(
+        context: context,
+        buttonKey: buttonKey3,
+        width: 300,
+        popupContent: AjouterStockForm(itemName: name,),
       );
     }
 
@@ -271,48 +330,57 @@ class ReusableTable extends StatelessWidget {
             ? const EdgeInsets.symmetric(vertical: 10, horizontal: 8)
             : const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
         child: AbsorbPointer(
-          absorbing:
-              userinfo.authmodel.value.user!.role == "SELLER" ? true : false,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              OutlinedButton(
-                key: buttonKey1,
-                style: OutlinedButton.styleFrom(
-                  shape: const CircleBorder(
-                      side: BorderSide(color: Colors.orange)),
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(36, 36),
-                ),
-                onPressed: () {
-                  updateItem(context);
-                },
-                child: const Icon(Icons.edit_outlined,
-                    size: 18, color: Colors.orange),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton(
-                key: buttonKey2,
-                style: OutlinedButton.styleFrom(
-                  shape:
-                      const CircleBorder(side: BorderSide(color: Colors.red)),
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(36, 36),
-                ),
-                onPressed: () {
-                  deletedItem(context);
-                },
-                child: const Icon(Icons.delete_outline,
-                    size: 18, color: Colors.red),
-                ),
-            ],
-          ),
-        ),
+            absorbing:
+                userinfo.authmodel.value.user!.role == "SELLER" ? true : false,
+            child: isfrmdashbord!
+                ? OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                        shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10)))),
+                    onPressed: () {
+                      addstok(context);
+                    },
+                    child: const Text('New stock',style: TextStyle(fontSize: 13),),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        key: buttonKey1,
+                        style: OutlinedButton.styleFrom(
+                          shape: const CircleBorder(
+                              side: BorderSide(color: Colors.orange)),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(36, 36),
+                        ),
+                        onPressed: () {
+                          updateItem(context);
+                        },
+                        child: const Icon(Icons.edit_outlined,
+                            size: 18, color: Colors.orange),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        key: buttonKey2,
+                        style: OutlinedButton.styleFrom(
+                          shape: const CircleBorder(
+                              side: BorderSide(color: Colors.red)),
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(36, 36),
+                        ),
+                        onPressed: () {
+                          deletedItem(context);
+                        },
+                        child: const Icon(Icons.delete_outline,
+                            size: 18, color: Colors.red),
+                      ),
+                    ],
+                  )),
       ),
     );
   }
 }
-
 
 class FutureWidget<T> extends StatelessWidget {
   final Future<T> Function() fetchFunction;
@@ -394,13 +462,10 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
     setState(() {
       isLoading = true;
     });
-
     ApiService apiService = ApiService();
     try {
-      // Si isHistoriquePage est vrai, l'ID et le categoryId sont différents
-      String itemId = widget.isHistoriquePage == true
-          ? selectedItemId! // Utilisation de l'ID sélectionné via le dropdown
-          : widget.id!;
+      String itemId =
+          widget.isHistoriquePage == true ? selectedItemId! : widget.id!;
 
       await apiService.updateItem(
         itemId,
@@ -408,7 +473,6 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
         int.parse(unitPriceController.text.trim()),
         int.parse(quantityController.text.trim()),
       );
-
       setState(() {
         isLoading = false;
       });
@@ -423,7 +487,6 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
       setState(() {
         isLoading = false;
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Error when updating item.'),
@@ -441,7 +504,10 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
         children: [
           const Text(
             'Edit item',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 15),
           widget.isHistoriquePage == true
@@ -520,7 +586,7 @@ class _UpdateItemFormState extends State<UpdateItemForm> {
         keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
         decoration: InputDecoration(
           hintText: hintText,
-          fillColor: Colors.grey[200],
+          fillColor: Colors.white,
           filled: true,
           border: InputBorder.none,
           contentPadding:

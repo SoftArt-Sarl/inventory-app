@@ -61,6 +61,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar('Succès', 'Livraison ajoutée avec succès',backgroundColor: Colors.green,colorText: Colors.white);
+      //  appTypeController.isDesktop.value?null: Get.back();
         await getDeliveries();
       } else {
         Get.snackbar('Erreur', 'Impossible d\'ajouter la livraison',backgroundColor: Colors.red,colorText: Colors.white);
@@ -91,7 +92,7 @@ final Rx<Invoice?> selectedInvoice = Rx<Invoice?>(null);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         PopupHelper.removePopup(context);
-        Get.snackbar('Succès', 'Statut de la livraison mis à jour');
+        Get.snackbar('Succès', 'Statut de la livraison mis à jour',backgroundColor: Colors.green,colorText: Colors.white);
 
         // Met à jour localement au lieu de tout recharger
         int index = deliveries.indexWhere((d) => d.id == deliveryId);

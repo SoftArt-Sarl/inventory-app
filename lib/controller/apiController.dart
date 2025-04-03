@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_application_1/controller/appController.dart';
+import 'package:flutter_application_1/models.dart/compagnieModel.dart';
 import 'package:flutter_application_1/models.dart/historiqueModel.dart';
 import 'package:flutter_application_1/models.dart/saleModel.dart';
+import 'package:flutter_application_1/services/Apiservice.dart';
 import 'package:get/get.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
-import 'package:flutter_application_1/services/apiService.dart';
 
 class ApiController extends GetxController {
   static ApiController instance = Get.find();
@@ -25,12 +26,31 @@ class ApiController extends GetxController {
   // Instance de ApiService
   final ApiService _apiService = ApiService();
 
+  // Observable pour stocker les informations de l'entreprise et de l'utilisateur
+  var companyUserInfo = CompanyUserInfo(
+    companyName: '',
+    companyLogo: '',
+    userName: '',
+  ).obs;
+
+  // Fonction pour récupérer les informations de l'entreprise et de l'utilisateur
+  Future<void> fetchCompanyUserInfo() async {
+    try {
+      isLoading.value = true;
+      final response = await _apiService.fetchCompanyUserInfo();
+      companyUserInfo.value = CompanyUserInfo.fromJson(response.data);
+      isLoading.value = false; // Mettre à jour l'état de chargement
+    } catch (e) {
+      print('Erreur lors de la récupération des informations : $e');
+    }
+  }
+
   // Fonction pour récupérer les catégories
   Future<void> fetchCategories() async {
     try {
       isLoading.value = true;
       final fetchedCategories = await _apiService.fetchCategories();
-      print(fetchedCategories.length);
+      // print(fetchedCategories.length);
       categories.assignAll(fetchedCategories);
     } catch (e) {
       print('Erreur lors de la récupération des catégories: $e');
@@ -47,7 +67,7 @@ class ApiController extends GetxController {
     try {
       isLoading.value = true;
       final actionitem = await fetchActionItems();
-      print(actionitem.length);
+      // print(actionitem.length);
       historiques.assignAll(actionitem);
     } catch (e) {
       print(e);
@@ -131,6 +151,7 @@ class ApiController extends GetxController {
 
   // Rafraîchissement global des catégories et des items
   Future<void> refreshData() async {
+    await fetchCompanyUserInfo();
     await fetchCategories();
     await fetchItems();
     await fechAction();

@@ -6,7 +6,7 @@ class Category {
   String? createdById;
   int? total;
   DateTime? updatedAt;
-  List<dynamic>? items;
+  List<Item>? items;
 
   Category({
     this.id,
@@ -46,7 +46,7 @@ class Category {
   }
 
   Map<String, dynamic> toJson1() {
-    int ruptureStock = items!.where((item) => item.quantity <= 10).length;
+    int ruptureStock = items!.where((item) => item.quantity! <= 10).length;
 
     return {
       'Nom': title,

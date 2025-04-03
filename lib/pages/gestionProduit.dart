@@ -39,7 +39,60 @@ class _HeaderState extends State<Header> {
     bool isDesktop = MediaQuery.of(context).size.width >= 600;
 
     return !isDesktop
-        ? const SizedBox.shrink()
+        ? Padding(
+            padding: const EdgeInsets.all(5),
+            child: Row(
+              children: [
+                // if(userinfo.authmodel.value.user!.role == 'ADMIN')
+                Expanded(
+                  child: AbsorbPointer(
+                    absorbing: userinfo.authmodel.value.user!.role == "SELLER"
+                        ? true
+                        : false,
+                    child: ElevatedButton(
+                      key: buttonKey,
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange),
+                      onPressed: () {
+                        widget.isCategory
+                            ? PopupHelper.showPopup(
+                                context: context,
+                                buttonKey: buttonKey,
+                                width: 300,
+                                popupContent: CategoryForm(),
+                              )
+                            : PopupHelper.showPopup(
+                                context: context,
+                                buttonKey: buttonKey,
+                                width: 300,
+                                popupContent: AddProduitForm(
+                                  isHistoriquePage: false,
+                                ),
+                              );
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            widget.buttonText,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // IconButton(
+                //     onPressed: () async {
+                //       await apiController.refreshData();
+                //     },
+                //     icon: const Icon(
+                //       Icons.refresh_outlined,
+                //       color: Colors.orange,
+                //     )),
+              ],
+            ),
+          )
         : Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(
@@ -330,6 +383,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
                 });
               },
             ),
+            const SizedBox(height: 8,),
           if (apiController.isCategorySelected.value)
             const SizedBox(
               height: 10,
@@ -341,7 +395,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
                 hintText: 'Nom',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
@@ -362,7 +416,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
                 hintText: 'Quantity',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
@@ -383,7 +437,7 @@ class _AddProduitFormState extends State<AddProduitForm> {
               decoration: InputDecoration(
                 // labelText: 'Nom de la catégorie',
                 hintText: 'Unit price',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
@@ -434,9 +488,21 @@ class _AddProduitFormState extends State<AddProduitForm> {
           ),
           TextButton(
             onPressed: () {
-              Get.defaultDialog(
-                  title: 'Add muptiple produtct',
-                  content: AddMultipleProductsForm());
+              appTypeController.isDesktop.value
+                  ? Get.defaultDialog(
+                      backgroundColor: Colors.grey[200],
+                      title: 'Add muptiple produtct',
+                      content: AddMultipleProductsForm())
+                  : Get.off(() => Scaffold(
+                        backgroundColor: Colors.grey[200],
+                        appBar: AppBar(
+                          title: const Text('Add multiple product',
+                              style: TextStyle(color: Colors.black)),
+                          backgroundColor: Colors.grey[200],
+                          elevation: 0,
+                        ),
+                        body: AddMultipleProductsForm(),
+                      ));
             },
             child: const Text('Ajouter plusieurs produit'),
           ),
@@ -577,11 +643,16 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
-        height: MediaQuery.of(context).size.height - 150,
-        width: MediaQuery.of(context).size.width / 2.5,
+        height: appTypeController.isDesktop.value
+            ? MediaQuery.of(context).size.height - 150
+            : double.maxFinite,
+        width: appTypeController.isDesktop.value
+            ? MediaQuery.of(context).size.width / 2.5
+            : double.infinity,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -595,12 +666,12 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                     });
                   },
                 ),
-                const Text("Même catégorie pour tous"),
+                const Text("Same category ?"),
                 const SizedBox(width: 50),
-                if (sameCategoryForAll)
+                if (sameCategoryForAll && appTypeController.isDesktop.value)
                   Expanded(
                     child: ReusableSearchDropdown(
-                      hintText: 'Sélectionner une catégorie',
+                      hintText: 'Category',
                       items: apiController.categories
                           .map((e) => e.title!)
                           .toList(),
@@ -617,7 +688,19 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                   ),
               ],
             ),
-            const Divider(),
+            if (sameCategoryForAll && !appTypeController.isDesktop.value)
+              ReusableSearchDropdown(
+                hintText: 'Category',
+                items: apiController.categories.map((e) => e.title!).toList(),
+                onPressed: (categorie) {
+                  setState(() {
+                    commonCategoryController.text = apiController.categories
+                        .firstWhere((element) => element.title == categorie!)
+                        .id!;
+                  });
+                },
+              ),
+            // const Divider(),
             Expanded(
               child: SingleChildScrollView(
                 child: Form(
@@ -630,6 +713,21 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
 
                       return Column(
                         children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const SizedBox(
+                                  width: 5,
+                                ),
+                                const Expanded(child: Divider()),
+                              ],
+                            ),
+                          ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -641,8 +739,7 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                                         children: [
                                           Expanded(
                                             child: ReusableSearchDropdown(
-                                              hintText:
-                                                  'Sélectionner une catégorie',
+                                              hintText: 'Category',
                                               items: apiController.categories
                                                   .map((e) => e.title!)
                                                   .toList(),
@@ -666,7 +763,8 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                                                   product['name']!, 'Nom')),
                                         ],
                                       ),
-                                    if (sameCategoryForAll)
+                                    if (sameCategoryForAll &&
+                                        appTypeController.isDesktop.value)
                                       Row(
                                         children: [
                                           Expanded(
@@ -682,6 +780,30 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                                               child: _buildTextField(
                                                   product['price']!,
                                                   'Prix unitaire')),
+                                        ],
+                                      ),
+                                    if (sameCategoryForAll &&
+                                        !appTypeController.isDesktop.value)
+                                      Column(
+                                        children: [
+                                          _buildTextField(
+                                              product['name']!, 'Nom'),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                  child: _buildTextField(
+                                                      product['quantity']!,
+                                                      'Quantité')),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                  child: _buildTextField(
+                                                      product['price']!,
+                                                      'Prix unitaire')),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     const SizedBox(height: 10),
@@ -710,7 +832,7 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
                               ),
                             ],
                           ),
-                          const Divider(),
+                          // const Divider(),
                         ],
                       );
                     }).toList(),
@@ -733,10 +855,10 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
               onPressed: isLoading ? null : addProducts,
               child: isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : Row(
+                  : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Submit'),
+                        Text('Submit'),
                       ],
                     ),
             ),
@@ -753,7 +875,7 @@ class _AddMultipleProductsFormState extends State<AddMultipleProductsForm> {
         controller: controller,
         decoration: InputDecoration(
           hintText: hint,
-          fillColor: Colors.grey[200],
+          fillColor: Colors.white,
           filled: true,
           isDense: true,
           border: InputBorder.none,
@@ -873,9 +995,9 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
               controller: quantitytext,
               keyboardType:
                   TextInputType.number, // Assure que seul un nombre est entré
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Quantity',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
@@ -923,7 +1045,9 @@ class _RetirerStockFormState extends State<RetirerStockForm> {
 }
 
 class AjouterStockForm extends StatefulWidget {
-  const AjouterStockForm({Key? key}) : super(key: key);
+  final String? itemName; // Paramètre optionnel
+
+  const AjouterStockForm({Key? key, this.itemName}) : super(key: key);
 
   @override
   State<AjouterStockForm> createState() => _AjouterStockFormState();
@@ -933,6 +1057,15 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
   bool isLoading = false;
   final TextEditingController nametext = TextEditingController();
   final TextEditingController quantitytext = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Si itemName est fourni, l'assigner au TextEditingController
+    if (widget.itemName != null) {
+      nametext.text = widget.itemName!;
+    }
+  }
 
   Future<void> ajouterStock() async {
     if (isLoading) return; // Éviter les doubles soumissions
@@ -1004,9 +1137,26 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
             'Add stock to an item',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          if (!apiController.isCategorySelected.value)
-            const SizedBox(height: 15),
-          if (!apiController.isCategorySelected.value)
+          const SizedBox(height: 15),
+          // Si itemName est fourni, afficher un TextField non modifiable
+          if (widget.itemName != null)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: TextFormField(
+                controller: nametext,
+                readOnly: true, // Rendre le champ non modifiable
+                decoration:  const InputDecoration(
+                  hintText: 'Product name',
+                  fillColor: Colors.white, // Couleur de fond grisée
+                  filled: true,
+                  border: InputBorder.none,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+            )
+          else
+            // Sinon, afficher le ReusableSearchDropdown
             ReusableSearchDropdown(
               items: apiController.items.map((e) => e.name!).toList(),
               onPressed: (produit) {
@@ -1021,13 +1171,13 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
             child: TextFormField(
               controller: quantitytext,
               keyboardType: TextInputType.number, // Clavier numérique
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Quantity',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
             ),
           ),
@@ -1064,14 +1214,26 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
                     ],
                   ),
                 ),
-          SizedBox(
+                const SizedBox(
             height: 20,
           ),
           TextButton(
             onPressed: () {
-              Get.defaultDialog(
-                  title: 'Add muptiple',
-                  content: const AjouterStockFormmultiple());
+              appTypeController.isDesktop.value
+                  ? Get.defaultDialog(
+                      backgroundColor: Colors.grey[200],
+                      title: 'Add muptiple',
+                      content: const AjouterStockFormmultiple())
+                  : Get.off(() => Scaffold(
+                    backgroundColor: Colors.grey[200],
+                        appBar: AppBar(
+                          title: const Text('Manage Stock',
+                              style: TextStyle(color: Colors.black)),
+                          backgroundColor: Colors.grey[200],
+                          elevation: 0,
+                        ),
+                        body: const AjouterStockFormmultiple(),
+                      ));
             },
             child: const Text('Ajouter plusieurs produit'),
           )
@@ -1080,12 +1242,13 @@ class _AjouterStockFormState extends State<AjouterStockForm> {
     );
   }
 }
-
 class AjouterStockFormmultiple extends StatefulWidget {
-  const AjouterStockFormmultiple({Key? key}) : super(key: key);
+  final List<String>? itemNames; // Paramètre optionnel pour les noms d'articles
+
+  const AjouterStockFormmultiple({Key? key, this.itemNames}) : super(key: key);
 
   @override
-  State<AjouterStockFormmultiple> createState() =>
+  _AjouterStockFormmultipleState createState() =>
       _AjouterStockFormmultipleState();
 }
 
@@ -1100,7 +1263,17 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
   @override
   void initState() {
     super.initState();
-    addNewRow();
+
+    // Si itemNames est fourni, initialiser les contrôleurs avec ces noms
+    if (widget.itemNames != null && widget.itemNames!.isNotEmpty) {
+      for (var itemName in widget.itemNames!) {
+        nameControllers.add(TextEditingController(text: itemName));
+        quantityControllers.add(TextEditingController());
+      }
+    } else {
+      // Sinon, ajouter une ligne par défaut
+      addNewRow();
+    }
   }
 
   void addNewRow() {
@@ -1144,8 +1317,9 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
         if (item == null) throw Exception("Product '$itemName' doesn't exist.");
 
         int? quantity = int.tryParse(quantityControllers[i].text.trim());
-        if (quantity == null || quantity <= 0)
+        if (quantity == null || quantity <= 0) {
           throw Exception('Enter a valid input for "$itemName".');
+        }
 
         itemsToAdd.add(item);
         await apiService.ajouterStock(item, quantity);
@@ -1154,26 +1328,23 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
       setState(() => isLoading = false);
       Get.back();
       apiController.refreshData();
-      Get.snackbar('Done', 'stock added successfully!',
+      Get.snackbar('Done', 'Stock added successfully!',
           backgroundColor: Colors.green, colorText: Colors.white);
     } catch (e) {
       setState(() => isLoading = false);
-    // Get.back();
-    Get.snackbar('Done', 'Something wrong',
-        backgroundColor: Colors.green, colorText: Colors.red);
+      Get.snackbar('Error', 'Something went wrong',
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    appTypeController.checkScreenType(context);
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Manage Stock',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
           Row(
             children: [
               Checkbox(
@@ -1186,77 +1357,173 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
                 },
               ),
               const Text('Apply same quantity to all items'),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: TextFormField(
-                    controller: commonQuantityController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: 'Enter quantity',
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: InputBorder.none,
+              if (applySameQuantity) const SizedBox(width: 10),
+              if (applySameQuantity && appTypeController.isDesktop.value)
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: TextFormField(
+                      controller: commonQuantityController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter quantity',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (value) => applyCommonQuantity(),
                     ),
-                    onChanged: (value) => applyCommonQuantity(),
                   ),
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: 10),
-          SizedBox(
-            width: 400,
-            height: 300,
-            child: ListView.builder(
-              itemCount: nameControllers.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ReusableSearchDropdown(
-                          items:
-                              apiController.items.map((e) => e.name!).toList(),
-                          onPressed: (produit) {
-                            setState(
-                                () => nameControllers[index].text = produit!);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        height: 40,
-                        width: 100,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: TextFormField(
-                            controller: quantityControllers[index],
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: 'Qty',
-                              filled: true,
-                              // isDense: true,
-                              fillColor: Colors.grey[200],
-                              border: InputBorder.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      IconButton(
-                        onPressed: () => removeRow(index),
-                        icon:
-                            const Icon(Icons.delete_outline, color: Colors.red),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          if (applySameQuantity && !appTypeController.isDesktop.value)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: TextFormField(
+                controller: commonQuantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  hintText: 'Enter quantity',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) => applyCommonQuantity(),
+              ),
             ),
-          ),
+          const SizedBox(height: 10),
+          appTypeController.isDesktop.value
+              ? SizedBox(
+                  width: 400,
+                  height: 300,
+                  child: ListView.builder(
+                    itemCount: nameControllers.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: widget.itemNames != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: TextFormField(
+                                        controller: nameControllers[index],
+                                        readOnly: true, // Non modifiable
+                                        decoration: const InputDecoration(
+                                          hintText: 'Product name',
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    )
+                                  : ReusableSearchDropdown(
+                                      items: apiController.items
+                                          .map((e) => e.name!)
+                                          .toList(),
+                                      onPressed: (produit) {
+                                        setState(() => nameControllers[index]
+                                            .text = produit!);
+                                      },
+                                    ),
+                            ),
+                            if (!applySameQuantity) const SizedBox(width: 10),
+                            if (!applySameQuantity)
+                              SizedBox(
+                                height: 40,
+                                width: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: TextFormField(
+                                    controller: quantityControllers[index],
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Qty',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(width: 10),
+                            IconButton(
+                              onPressed: () => removeRow(index),
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : Expanded(
+                  child: ListView.builder(
+                    itemCount: nameControllers.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: widget.itemNames != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: TextFormField(
+                                        controller: nameControllers[index],
+                                        readOnly: true, // Non modifiable
+                                        decoration:  const InputDecoration(
+                                          hintText: 'Product name',
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    )
+                                  : ReusableSearchDropdown(
+                                      items: apiController.items
+                                          .map((e) => e.name!)
+                                          .toList(),
+                                      onPressed: (produit) {
+                                        setState(() => nameControllers[index]
+                                            .text = produit!);
+                                      },
+                                    ),
+                            ),
+                            if (!applySameQuantity) const SizedBox(width: 10),
+                            if (!applySameQuantity)
+                              SizedBox(
+                                height: 40,
+                                width: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: TextFormField(
+                                    controller: quantityControllers[index],
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Qty',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(width: 10),
+                            IconButton(
+                              onPressed: () => removeRow(index),
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
           const SizedBox(height: 10),
           Align(
             alignment: Alignment.centerRight,
@@ -1274,7 +1541,8 @@ class _AjouterStockFormmultipleState extends State<AjouterStockFormmultiple> {
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('Add to stock')]),
+                      children: [Text('Add to stock')],
+                    ),
             ),
           ),
         ],
@@ -1353,9 +1621,9 @@ class _CategoryFormState extends State<CategoryForm> {
             borderRadius: BorderRadius.circular(10),
             child: TextFormField(
               controller: categorieText,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Category name',
-                fillColor: Colors.grey[200],
+                fillColor: Colors.white,
                 filled: true,
                 border: InputBorder.none,
                 contentPadding:
@@ -1390,4 +1658,3 @@ class _CategoryFormState extends State<CategoryForm> {
     );
   }
 }
-
