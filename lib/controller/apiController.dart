@@ -40,6 +40,7 @@ class ApiController extends GetxController {
       final response = await _apiService.fetchCompanyUserInfo();
       companyUserInfo.value = CompanyUserInfo.fromJson(response.data);
       isLoading.value = false; // Mettre à jour l'état de chargement
+      // print(cop)
     } catch (e) {
       print('Erreur lors de la récupération des informations : $e');
     }

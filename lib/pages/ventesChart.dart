@@ -231,7 +231,8 @@ class MonthlySalesChart extends StatelessWidget {
 
     if (salesByDay.isEmpty) {
       return const Center(
-        child: Text("Aucune donnée disponible pour ce mois."),
+
+        child: SizedBox(height: 20,width: 20,child: CircularProgressIndicator()),
       );
     }
 

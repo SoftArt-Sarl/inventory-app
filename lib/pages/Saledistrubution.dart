@@ -188,10 +188,7 @@ class _SalesDistributionChartState extends State<SalesDistributionChart> {
       if (topSellingProducts.isEmpty) {
         return const Expanded(
           child: Center(
-            child: Text(
-              "Aucun produit vendu pour cette date",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            child: SizedBox(height: 20,width:20 ,child: CircularProgressIndicator()),
           ),
         );
       }

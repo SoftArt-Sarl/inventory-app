@@ -57,25 +57,31 @@ class _SideMenuState extends State<SideMenu> {
                             child: Obx(() {
                               final companyInfo =
                                   apiController.companyUserInfo.value;
-                              return Card(elevation: 0,
-                              color: Colors.transparent,
-                                child: Container(padding: const EdgeInsets.all(10),width: double.infinity,
-                                  child: Column(crossAxisAlignment: CrossAxisAlignment.center,
+                              return Card(
+                                elevation: 0,
+                                color: Colors.transparent,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(50),
-                                        child: Image.network(
-                                          companyInfo.companyLogo,
-                                          height: 80,
-                                          width: 80,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(
-                                            Icons.image,
-                                            size: 80,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
+                                      Image.network(
+                                        companyInfo.companyLogo,
+                                        height: 80,
+                                        width: 80,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (context, child, progress) {
+                                          if (progress == null) return child;
+                                          return const CircularProgressIndicator();
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.image,
+                                                    size: 80,
+                                                    color: Colors.grey),
                                       ),
                                       const SizedBox(height: 10),
                                       Text(
@@ -87,9 +93,10 @@ class _SideMenuState extends State<SideMenu> {
                                         ),
                                         textAlign: TextAlign.center,
                                       ),
-                                      const SizedBox(height: 10,),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
                                       const Divider(),
-                                      
                                     ],
                                   ),
                                 ),
@@ -166,54 +173,59 @@ class _SideMenuState extends State<SideMenu> {
               drawer: Drawer(
                 backgroundColor: Colors.grey[200],
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
                   child: Column(
                     children: [
                       // Affichage du logo et du nom de la compagnie
                       Center(
-                              child: Obx(() {
-                                final companyInfo =
-                                    apiController.companyUserInfo.value;
-                                return Card(elevation: 0,
-                                color: Colors.transparent,
-                                  child: Container(padding: const EdgeInsets.all(10),width: double.infinity,
-                                    child: Column(crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(50),
-                                          child: Image.network(
-                                            companyInfo.companyLogo,
-                                            height: 80,
-                                            width: 80,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                const Icon(
-                                              Icons.image,
-                                              size: 80,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          companyInfo.companyName,
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),SizedBox(height: 10,),
-                                        Divider(),
-                                        
-                                      ],
-                                    ),
+                        child: Obx(() {
+                          final companyInfo =
+                              apiController.companyUserInfo.value;
+                          return Card(
+                            elevation: 0,
+                            color: Colors.transparent,
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              width: double.infinity,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Image.network(
+                                    companyInfo.companyLogo,
+                                    height: 80,
+                                    width: 80,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, progress) {
+                                      if (progress == null) return child;
+                                      return CircularProgressIndicator();
+                                    },
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(Icons.image,
+                                                size: 80, color: Colors.grey),
                                   ),
-                                );
-                              }),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    companyInfo.companyName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(
+                                    height: 10,
+                                  ),
+                                  Divider(),
+                                ],
+                              ),
                             ),
-                            
+                          );
+                        }),
+                      ),
+
                       _buildMenuItem(FontAwesomeIcons.chartPie, "Dashboard", 0),
                       if (userinfo.authmodel.value.user!.role == 'SELLER')
                         _buildMenuItem(FontAwesomeIcons.shopify, "Purchase", 1),
@@ -233,7 +245,9 @@ class _SideMenuState extends State<SideMenu> {
                         },
                         child: AbsorbPointer(
                           child: _buildMenuItem(
-                              FontAwesomeIcons.rightFromBracket, "Sign Out", 10),
+                              FontAwesomeIcons.rightFromBracket,
+                              "Sign Out",
+                              10),
                         ),
                       ),
                       const SizedBox(

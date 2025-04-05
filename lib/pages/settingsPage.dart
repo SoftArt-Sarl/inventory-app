@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/pages/editingUser.dart';
@@ -234,20 +235,28 @@ class _UpdateCompanyLogoPageState extends State<UpdateCompanyLogoPage> {
   final ApiService apiService = ApiService();
   bool isLoading = false;
   File? _selectedImage; // Fichier pour stocker l'image sélectionnée
+  String? _webImagePath; // Chemin pour l'image sélectionnée sur le web
 
   Future<void> pickImage() async {
     try {
       final pickedFile = await ImagePicker().pickImage(
-        source: ImageSource
-            .gallery, // Permet de choisir une image depuis la galerie
+        source: ImageSource.gallery, // Permet de choisir une image depuis la galerie
         maxWidth: 800, // Redimensionne l'image pour réduire la taille
         maxHeight: 800,
       );
 
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path); // Stocke l'image sélectionnée
-        });
+        if (kIsWeb) {
+          // Pour le web, utilisez le chemin temporaire
+          setState(() {
+            _webImagePath = pickedFile.path;
+          });
+        } else {
+          // Pour mobile/desktop, utilisez File
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+          });
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -257,7 +266,14 @@ class _UpdateCompanyLogoPageState extends State<UpdateCompanyLogoPage> {
   }
 
   Future<void> uploadLogo() async {
-    if (_selectedImage == null) {
+    if (!kIsWeb && _selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select an image first")),
+      );
+      return;
+    }
+
+    if (kIsWeb && _webImagePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select an image first")),
       );
@@ -269,7 +285,9 @@ class _UpdateCompanyLogoPageState extends State<UpdateCompanyLogoPage> {
     });
 
     try {
-      final response = await apiService.updateCompanyLogo(_selectedImage!.path);
+      final response = await apiService.updateCompanyLogo(
+        kIsWeb ? _webImagePath! : _selectedImage!.path,
+      );
       if (response.statusCode == 200 || response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Logo uploaded successfully")),
@@ -312,29 +330,53 @@ class _UpdateCompanyLogoPageState extends State<UpdateCompanyLogoPage> {
                 // Affiche l'image sélectionnée ou un placeholder
                 GestureDetector(
                   onTap: pickImage,
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            _selectedImage!,
-                            height: 150,
-                            width: 150,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Container(
-                          height: 150,
-                          width: 150,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            Icons.image,
-                            size: 50,
-                            color: Colors.grey[200],
-                          ),
-                        ),
+                  child: kIsWeb
+                      ? (_webImagePath != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                _webImagePath!,
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Container(
+                              height: 150,
+                              width: 150,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.image,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            ))
+                      : (_selectedImage != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.file(
+                                _selectedImage!,
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Container(
+                              height: 150,
+                              width: 150,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.image,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            )),
                 ),
                 const SizedBox(height: 10),
                 const Text(
@@ -405,7 +447,6 @@ class _UpdateCompanyLogoPageState extends State<UpdateCompanyLogoPage> {
     );
   }
 }
-
 // 🆕 Page pour modifier le nom de l'entreprise
 class UpdateCompanyNamePage extends StatefulWidget {
   @override

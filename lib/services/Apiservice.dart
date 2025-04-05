@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_application_1/controller/appController.dart';
 import 'package:flutter_application_1/models.dart/Item.dart';
 import 'package:flutter_application_1/models.dart/Usermodel.dart';
 import 'package:flutter_application_1/models.dart/category.dart';
 import 'package:flutter_application_1/models.dart/historiqueModel.dart';
 import 'package:flutter_application_1/pages/facturePage.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ApiService {
   final Dio _dio = Dio(
@@ -96,25 +98,47 @@ class ApiService {
 
   // Modifier le logo de l'entreprise
   Future<Response> updateCompanyLogo(String filePath) async {
-    try {
-      FormData formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(filePath, filename: 'company_logo.png'),
-      });
+  try {
+    FormData formData;
 
-      final response = await _dio.put(
-        '/user/update/company-logo',
-        data: formData,
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $_accessToken',
-          },
+    if (kIsWeb) {
+      // Gestion pour le web
+      final bytes = await XFile(filePath).readAsBytes(); // Lire les données du fichier
+      formData = FormData.fromMap({
+        'logo': MultipartFile.fromBytes(
+          bytes,
+          filename: filePath.split('/').last, // Nom du fichier
         ),
-      );
-      return response;
-    } catch (e) {
-      throw Exception('Erreur lors de la mise à jour du logo de l\'entreprise: $e');
+      });
+    } else {
+      // Gestion pour mobile/desktop
+      formData = FormData.fromMap({
+        'logo': await MultipartFile.fromFile(
+          filePath,
+          filename: filePath.split('/').last, // Nom du fichier
+        ),
+      });
     }
+
+    print("Envoi des données au serveur : ${formData.fields}");
+    print("URL de l'endpoint : /user/update-logo");
+
+    final response = await _dio.post(
+      '/user/update-logo',
+      data: formData,
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $_accessToken', // Ajoutez votre token ici
+        },
+      ),
+    );
+
+    return response;
+  } catch (e) {
+    print("Erreur lors de la mise à jour du logo : $e");
+    throw Exception('Erreur lors de la mise à jour du logo de l\'entreprise: $e');
   }
+}
 
   // Modifier le nom de l'entreprise
   Future<Response> updateCompanyName(String name) async {
